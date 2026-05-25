@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Intercom Report Generator</title>
+  <title>Performance Report Generator</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
@@ -12,16 +12,24 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 </head>
 <body>
-  <!-- Sidebar (desktop) -->
+  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      <span class="sidebar-title">Intercom Reports</span>
+      <span class="sidebar-title">Report Generator</span>
     </div>
     <nav class="sidebar-nav">
-      <a href="#" class="nav-link active">
+      <a href="#config" class="nav-link active">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         Dashboard
+      </a>
+      <a href="#uploads" class="nav-link">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Uploads
+      </a>
+      <a href="#enterData" class="nav-link">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 7h10v2H7z"/><path d="M7 11h10v2H7z"/><path d="M7 15h4v2H7z"/></svg>
+        Enter Data
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -40,7 +48,7 @@
     </button>
     <div class="mobile-title">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Intercom Reports
+      Report Generator
     </div>
     <button class="theme-toggle-mobile" onclick="toggleTheme()">
       <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
@@ -49,21 +57,29 @@
   </header>
 
   <!-- Main content -->
-  <main class="main-content">
-    <!-- Config -->
-    <section class="config-section">
-      <h1>Intercom Report Generator</h1>
+  <main class="main-content" id="mainContent">
+    <!-- ===== SECTION: Config ===== -->
+    <section class="config-section" id="config">
+      <h1>Monthly Performance Report Generator</h1>
       <div class="config-grid">
         <div class="form-group">
-          <label>Project Name</label>
-          <input type="text" id="projectName" placeholder="e.g. Client PK" value="Client PK">
+          <label>Client Name</label>
+          <input type="text" id="projectName" placeholder="e.g. Client SJ" value="Client SJ">
         </div>
         <div class="form-group">
           <label>Month</label>
           <select id="monthSelect"><option value="">Select month</option></select>
         </div>
         <div class="form-group">
-          <label>Week</label>
+          <label>Year</label>
+          <select id="yearSelect">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Week Filter</label>
           <select id="weekSelect">
             <option value="All">All Weeks</option>
             <option value="Week 1">Week 1</option>
@@ -79,8 +95,9 @@
       </div>
     </section>
 
-    <!-- Uploads -->
-    <section class="upload-section">
+    <!-- ===== SECTION: Uploads ===== -->
+    <section class="upload-section" id="uploads">
+      <h2>Data Uploads</h2>
       <div class="upload-grid">
         <!-- Intercom CSV -->
         <div class="upload-zone" id="uploadZone">
@@ -103,38 +120,71 @@
       </div>
     </section>
 
-    <!-- Manual Entry -->
+    <!-- ===== SECTION: Manual Entry ===== -->
     <section class="manual-section" id="manualSection">
-      <h3>Manual Entry</h3>
+      <h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Manual Entry - Chat KPIs</h2>
       <div class="manual-grid">
         <div class="form-group">
           <label>Average First Response Time</label>
-          <input type="text" id="manualFirstResponse" placeholder="HH:MM:SS">
+          <input type="text" class="manual-input" id="manualFirstResponse" placeholder="HH:MM:SS">
         </div>
         <div class="form-group">
           <label>Average Response Time</label>
-          <input type="text" id="manualAvgResponse" placeholder="HH:MM:SS">
+          <input type="text" class="manual-input" id="manualAvgResponse" placeholder="HH:MM:SS">
         </div>
         <div class="form-group">
           <label>Median Handling Time</label>
-          <input type="text" id="manualHandlingTime" placeholder="HH:MM:SS">
+          <input type="text" class="manual-input" id="manualHandlingTime" placeholder="HH:MM:SS">
+        </div>
+      </div>
+      <div class="manual-grid" style="margin-top:0.75rem">
+        <div class="form-group">
+          <label>Average Chats (Manual)</label>
+          <input type="text" class="manual-input" id="manualAvgChats" placeholder="e.g. 150">
+        </div>
+        <div class="form-group">
+          <label>Average Calls (Manual)</label>
+          <input type="text" class="manual-input" id="manualAvgCalls" placeholder="e.g. 85">
+        </div>
+        <div class="form-group">
+          <label>Historical Avg Chat Volume</label>
+          <input type="text" class="manual-input" id="manualHistAvgChats" placeholder="e.g. 1200">
+        </div>
+        <div class="form-group">
+          <label>Historical Avg Call Volume</label>
+          <input type="text" class="manual-input" id="manualHistAvgCalls" placeholder="e.g. 600">
         </div>
       </div>
     </section>
 
-    <!-- Actions -->
+    <!-- ===== SECTION: Enter Data Button ===== -->
+    <section class="enter-data-section" id="enterData">
+      <h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Enter Data</h2>
+      <p class="section-desc">Open the multi-sheet Excel-like editor to enter data for all tables (TL KPI, QA KPI, Agent Productivity, Agent KPI, Escalation Count, Payment Details). Each table is a separate worksheet.</p>
+      <div class="enter-data-card">
+        <div class="enter-data-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 7h10v2H7z"/><path d="M7 11h10v2H7z"/><path d="M7 15h4v2H7z"/></svg>
+        </div>
+        <div class="enter-data-info">
+          <div class="enter-data-title">Multi-Sheet Data Entry</div>
+          <div class="enter-data-desc">Paste data from Excel into 6 worksheets — TL KPI, QA KPI, Agent Productivity, Agent KPI, Escalation Count & Payment Details</div>
+        </div>
+        <button class="btn btn-primary btn-enter-data" onclick="openDataEntryModal()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Open Excel Editor
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: Actions ===== -->
     <section class="actions">
       <button class="btn btn-primary" id="processBtn" onclick="processFile()" disabled>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Process
+        Generate Report
       </button>
-      <button class="btn btn-success" id="exportCsvBtn" onclick="exportCSV()" disabled>
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export CSV
-      </button>
-      <button class="btn btn-danger" id="exportPdfBtn" onclick="exportPDF()" disabled>
+      <button class="btn btn-success" id="exportPdfBtn" onclick="exportPDF()" disabled>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Export PDF Dashboard
+        Export PDF (15 Pages)
       </button>
       <button class="btn btn-outline" onclick="resetAll()">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
@@ -142,17 +192,17 @@
       </button>
     </section>
 
-    <!-- Log -->
+    <!-- ===== SECTION: Processing Log ===== -->
     <section class="log-section" id="logSection" style="display:none">
       <h3>Processing Log</h3>
       <div class="log-container" id="logContainer"></div>
     </section>
 
-    <!-- Preview table -->
+    <!-- ===== SECTION: Preview ===== -->
     <section class="preview-section" id="previewSection" style="display:none">
       <div class="preview-card">
         <div class="preview-header">
-          <div class="preview-title">Chatbot Performance</div>
+          <div class="preview-title">Processed Data Preview</div>
           <div class="preview-search-wrap">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input class="preview-search" type="text" placeholder="Search..." oninput="filterPreview(this)">
@@ -167,57 +217,290 @@
       </div>
     </section>
 
-    <!-- PDF Dashboard (hidden, used for PDF export) -->
+    <!-- ===== SECTION: Dashboard (15 Slides for PDF Export) ===== -->
     <section class="dashboard-section" id="dashboardSection" style="display:none">
 
-      <!-- Slide 1: Title Slide -->
-      <div class="dashboard-slide slide-title" id="slideTitle">
-        <div class="slide-title-content">
-          <div class="slide-main-title">Monthly Performance Review</div>
-          <div class="slide-month" id="slideMonth">April 26</div>
+      <!-- Helper: KPI Row Component -->
+      <!-- SLIDE 1: Cover Page -->
+      <div class="dashboard-slide slide-cover" id="slide1">
+        <div class="slide-cover-bg"></div>
+        <div class="slide-cover-content">
+          <div class="slide-cover-subtitle">Monthly Performance Review</div>
+          <div class="slide-cover-client" id="slideClientName">Client SJ</div>
+          <div class="slide-cover-month" id="slideMonthYear">March 2026</div>
+          <div class="slide-cover-divider"></div>
+          <div class="slide-cover-meta" id="slideDateRange">1 - 30 Apr</div>
         </div>
       </div>
 
-      <!-- Slide 2: Weekly Chat Flow -->
-      <div class="dashboard-slide slide-flow" id="slideFlow">
-        <div class="slide-flow-head">
-          <div class="slide-flow-title">Chats performance</div>
-        </div>
-        <div class="slide-content">
-          <div class="slide-body">
-            <!-- Left: chart only -->
-            <div class="slide-left">
-              <div class="chart-container">
-                <canvas id="volumeChart"></canvas>
-              </div>
-            </div>
-            <!-- Right: time/rate KPIs -->
-            <div class="slide-right">
-              <div class="kpi-grid" id="kpiGridRight"></div>
+      <!-- SLIDE 2: Chat Volume Summary -->
+      <div class="dashboard-slide slide-content-page" id="slide2">
+        <div class="slide-header"><div class="slide-num">01</div><div class="slide-title-text">Chat Volume Summary</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide2Volume"></canvas></div>
+            <div class="slide-chart-box" style="margin-top:8px"><canvas id="chartSlide2Closed"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-kpi-grid" id="slide2Kpis"></div>
+            <div class="slide-insight-box" id="slide2Insights">
+              <div class="insight-title">AI Insights</div>
+              <div class="insight-text" id="slide2InsightText">Analyzing chat performance data...</div>
             </div>
           </div>
-          <!-- Bottom: full-width volume KPIs -->
-          <div class="kpi-bottom-row" id="kpiGridLeft"></div>
         </div>
       </div>
 
-      <!-- Slide 3: Inbound Calls Performance -->
-      <div class="dashboard-slide slide-flow" id="slideCallsFlow" style="display:none">
-        <div class="slide-flow-head">
-          <div class="slide-flow-title">Inbound Calls Performance</div>
-        </div>
-        <div class="slide-content">
-          <div class="slide-body">
-            <div class="slide-left">
-              <div class="chart-container">
-                <canvas id="callsVolumeChart"></canvas>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="kpi-grid" id="kpiGridCallsRight"></div>
+      <!-- SLIDE 3: Inbound Call Summary -->
+      <div class="dashboard-slide slide-content-page" id="slide3">
+        <div class="slide-header"><div class="slide-num">02</div><div class="slide-title-text">Inbound Call Summary</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide3Calls"></canvas></div>
+            <div class="slide-chart-box" style="margin-top:8px"><canvas id="chartSlide3Resolved"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-kpi-grid" id="slide3Kpis"></div>
+            <div class="slide-insight-box">
+              <div class="insight-title">AI Insights</div>
+              <div class="insight-text" id="slide3InsightText">Analyzing call performance data...</div>
             </div>
           </div>
-          <div class="kpi-bottom-row" id="kpiGridCallsBottom"></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: Interval Wise Volume Analysis -->
+      <div class="dashboard-slide slide-content-page" id="slide4">
+        <div class="slide-header"><div class="slide-num">03</div><div class="slide-title-text">Interval Wise Volume Analysis</div></div>
+        <div class="slide-body-1col">
+          <div class="slide-chart-box" style="height:220px"><canvas id="chartSlide4Interval"></canvas></div>
+          <div class="slide-3col" style="margin-top:8px">
+            <div class="slide-stat-card" id="slide4Morning">
+              <div class="stat-label">🌅 Morning (6AM-12PM)</div>
+              <div class="stat-value" id="slide4MorningVal">-</div>
+            </div>
+            <div class="slide-stat-card" id="slide4Afternoon">
+              <div class="stat-label">☀️ Afternoon (12PM-6PM)</div>
+              <div class="stat-value" id="slide4AfternoonVal">-</div>
+            </div>
+            <div class="slide-stat-card" id="slide4Night">
+              <div class="stat-label">🌙 Night (6PM-6AM)</div>
+              <div class="stat-value" id="slide4NightVal">-</div>
+            </div>
+          </div>
+          <div class="slide-insight-box" style="margin-top:8px">
+            <div class="insight-title">AI Insights — Staffing Optimization</div>
+            <div class="insight-text" id="slide4InsightText">Analyzing traffic patterns...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Current Month vs Historical Average -->
+      <div class="dashboard-slide slide-content-page" id="slide5">
+        <div class="slide-header"><div class="slide-num">04</div><div class="slide-title-text">Current Month vs Historical Average</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide5Chats"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box"><canvas id="chartSlide5Calls"></canvas></div>
+          </div>
+        </div>
+        <div class="slide-comparison-row" id="slide5Comparison"></div>
+        <div class="slide-insight-box" style="margin-top:8px">
+          <div class="insight-title">AI Insights — Trend Analysis</div>
+          <div class="insight-text" id="slide5InsightText">Comparing current vs historical averages...</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: Top Locations Analysis -->
+      <div class="dashboard-slide slide-content-page" id="slide6">
+        <div class="slide-header"><div class="slide-num">05</div><div class="slide-title-text">Top Locations Analysis</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide6LocChats"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box"><canvas id="chartSlide6LocCalls"></canvas></div>
+          </div>
+        </div>
+        <div class="slide-insight-box" style="margin-top:8px">
+          <div class="insight-title">AI Insights — Regional Analysis</div>
+          <div class="insight-text" id="slide6InsightText">Analyzing location-based engagement...</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: Top Reported Issues -->
+      <div class="dashboard-slide slide-content-page" id="slide7">
+        <div class="slide-header"><div class="slide-num">06</div><div class="slide-title-text">Top Reported Issues</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide7Issues"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box"><canvas id="chartSlide7AHT"></canvas></div>
+          </div>
+        </div>
+        <div class="slide-insight-box" style="margin-top:8px">
+          <div class="insight-title">AI Insights — Issue Analysis</div>
+          <div class="insight-text" id="slide7InsightText">Analyzing top reported issues...</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: Repeat Customer Analysis -->
+      <div class="dashboard-slide slide-content-page" id="slide8">
+        <div class="slide-header"><div class="slide-num">07</div><div class="slide-title-text">Repeat Customer Analysis</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide8Repeat"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-insight-box">
+              <div class="insight-title">AI Insights — Repeat Contact Analysis</div>
+              <div class="insight-text" id="slide8InsightText">Analyzing repeat customer patterns...</div>
+            </div>
+            <div class="slide-table-box" id="slide8Table" style="margin-top:8px">
+              <table class="slide-data-table">
+                <thead><tr><th>Query Type</th><th>Repeat Customers</th></tr></thead>
+                <tbody id="slide8TableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9: Volume vs Tagged Queries Validation -->
+      <div class="dashboard-slide slide-content-page" id="slide9">
+        <div class="slide-header"><div class="slide-num">08</div><div class="slide-title-text">Volume vs Tagged Queries Validation</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box" style="height:200px"><canvas id="chartSlide9Validation"></canvas></div>
+            <div class="slide-insight-box" style="margin-top:8px">
+              <div class="insight-title">AI Insights — Tagging Validation</div>
+              <div class="insight-text" id="slide9InsightText">Validating tagging coverage...</div>
+            </div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-table-box" id="slide9Table">
+              <table class="slide-data-table">
+                <thead><tr><th>Metric</th><th>Volume</th><th>Tagged</th><th>Match %</th></tr></thead>
+                <tbody id="slide9TableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 10: Escalation Analysis -->
+      <div class="dashboard-slide slide-content-page" id="slide10">
+        <div class="slide-header"><div class="slide-num">09</div><div class="slide-title-text">Escalation Analysis</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide10Esc"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-kpi-grid" id="slide10Kpis"></div>
+            <div class="slide-table-box" style="margin-top:8px">
+              <table class="slide-data-table">
+                <thead><tr><th>Issue Type</th><th>Count</th><th>Resolved</th><th>Pending</th></tr></thead>
+                <tbody id="slide10TableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="slide-insight-box" style="margin-top:8px">
+          <div class="insight-title">AI Insights — Escalation Analysis</div>
+          <div class="insight-text" id="slide10InsightText">Analyzing escalation patterns...</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11: Cost & Subscription Analysis -->
+      <div class="dashboard-slide slide-content-page" id="slide11">
+        <div class="slide-header"><div class="slide-num">10</div><div class="slide-title-text">Cost & Subscription Analysis</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide11Cost"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-kpi-grid" id="slide11Kpis"></div>
+          </div>
+        </div>
+        <div class="slide-table-box" style="margin-top:8px">
+          <table class="slide-data-table">
+            <thead><tr><th>Process</th><th>Subscription</th><th>Amount</th><th>Tax</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody id="slide11TableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SLIDE 12: Agent Productivity -->
+      <div class="dashboard-slide slide-content-page" id="slide12">
+        <div class="slide-header"><div class="slide-num">11</div><div class="slide-title-text">Agent Productivity</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide12Prod"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-kpi-grid" id="slide12Kpis"></div>
+            <div class="slide-table-box" style="margin-top:8px">
+              <table class="slide-data-table">
+                <thead><tr><th>Agent</th><th>Chats</th><th>Calls</th><th>WhatsApp</th><th>Total</th></tr></thead>
+                <tbody id="slide12TableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 13: Top & Bottom Performers -->
+      <div class="dashboard-slide slide-content-page" id="slide13">
+        <div class="slide-header"><div class="slide-num">12</div><div class="slide-title-text">Top & Bottom Performers</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box" style="height:200px"><canvas id="chartSlide13Top"></canvas></div>
+            <div class="slide-insight-box" style="margin-top:8px">
+              <div class="insight-title">AI Insights — Top Performers</div>
+              <div class="insight-text" id="slide13TopInsight">Analyzing top performers...</div>
+            </div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box" style="height:200px"><canvas id="chartSlide13Bottom"></canvas></div>
+            <div class="slide-insight-box" style="margin-top:8px">
+              <div class="insight-title">AI Insights — Coaching Required</div>
+              <div class="insight-text" id="slide13BottomInsight">Analyzing bottom performers...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 14: Quality & KPI Dashboard -->
+      <div class="dashboard-slide slide-content-page" id="slide14">
+        <div class="slide-header"><div class="slide-num">13</div><div class="slide-title-text">Quality & KPI Dashboard</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box"><canvas id="chartSlide14Kpi"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box"><canvas id="chartSlide14Quality"></canvas></div>
+          </div>
+        </div>
+        <div class="slide-kpi-grid slide-kpi-row" id="slide14Kpis" style="margin-top:8px"></div>
+      </div>
+
+      <!-- SLIDE 15: TL & QA Performance -->
+      <div class="dashboard-slide slide-content-page" id="slide15">
+        <div class="slide-header"><div class="slide-num">14</div><div class="slide-title-text">TL & QA Performance</div></div>
+        <div class="slide-body-2col">
+          <div class="slide-left-col">
+            <div class="slide-chart-box" style="height:220px"><canvas id="chartSlide15Tl"></canvas></div>
+          </div>
+          <div class="slide-right-col">
+            <div class="slide-chart-box" style="height:220px"><canvas id="chartSlide15Qa"></canvas></div>
+          </div>
+        </div>
+        <div class="slide-insight-box" style="margin-top:8px">
+          <div class="insight-title">AI Insights — TL & QA Summary</div>
+          <div class="insight-text" id="slide15InsightText">Analyzing TL and QA performance...</div>
         </div>
       </div>
 
@@ -226,6 +509,37 @@
 
   <!-- Mobile overlay -->
   <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- ===== EXCEL EDITOR MODAL (Multi-Sheet) ===== -->
+  <div class="excel-modal-overlay" id="excelModal" style="display:none" onclick="if(event.target===this)closeExcelEditor()">
+    <div class="excel-modal">
+      <div class="excel-modal-header">
+        <h3 id="excelModalTitle">📊 Multi-Sheet Data Entry</h3>
+        <button class="excel-modal-close" onclick="closeExcelEditor()">✕</button>
+      </div>
+      <div class="excel-modal-body">
+        <div class="excel-paste-hint">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 7h10v2H7z"/><path d="M7 11h10v2H7z"/><path d="M7 15h6v2H7z"/></svg>
+          Copy from Excel, click a cell and press <kbd>Ctrl+V</kbd> — data fills across cells automatically
+        </div>
+        <div class="excel-grid-wrapper">
+          <table class="excel-grid" id="excelGrid">
+            <thead id="excelGridHead"></thead>
+            <tbody id="excelGridBody"></tbody>
+          </table>
+        </div>
+        <!-- Sheet tabs at bottom -->
+        <div class="excel-sheet-tabs" id="excelSheetTabs"></div>
+      </div>
+      <div class="excel-modal-footer">
+        <button class="btn btn-primary" onclick="saveAllSheets()">💾 Save All Sheets</button>
+        <button class="btn btn-success btn-add-row" onclick="addExcelGridRow()">+ Add Row</button>
+        <button class="btn btn-outline" onclick="clearExcelGrid()">Clear Sheet</button>
+        <button class="btn btn-outline" onclick="closeExcelEditor()">Cancel</button>
+        <span class="sheet-status" id="sheetStatus"></span>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
