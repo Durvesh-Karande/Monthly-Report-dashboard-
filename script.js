@@ -22,6 +22,7 @@ let state = {
   file: null, rawData: [], processed: [], logs: [],
   exotelFile: null, exotelRaw: [], exotelKPIs: null,
   ameyoFile: null, ameyoRaw: [], ameyoKPIs: null,
+  frejunFile: null, frejunRaw: [], frejunKPIs: null,
   charts: {},
 };
 var clientStore = {};
@@ -100,6 +101,8 @@ function initConfig() {
   if(ez){ez.addEventListener("dragover",e=>{e.preventDefault();ez.classList.add("dragover")});ez.addEventListener("dragleave",()=>ez.classList.remove("dragover"));ez.addEventListener("drop",e=>{e.preventDefault();ez.classList.remove("dragover");if(e.dataTransfer.files[0])handleExotelFile(e.dataTransfer.files[0])});}
   const az=document.getElementById("ameyoUploadZone");
   if(az){az.addEventListener("dragover",e=>{e.preventDefault();az.classList.add("dragover")});az.addEventListener("dragleave",()=>az.classList.remove("dragover"));az.addEventListener("drop",e=>{e.preventDefault();az.classList.remove("dragover");if(e.dataTransfer.files[0])handleAmeyoFile(e.dataTransfer.files[0])});}
+  const fz=document.getElementById("frejunUploadZone");
+  if(fz){fz.addEventListener("dragover",e=>{e.preventDefault();fz.classList.add("dragover")});fz.addEventListener("dragleave",()=>fz.classList.remove("dragover"));fz.addEventListener("drop",e=>{e.preventDefault();fz.classList.remove("dragover");if(e.dataTransfer.files[0])handleFrejunFile(e.dataTransfer.files[0])});}
   updateSidebarProject();
 }
 
@@ -437,6 +440,8 @@ function handleAmeyoFile(file) {
   setAmeyoUploadState("idle",file.name);
 }
 function setAmeyoUploadState(s,t){const z=document.getElementById("ameyoUploadZone");if(!z)return;z.classList.remove("success","error","dragover");if(s==="success")z.classList.add("success");if(s==="error")z.classList.add("error");const h=document.getElementById("ameyoUploadHint");if(h)h.textContent=t||"Drag & drop or click to browse";}
+function handleFrejunFile(file){if(!file)return;const ext=file.name.split(".").pop().toLowerCase();if(!["csv","xlsx","xls"].includes(ext)){setFrejunUploadState("error","Unsupported");return}state.frejunFile=file;setFrejunUploadState("idle",file.name);}
+function setFrejunUploadState(s,t){const z=document.getElementById("frejunUploadZone");if(!z)return;z.classList.remove("success","error","dragover");if(s==="success")z.classList.add("success");if(s==="error")z.classList.add("error");const h=document.getElementById("frejunUploadHint");if(h)h.textContent=t||"Drag & drop or click to browse";}
 
 // ===== Logging =====
 function addLog(msg,type="info"){const t=new Date().toLocaleTimeString("en-US",{hour12:false});state.logs.push({time:t,msg,type});renderLog();}
@@ -444,13 +449,14 @@ function renderLog(){const s=document.getElementById("logSection"),c=document.ge
 
 // ===== Parse =====
 function parseFile(file) {
+  function stripBOM(rows) { return rows.map(function(row) { var clean = {}; Object.keys(row).forEach(function(k) { clean[k.replace(/^\uFEFF/,"").trim()] = row[k]; }); return clean; }); }
   return new Promise((resolve,reject)=>{
     const ext=file.name.split(".").pop().toLowerCase();
     if(ext==="csv"){
-      Papa.parse(file,{header:true,skipEmptyLines:true,complete:r=>r.errors.length?reject(new Error(r.errors[0].message)):resolve(r.data),error:reject});
+      Papa.parse(file,{header:true,skipEmptyLines:true,complete:r=>r.errors.length?reject(new Error(r.errors[0].message)):resolve(stripBOM(r.data)),error:reject});
     }else{
       const r=new FileReader();
-      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]));}catch(err){reject(err)}};
+      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});resolve(stripBOM(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])));}catch(err){reject(err)}};
       r.onerror=()=>reject(new Error("Failed to read file"));
       r.readAsArrayBuffer(file);
     }
@@ -461,13 +467,50 @@ function parseFile(file) {
 function safeNum(v){if(v===null||v===undefined||v==="")return 0;const n=Number(String(v).replace(/[,%$]/g,""));return isNaN(n)?0:n;}
 function secondsToHMS(sec){if(!sec||sec<=0)return"";const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
 function median(arr){if(arr.length===0)return 0;const s=[...arr].sort((a,b)=>a-b),mid=Math.floor(s.length/2);return s.length%2?s[mid]:(s[mid-1]+s[mid])/2;}
-function extractDay(dateStr){if(!dateStr)return 1;const s=String(dateStr).trim();const parts=s.split(/[\/\-\s:]/);if(parts.length>=1){const d=Number(parts[0]);if(d>=1&&d<=31)return d}const dt=new Date(s);if(!isNaN(dt.getTime()))return dt.getDate();return 1;}
+function extractDay(dateStr){
+  if(!dateStr)return 1;
+  const s=String(dateStr).trim();
+  
+  // Try native parser first
+  const dt=new Date(s);
+  if(!isNaN(dt.getTime())) {
+    // Check if it's a very small year (e.g. new Date("27/05/26") might be year 26)
+    if (dt.getFullYear() > 100) return dt.getDate();
+  }
+
+  // Manual parsing for non-standard formats (DD/MM/YYYY, DD-MM-YY, etc.)
+  const parts = s.split(/[\/\-\s,:.]+/).map(p => parseInt(p, 10)).filter(p => !isNaN(p));
+  if (parts.length >= 3) {
+    const p1 = parts[0];
+    const p2 = parts[1];
+    const p3 = parts[2];
+
+    // Case 1: YYYY-MM-DD or YYYY-DD-MM
+    if (p1 > 1000) {
+      if (p3 >= 1 && p3 <= 31) return p3;
+      if (p2 >= 1 && p2 <= 31) return p2;
+    }
+    
+    // Case 2: DD-MM-YYYY or MM-DD-YYYY or DD-MM-YY
+    // Check which one is clearly a day (>12)
+    if (p1 > 12 && p1 <= 31) return p1;
+    if (p2 > 12 && p2 <= 31) return p2;
+    
+    // Still ambiguous (both <= 12). 
+    // Most Ameyo reports use DD/MM/YYYY or MM/DD/YYYY.
+    // If we have no other hint, we'll return p1, but let's check if it's likely a day.
+    if (p1 >= 1 && p1 <= 31) return p1;
+  }
+
+  return 1;
+}
 function getWeekNum(day){if(day<=7)return"Week 1";if(day<=14)return"Week 2";if(day<=21)return"Week 3";return"Week 4";}
 function findCol(row,...names){const keys=Object.keys(row);for(const n of names){const k=keys.find(kk=>kk.toLowerCase().trim()===n.toLowerCase().trim());if(k!==undefined)return row[k]}return null;}
 
 function validateColumns(rows, expectedGroups, label) {
   if (!rows || rows.length === 0) { addLog(label + ": No data rows to validate","warn"); return false; }
   var headers = Object.keys(rows[0]);
+  addLog(label + " headers found: " + headers.join(", "),"info");
   var allOk = true;
   expectedGroups.forEach(function(group) {
     var found = group.names.some(function(n) {
@@ -506,7 +549,20 @@ async function processFile() {
   if (!intercomOk) { addLog("Intercom CSV is missing critical columns. Report will be incomplete.","error"); return; }
 
   var currentClient = document.getElementById("sidebarProjectName").textContent || "";
-  if (currentClient === "Client WC (C10)" && state.ameyoFile) {
+  if (currentClient === "Client JE (C11)" && state.frejunFile) {
+    addLog("Processing Frejun data...","info");
+    try { state.frejunRaw = await parseFile(state.frejunFile); addLog(`Parsed ${state.frejunRaw.length} Frejun rows`,"success"); } catch(err) { addLog(`Frejun parse error: ${err.message}`,"error"); return; }
+    var frejunOk = validateColumns(state.frejunRaw, [
+      { names:["Call Status","call status","Call_Status","Status","status"], hint:"Call Status", critical:true },
+      { names:["Start Time","start time","StartTime","starttime","Start_Time"], hint:"Start Time", critical:true },
+      { names:["Total Minutes","total minutes","Total_Minutes"], hint:"Total Minutes", critical:false },
+      { names:["Call Cost","call cost","Call_Cost","Cost","cost","Price","price"], hint:"Call Cost", critical:false },
+      { names:["Tags","tags"], hint:"Tags", critical:false },
+      { names:["Caller","caller"], hint:"Caller", critical:false },
+    ], "Frejun");
+    if (!frejunOk) { addLog("Frejun CSV is missing critical columns. Call data will not be processed.","error"); return; }
+    try { state.frejunKPIs = processFrejunData(state.frejunRaw); setFrejunUploadState("success",`${state.frejunFile.name} — ${state.frejunRaw.length} rows`); addLog(`Frejun: ${state.frejunKPIs.total} calls`,"success"); state.exotelKPIs = state.frejunKPIs; state.exotelRaw = state.frejunRaw; } catch(err) { addLog(`Frejun processing error: ${err.message}`,"error"); }
+  } else if (currentClient === "Client WC (C10)" && state.ameyoFile) {
     addLog("Processing Ameyo data...","info");
     try { state.ameyoRaw = await parseFile(state.ameyoFile); addLog(`Parsed ${state.ameyoRaw.length} Ameyo rows`,"success"); } catch(err) { addLog(`Ameyo parse error: ${err.message}`,"error"); return; }
     // Detect transposed Ameyo CSV (field names in rows, data in columns)
@@ -539,6 +595,41 @@ async function processFile() {
     ], "Ameyo");
     if (!ameyoOk) { addLog("Ameyo CSV is missing critical columns. Call data will not be processed.","error"); return; }
     try { state.ameyoKPIs = processAmeyoData(state.ameyoRaw); setAmeyoUploadState("success",`${state.ameyoFile.name} — ${state.ameyoRaw.length} rows`); addLog(`Ameyo: ${state.ameyoKPIs.total} calls`,"success"); state.exotelKPIs = state.ameyoKPIs; state.exotelRaw = state.ameyoRaw; } catch(err) { addLog(`Ameyo processing error: ${err.message}`,"error"); }
+  } else if (currentClient === "Client PK" && state.ameyoFile) {
+    addLog("Processing Ameyo data (Playkaro)...","info");
+    try { state.ameyoRaw = await parseFile(state.ameyoFile); addLog(`Parsed ${state.ameyoRaw.length} Ameyo rows`,"success"); } catch(err) { addLog(`Ameyo parse error: ${err.message}`,"error"); return; }
+    addLog("PK headers: " + Object.keys(state.ameyoRaw[0]||{}).join(", "),"info");
+    if (state.ameyoRaw[0]) { var pkSampleCallTime = state.ameyoRaw[0]["Call Time"] || state.ameyoRaw[0]["call time"] || state.ameyoRaw[0]["Call_Time"]; addLog("PK raw Call Time sample: " + JSON.stringify(pkSampleCallTime), "info"); }
+    // Detect transposed Ameyo CSV (field names in rows, data in columns)
+    var pkKeys = Object.keys(state.ameyoRaw[0] || {});
+    var pkFirstKey = pkKeys[0] || "";
+    var pkFirstVals = state.ameyoRaw.map(function(r){return String(r[pkFirstKey]||"").toLowerCase().trim();});
+    var pkNeedsTranspose = pkKeys.length > 1 && pkFirstVals.some(function(v){return v==="system disposition"||v==="system_disposition";}) && pkFirstVals.some(function(v){return v==="call time"||v==="call_time";});
+    if (pkNeedsTranspose) {
+      addLog("Detected transposed Ameyo format — pivoting columns to rows...","info");
+      var pkPivotCols = pkKeys.slice(1);
+      var pkPivoted = [];
+      pkPivotCols.forEach(function(col) {
+        var rec = {};
+        state.ameyoRaw.forEach(function(row) {
+          var field = String(row[pkFirstKey] || "").trim();
+          if (field) rec[field] = row[col];
+        });
+        pkPivoted.push(rec);
+      });
+      state.ameyoRaw = pkPivoted;
+      addLog(`Pivoted to ${pkPivoted.length} call records`,"success");
+    }
+    var pkOk = validateColumns(state.ameyoRaw, [
+      { names:["System Disposition","system disposition","System_Disposition"], hint:"System Disposition", critical:true },
+      { names:["Call Time","call time","Call Time","Call_Time"], hint:"Call Time", critical:true },
+      { names:["User Talk Time","user talk time","User_Talk_Time","User Talktime"], hint:"User Talk Time", critical:false },
+      { names:["User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"], hint:"User Ringing Time", critical:false },
+      { names:["Disposition Code","disposition code","Disposition_Code","DispositionCode"], hint:"Disposition Code", critical:false },
+      { names:["Disposition Class","disposition class","Disposition_Class","DispositionClass"], hint:"Disposition Class", critical:false },
+    ], "Ameyo (PK)");
+    if (!pkOk) { addLog("Ameyo CSV is missing critical columns. Call data will not be processed.","error"); return; }
+    try { state.ameyoKPIs = processPKAmeyoData(state.ameyoRaw); setAmeyoUploadState("success",`${state.ameyoFile.name} — ${state.ameyoRaw.length} rows`); addLog(`Ameyo (PK): ${state.ameyoKPIs.total} calls`,"success"); state.exotelKPIs = state.ameyoKPIs; state.exotelRaw = state.ameyoRaw; } catch(err) { addLog(`Ameyo processing error: ${err.message}`,"error"); }
   } else if (state.exotelFile) {
     addLog("Processing Exotel data...","info");
     try { state.exotelRaw = await parseFile(state.exotelFile); addLog(`Parsed ${state.exotelRaw.length} Exotel rows`,"success"); } catch(err) { addLog(`Exotel parse error: ${err.message}`,"error"); return; }
@@ -978,6 +1069,425 @@ function processAmeyoData(rows) {
 }
 
 // =====================================================================
+// ===== AMEYO PROCESSING (Client PK / Playkaro) =====
+// =====================================================================
+function processPKAmeyoData(rows) {
+  const get = (r,...n)=>findCol(r,...n);
+  const getS = r => String(get(r,"System Disposition","system disposition","System_Disposition")||"").toLowerCase().trim();
+  var getCallTime = function(r) { return String(get(r,"Call Time","call time","Call Time","Call_Time")||"").trim(); };
+  // Robust date extraction — handles Excel serial numbers, ISO datetimes, MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD, etc.
+  var excelSerialToDate = function(num) { return new Date(Math.round((num - 25569) * 86400) * 1000); };
+  var getDate = function(r) {
+    var ct = getCallTime(r);
+    if (!ct) return 0;
+    // Excel serial datetime (SheetJS returns date cells as decimal numbers, e.g. 45762.604 = Apr 15 2025 14:30)
+    var num = Number(ct);
+    if (!isNaN(num) && /^\d+(\.\d+)?$/.test(String(ct).trim()) && num > 40000 && num < 60000) {
+      return excelSerialToDate(Math.floor(num)).getUTCDate();
+    }
+    // ISO datetime with T separator (no whitespace): "2025-04-15T14:30:00.000Z"
+    var datePart = ct.split(/[\sT]/)[0] || "";
+    if (!datePart) return 0;
+    var day = extractDay(datePart);
+    return (day >= 1 && day <= 31) ? day : 0;
+  };
+  var hmsToSec = function(s) { if(!s) return 0; var p=String(s).split(":"); return p.length===3 ? parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]) : safeNum(s); };
+  var getDisposition = function(r) { return String(get(r,"Disposition Code","disposition code","Disposition_Code","DispositionCode")||"").trim(); };
+
+  var completed = rows.filter(function(r) { var s=getS(r); return s.includes("connected") || s.includes("answer") || s.includes("complete") || s.includes("successful"); });
+  var missed    = rows.filter(function(r) { var s=getS(r); return s.includes("hangup") || s.includes("not_picked") || s.includes("not_pick") || s.includes("abandon") || s.includes("miss") || s.includes("no_answer") || s.includes("no-answer") || s.includes("unanswered") || s.includes("not-answered"); });
+  var attempts  = rows.filter(function(r) { var s=getS(r); return !s.includes("connected") && !s.includes("answer") && !s.includes("complete") && !s.includes("successful") && !s.includes("hangup") && !s.includes("not_picked") && !s.includes("not_pick") && !s.includes("abandon") && !s.includes("miss") && !s.includes("no_answer") && !s.includes("no-answer") && !s.includes("unanswered") && !s.includes("not-answered"); });
+
+  // Per-date aggregation
+  var dateMap = {};
+  var dayStats = {};
+  rows.forEach(function(r) {
+    var d = getDate(r);
+    dayStats[d] = (dayStats[d]||0) + 1;
+    if (!d) return;
+    if (!dateMap[d]) dateMap[d] = { completed:0, missed:0, attempts:0, convDurs:[], ringTimes:[], prices:[], priceCompleted:0, priceMissed:0, priceAttempt:0 };
+    var s = getS(r);
+    // Match expanded keyword set (consistent with outer filters)
+    if (s.includes("connected") || s.includes("answer") || s.includes("complete") || s.includes("successful")) {
+      dateMap[d].completed++;
+      var cd = hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));
+      dateMap[d].convDurs.push(cd);
+      var rt = hmsToSec(get(r,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"));
+      dateMap[d].ringTimes.push(rt);
+    } else if (s.includes("hangup") || s.includes("not_picked") || s.includes("not_pick") || s.includes("abandon") || s.includes("miss") || s.includes("no_answer") || s.includes("no-answer") || s.includes("unanswered") || s.includes("not-answered")) {
+      dateMap[d].missed++;
+    } else {
+      dateMap[d].attempts++;
+    }
+  });
+
+  // Diagnostic Log
+  const daySummary = Object.entries(dayStats).sort((a,b)=>a[0]-b[0]).map(e => `Day ${e[0]}: ${e[1]}`).join(", ");
+  addLog(`Ameyo PK Day Distribution: ${daySummary}`, "info");
+
+  var sortedDates = Object.keys(dateMap).map(Number).sort(function(a,b){return a-b;});
+
+  // Table 1: Call Count per date
+  var dateCallCounts = sortedDates.map(function(d){return {date:d, completed:dateMap[d].completed, missed:dateMap[d].missed, attempts:dateMap[d].attempts, total:dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts};});
+
+  // Table 2: AHT per date
+  var dateAHT = sortedDates.map(function(d){var c=dateMap[d].convDurs; return {date:d, avgAHT:c.length?c.reduce(function(a,b){return a+b;},0)/c.length:0};});
+
+  // Table 3: Ring Time per date
+  var dateRing = sortedDates.map(function(d){var r=dateMap[d].ringTimes; return {date:d, avgRing:r.length?r.reduce(function(a,b){return a+b;},0)/r.length:0};});
+
+  // Table 4: Avg Cost Per Call (all 0 for Ameyo)
+  var dateCost = sortedDates.map(function(d){return {date:d, avgCost:0};});
+
+  // Table 5: Cost Spend per date (all 0 for Ameyo)
+  var dateCostSpend = sortedDates.map(function(d){return {date:d, completed:0, missed:0, attempts:0, total:0};});
+
+  // Overall aggregates
+  var convDurs = completed.map(function(r){return hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));});
+  var avgAHT = convDurs.length ? convDurs.reduce(function(a,b){return a+b;},0)/convDurs.length : 0;
+
+  var ringTimes = completed.map(function(r){return hmsToSec(get(r,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"));});
+  var avgRing = ringTimes.length ? ringTimes.reduce(function(a,b){return a+b;},0)/ringTimes.length : 0;
+
+  var avgCostPerCall = 0, totalCost = 0, missedCost = 0, attemptCost = 0;
+
+  // Week data
+  var weekData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  var weekCompletedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  var weekMissedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  rows.forEach(function(r){
+    var day = getDate(r);
+    var wk = getWeekNum(day);
+    weekData[wk]++;
+    var s = getS(r);
+    // Match expanded keyword set (consistent with outer filters)
+    if (s.includes("connected") || s.includes("answer") || s.includes("complete") || s.includes("successful")) weekCompletedData[wk]++;
+    else if (s.includes("hangup") || s.includes("not_picked") || s.includes("not_pick") || s.includes("abandon") || s.includes("miss") || s.includes("no_answer") || s.includes("no-answer") || s.includes("unanswered") || s.includes("not-answered")) weekMissedData[wk]++;
+  });
+
+  // Location Table — PK has no phone column, return empty
+  var topLocations = [];
+
+  var month = document.getElementById("monthSelect")?.value || "January";
+  var projectName = document.getElementById("sidebarProjectName")?.textContent || "Client";
+  var weekFilter = document.getElementById("weekSelect")?.value || "All";
+
+  // Issue Count & AHT Table (top 10) — all Disposition Codes on completed calls
+  var issueCounts = {}, issueDurs = {};
+  completed.forEach(function(r) {
+    var disp = getDisposition(r);
+    if (!disp) return;
+    issueCounts[disp] = (issueCounts[disp]||0) + 1;
+    if (!issueDurs[disp]) issueDurs[disp] = [];
+    issueDurs[disp].push(hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime")));
+  });
+  var topIssues = Object.entries(issueCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(e){
+    var code=e[0], count=e[1];
+    return {code:code, count:count, avgAHT:secondsToHMS(Math.round((issueDurs[code]||[0]).reduce(function(a,b){return a+b;},0)/(issueDurs[code]||[1]).length))};
+  });
+
+  var issueCountTable = topIssues.map(function(x){return {Month:month,Week:weekFilter,Date:"",Client:projectName,MOC:"Inbound",DispositionCodes:x.code,Count:x.count,"Average of ConversationDuration":x.avgAHT};});
+
+  // Difference / Tagging Table
+  var totalVolume = completed.length + missed.length + attempts.length;
+  var taggedCount = rows.filter(function(r){var d=getDisposition(r);return d && d.length>0;}).length;
+  var queryCount = topIssues.reduce(function(s,i){return s+i.count;},0);
+  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":queryCount};
+
+  // Interval-Wise Table
+  var intervalCounts={};for(var i=0;i<24;i++)intervalCounts[i]=0;
+  if (rows.length > 0) {
+    const sample = getCallTime(rows[0]);
+    addLog(`Ameyo PK Sample Call Time: "${sample}"`, "info");
+  }
+  var intervalHit = 0;
+  rows.forEach(function(r) {
+    var ct = getCallTime(r);
+    if (!ct) return;
+    var h = -1;
+    // Excel serial datetime: fractional part encodes time of day (e.g. 0.604 = 14:30)
+    var num = Number(ct);
+    if (!isNaN(num) && /^\d+\.\d+$/.test(String(ct).trim()) && num > 40000 && num < 60000) {
+      h = Math.floor((num - Math.floor(num)) * 24);
+    } else {
+      // String datetime — split on space or T, find the token containing ":"
+      var timeStr = ct;
+      if (!timeStr.includes(":")) {
+        timeStr = String(get(r,"Call Start Time","call start time","Call_Start_Time","Start Time","start time","Start_Time","CallStartTime")||"").trim();
+      }
+      if (!timeStr) return;
+      var parts = timeStr.split(/[\sT]+/);
+      var timePart = "";
+      for (var ti = 0; ti < parts.length; ti++) { if (parts[ti].includes(":")) { timePart = parts[ti]; break; } }
+      if (!timePart) return;
+      h = parseInt(timePart.split(":")[0], 10);
+      if (isNaN(h)) return;
+      var ampm = parts.find(function(t){return t.toLowerCase()==="am"||t.toLowerCase()==="pm";});
+      if (ampm && ampm.toLowerCase()==="pm" && h<12) h+=12;
+      if (ampm && ampm.toLowerCase()==="am" && h===12) h=0;
+    }
+    if (h>=0 && h<24) { intervalCounts[h]++; intervalHit++; }
+  });
+  addLog("PK interval: " + intervalHit + " rows had valid time out of " + rows.length, "info");
+  var monthIndex = MONTHS.indexOf(month);
+  var year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
+  var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
+  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+i+"-"+(i+1===24?"0":i+1)+" "+(i<12?"AM":"PM")+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
+
+  // Repeat Count Table — PK has no phone column, return empty
+  var repeatTable = [];
+
+  // Summary Table
+  addLog("PK debug: completed=" + completed.length + " missed=" + missed.length + " attempts=" + attempts.length, "info");
+  addLog("PK debug: dates=" + sortedDates.join(",") + " weeks=" + JSON.stringify(weekData), "info");
+  addLog("PK debug: avgAHT=" + avgAHT.toFixed(1) + "s avgRing=" + avgRing.toFixed(1) + "s", "info");
+  var summaryTable = sortedDates.map(function(d){return{Date:d,"Inbound Calls":dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts,Completed:dateMap[d].completed,"Missed Calls":dateMap[d].missed,"Inbound AHT":secondsToHMS(Math.round((dateAHT.find(function(x){return x.date===d;})||{avgAHT:0}).avgAHT)),"Average Ring Time":secondsToHMS(Math.round((dateRing.find(function(x){return x.date===d;})||{avgRing:0}).avgRing)),"Average Cost Per Call":"","Price":"","Completed Call Price":"","Missed Call Price":"","Call Attempt Price":""};});
+  var totalInbound = dateCallCounts.reduce(function(s,r){return s+r.total;},0);
+  var totalCompleted = dateCallCounts.reduce(function(s,r){return s+r.completed;},0);
+  var totalMissed = dateCallCounts.reduce(function(s,r){return s+r.missed;},0);
+  var avgAHTAll = dateAHT.length?dateAHT.reduce(function(s,r){return s+r.avgAHT;},0)/dateAHT.length:0;
+  var avgRingAll = dateRing.length?dateRing.reduce(function(s,r){return s+r.avgRing;},0)/dateRing.length:0;
+  summaryTable.push({Date:"Grand Total","Inbound Calls":totalInbound,Completed:totalCompleted,"Missed Calls":totalMissed,"Inbound AHT":secondsToHMS(Math.round(avgAHTAll)),"Average Ring Time":secondsToHMS(Math.round(avgRingAll)),"Average Cost Per Call":"","Price":"","Completed Call Price":"","Missed Call Price":"","Call Attempt Price":""});
+
+  return {
+    total:rows.length, completed:completed.length, missed:missed.length, attempts:attempts.length,
+    avgAHT, avgRing, avgCostPerCall, totalCost, missedCost, attemptCost,
+    weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
+    dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
+    summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+  };
+}
+
+// =====================================================================
+// ===== FREJUN PROCESSING =====
+// =====================================================================
+function processFrejunData(rows) {
+  const get = (r,...n)=>findCol(r,...n);
+  const getS = r => String(get(r,"Call Status","call status","Call_Status","Status","status")||"").toLowerCase().trim();
+  const getStartTime = r => String(get(r,"Start Time","start time","StartTime","starttime","Start_Time")||"").trim();
+  const getCallCost = r => safeNum(get(r,"Call Cost","call cost","Call_Cost","Cost","cost","Price","price"));
+  const getTags = r => String(get(r,"Tags","tags")||"").trim();
+  const getDate = r => { const st=getStartTime(r); if(!st)return ''; const s=st.split(/\s+/)[0]; return s||''; };
+  const toSec = function(s) {
+    if(!s||s==="NA"||s==="na")return 0;
+    var p=String(s).match(/(\d+)m\s*(\d+)s/);
+    if(p)return parseInt(p[1],10)*60+parseInt(p[2],10);
+    return safeNum(s);
+  };
+
+  const completed = rows.filter(r => getS(r)==="answered");
+  const missed    = rows.filter(r => getS(r)==="user-not-answered");
+  // Any rows with other statuses treated as attempts
+  const attempts  = rows.filter(r => !["answered","user-not-answered"].includes(getS(r)));
+
+  // --- Per-date aggregation ---
+  const dateMap = {};
+  rows.forEach(r => {
+    const d = getDate(r);
+    if (!d) return;
+    if (!dateMap[d]) dateMap[d] = { completed:0, missed:0, attempts:0, convDurs:[], ringTimes:[], prices:[], priceCompleted:0, priceMissed:0, priceAttempt:0 };
+    const p = getCallCost(r);
+    if (getS(r)==="answered") {
+      dateMap[d].completed++;
+      var totalMinSec = toSec(get(r,"Total Minutes","total minutes","Total_Minutes"));
+      dateMap[d].convDurs.push(totalMinSec);
+      dateMap[d].prices.push(p);
+      dateMap[d].priceCompleted += p;
+    } else if (getS(r)==="user-not-answered") {
+      dateMap[d].missed++;
+      dateMap[d].priceMissed += p;
+    } else {
+      dateMap[d].attempts++;
+      dateMap[d].priceAttempt += p;
+    }
+  });
+
+  const sortedDates = Object.keys(dateMap).sort();
+
+  // Table 1: Call Count per date
+  const dateCallCounts = sortedDates.map(d => ({
+    date:d, completed:dateMap[d].completed, missed:dateMap[d].missed,
+    attempts:dateMap[d].attempts, total: dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts,
+  }));
+
+  // Table 2: AHT per date
+  const dateAHT = sortedDates.map(d => {
+    const c = dateMap[d].convDurs;
+    return { date:d, avgAHT: c.length ? c.reduce((a,b)=>a+b,0)/c.length : 0 };
+  });
+
+  // Table 3: Ring Time (not available in Frejun, all 0)
+  const dateRing = sortedDates.map(d => ({ date:d, avgRing:0 }));
+
+  // Table 4: Avg Cost Per Call
+  const dateCost = sortedDates.map(d => {
+    const dayRows = rows.filter(r => getDate(r) === d);
+    const dayPrices = dayRows.map(r => getCallCost(r));
+    return { date:d, avgCost: dayPrices.length ? dayPrices.reduce((a,b)=>a+b,0)/dayPrices.length : 0 };
+  });
+
+  // Table 5: Cost Spend per date
+  const dateCostSpend = sortedDates.map(d => ({
+    date:d, completed:dateMap[d].priceCompleted, missed:dateMap[d].priceMissed,
+    attempts:dateMap[d].priceAttempt, total: dateMap[d].priceCompleted+dateMap[d].priceMissed+dateMap[d].priceAttempt,
+  }));
+
+  // --- Overall aggregates ---
+  const convDurs = completed.map(r => toSec(get(r,"Total Minutes","total minutes","Total_Minutes")));
+  const avgAHT = convDurs.length ? convDurs.reduce((a,b)=>a+b,0)/convDurs.length : 0;
+  const avgRing = 0;
+
+  const allPrices = rows.map(r => getCallCost(r));
+  const avgCostPerCall = allPrices.length ? allPrices.reduce((a,b)=>a+b,0)/allPrices.length : 0;
+
+  const totalCost = completed.map(r => getCallCost(r)).reduce((a,b)=>a+b,0);
+  const missedCost = missed.map(r => getCallCost(r)).reduce((a,b)=>a+b,0);
+  const attemptCost = attempts.map(r => getCallCost(r)).reduce((a,b)=>a+b,0);
+
+  // Week data
+  const weekData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  const weekCompletedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  const weekMissedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  rows.forEach(r => {
+    const st = getStartTime(r);
+    const day = extractDay(st);
+    const wk = getWeekNum(day);
+    weekData[wk]++;
+    const sts = getS(r);
+    if (sts === "answered") weekCompletedData[wk]++;
+    else if (sts === "user-not-answered") weekMissedData[wk]++;
+  });
+
+  // --- Location Table (top 10) - Frejun has no location, use caller area prefix ---
+  const locCounts = {};
+  rows.forEach(r => {
+    var caller = String(get(r,"Caller","caller")||"").trim();
+    if(caller){
+      var p = caller.replace(/[^0-9]/g,"").substring(0,4);
+      if(p) locCounts[p] = (locCounts[p]||0)+1;
+    }
+  });
+  const topLocations = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  const month = document.getElementById("monthSelect")?.value || "January";
+  const projectName = document.getElementById("sidebarProjectName")?.textContent || "Client";
+  const weekFilter = document.getElementById("weekSelect")?.value || "All";
+
+  // --- Issue Count & AHT Table (top 10) - from Tags column ---
+  const issueCounts = {}, issueDurs = {};
+  completed.forEach(r => {
+    const t = getTags(r);
+    if(t){
+      issueCounts[t] = (issueCounts[t]||0)+1;
+      if(!issueDurs[t]) issueDurs[t] = [];
+      issueDurs[t].push(toSec(get(r,"Total Minutes","total minutes","Total_Minutes")));
+    }
+  });
+  const topIssues = Object.entries(issueCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([code,count])=>({
+    code,count,
+    avgAHT:secondsToHMS(Math.round((issueDurs[code]||[0]).reduce((a,b)=>a+b,0)/(issueDurs[code]||[1]).length))
+  }));
+
+  const issueCountTable = topIssues.map(({code,count,avgAHT}) => ({
+    Month: month, Week: weekFilter, Date: "", Client: projectName, MOC: "Inbound",
+    DispositionCodes: code, Count: count, "Average of ConversationDuration": avgAHT,
+  }));
+
+  // --- Difference Table ---
+  const totalVolume = completed.length + missed.length + attempts.length;
+  const taggedCount = completed.filter(r => { const t = getTags(r); return t.length > 0; }).length;
+  const differenceTable = {
+    "Total Volume": totalVolume,
+    "Tagged": taggedCount,
+    "Not Autotagged": totalVolume - taggedCount,
+    "Query Count": topIssues.reduce((s,i)=>s+i.count,0),
+  };
+
+  // --- Interval-Wise Table ---
+  const intervalCounts={};for(let i=0;i<24;i++)intervalCounts[i]=0;
+  rows.forEach(r => {
+    const st = getStartTime(r);
+    if(!st)return;
+    const timePart = st.split(/\s+/)[1]||'';
+    let h = parseInt(timePart.split(":")[0],10);
+    if(isNaN(h)) h = parseInt(st.split(/[\s:]/)[2],10);
+    if(isNaN(h)) return;
+    if(h>=0&&h<24) intervalCounts[h]++;
+  });
+  const monthIndex = MONTHS.indexOf(month);
+  const year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const intervalAvg={};for(let i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
+  const intervalTable = Array.from({length:24},(_,i)=>({
+    Month: month, Week: weekFilter, Date: "", Client: projectName,
+    Intervals: i, Time: `(${i}-${i+1===24?"0":i+1} ${i<12?"AM":"PM"})`,
+    Shifts: i<8?"Night":i<17?"Morning":"Evening",
+    MOC: "Inbound", Count: intervalAvg[i],
+  }));
+
+  // --- Repeat Count Table (top 10) ---
+  const repeatRaw = {};
+  completed.forEach(r => {
+    const t = getTags(r);
+    const caller = String(get(r,"Caller","caller")||"").trim();
+    if (!t || !caller) return;
+    if (!repeatRaw[t]) repeatRaw[t] = new Set();
+    repeatRaw[t].add(caller);
+  });
+  const repeatTable = Object.entries(repeatRaw)
+    .map(([code, fromSet]) => ({ code, count: fromSet.size }))
+    .filter(x => x.count > 1)
+    .sort((a,b) => b.count - a.count)
+    .slice(0, 10)
+    .map(({code, count}) => ({ DispositionCodes: code, "Count of Count of From": count }));
+
+  // --- Summary Table ---
+  const summaryTable = sortedDates.map(d => ({
+    Date: d,
+    "Inbound Calls": dateMap[d].completed + dateMap[d].missed + dateMap[d].attempts,
+    Completed: dateMap[d].completed,
+    "Missed Calls": dateMap[d].missed,
+    "Inbound AHT": secondsToHMS(Math.round((dateAHT.find(x=>x.date===d)||{avgAHT:0}).avgAHT)),
+    "Average Ring Time": "00:00:00",
+    "Average Cost Per Call": `₹${(dateCost.find(x=>x.date===d)||{avgCost:0}).avgCost.toFixed(2)}`,
+    "Price": `₹${dateCostSpend.find(x=>x.date===d).total.toFixed(2)}`,
+    "Completed Call Price": `₹${dateMap[d].priceCompleted.toFixed(2)}`,
+    "Missed Call Price": `₹${dateMap[d].priceMissed.toFixed(2)}`,
+    "Call Attempt Price": `₹${dateMap[d].priceAttempt.toFixed(2)}`,
+  }));
+
+  // Grand Total row
+  const totalInbound = dateCallCounts.reduce((s,r)=>s+r.total,0);
+  const totalCompleted = dateCallCounts.reduce((s,r)=>s+r.completed,0);
+  const totalMissed = dateCallCounts.reduce((s,r)=>s+r.missed,0);
+  const avgAHTAll = dateAHT.length ? dateAHT.reduce((s,r)=>s+r.avgAHT,0)/dateAHT.length : 0;
+  const avgRingAll = 0;
+  const avgCostAll = dateCost.length ? dateCost.reduce((s,r)=>s+r.avgCost,0)/dateCost.length : 0;
+  summaryTable.push({
+    Date: "Grand Total",
+    "Inbound Calls": totalInbound,
+    Completed: totalCompleted,
+    "Missed Calls": totalMissed,
+    "Inbound AHT": secondsToHMS(Math.round(avgAHTAll)),
+    "Average Ring Time": "00:00:00",
+    "Average Cost Per Call": `₹${avgCostAll.toFixed(2)}`,
+    "Price": `₹${dateCostSpend.reduce((s,r)=>s+r.total,0).toFixed(2)}`,
+    "Completed Call Price": `₹${Object.values(dateMap).reduce((s,r)=>s+r.priceCompleted,0).toFixed(2)}`,
+    "Missed Call Price": `₹${Object.values(dateMap).reduce((s,r)=>s+r.priceMissed,0).toFixed(2)}`,
+    "Call Attempt Price": `₹${Object.values(dateMap).reduce((s,r)=>s+r.priceAttempt,0).toFixed(2)}`,
+  });
+
+  return {
+    total:rows.length, completed:completed.length, missed:missed.length, attempts:attempts.length,
+    avgAHT, avgRing, avgCostPerCall, totalCost, missedCost, attemptCost,
+    weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
+    dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
+    summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+  };
+}
+
+// =====================================================================
 // ===== SLIDE 1: Cover =====
 // =====================================================================
 function renderSlide1() {
@@ -1115,7 +1625,9 @@ function renderSlide2() {
 // =====================================================================
 function renderSlide3() {
   const d = state.exotelKPIs;
-  if (!d) return;
+  if (!d) { addLog("renderSlide3: exotelKPIs is null","warn"); return; }
+  var isJE = document.getElementById("sidebarProjectName").textContent === "Client JE (C11)";
+  addLog("renderSlide3: total=" + d.total + " completed=" + d.completed + " missed=" + d.missed + " avgAHT=" + d.avgAHT.toFixed(1), "info");
 
   const weekLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
   const weekTotal = weekLabels.map(w => d.weekData[w] || 0);
@@ -1125,12 +1637,14 @@ function renderSlide3() {
   const aht = secondsToHMS(Math.round(d.avgAHT));
   const ring = secondsToHMS(Math.round(d.avgRing));
 
-  document.getElementById("s3Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
+  var kpis = `<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${d.completed.toLocaleString()}</div><div class="kpi-lbl">Completed Calls</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${d.missed.toLocaleString()}</div><div class="kpi-lbl">Missed Calls</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${ring}</div><div class="kpi-lbl">Avg Ring + IVR Time</div></div>`;
+    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>`;
+  if (!isJE) {
+    kpis += `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${ring}</div><div class="kpi-lbl">Avg Ring + IVR Time</div></div>`;
+  }
+  document.getElementById("s3Kpis").innerHTML = kpis;
 
   const maxVal = Math.max(...weekTotal, ...weekCompleted, 1);
   const yMax = Math.ceil(maxVal * 1.25);
@@ -1659,6 +2173,8 @@ function renderSlide6() {
   var exotel = state.exotelKPIs;
   if (!data || data.length === 0) return;
   var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
+  var isJE = document.getElementById("sidebarProjectName").textContent === "Client JE (C11)";
+  var isPK = document.getElementById("sidebarProjectName").textContent === "Client PK";
 
   // Chat locations
   var locTotals = {};
@@ -1676,7 +2192,7 @@ function renderSlide6() {
 
   // Call locations — only for non-WC clients
   var callLocations = [];
-  if (!isWC) {
+  if (!isWC && !isJE) {
     callLocations = exotel ? (exotel.topLocations || []) : [];
     if (callLocations.length > 0 && typeof callLocations[0] === 'object' && callLocations[0].name !== undefined) {
       callLocations = callLocations.map(function(l) { return [l.name, l.count]; });
@@ -1686,9 +2202,9 @@ function renderSlide6() {
 
   // Hide/show call locations panel
   var callPanel = document.querySelector("#slide6 .slide6-panel:nth-child(2)");
-  if (callPanel) callPanel.style.display = isWC ? "none" : "flex";
+  if (callPanel) callPanel.style.display = (isWC || isJE || isPK) ? "none" : "flex";
   var chatPanel = document.querySelector("#slide6 .slide6-panel:nth-child(1)");
-  if (chatPanel) chatPanel.style.width = isWC ? "100%" : "";
+  if (chatPanel) chatPanel.style.width = (isWC || isJE || isPK) ? "100%" : "";
 
   // Find max for scaling
   var chatMax = 1, callMax = 1;
@@ -2001,8 +2517,11 @@ function renderSlide11() {
   const payData = getTableData("paymentData");
   const sideEl = document.getElementById("s11Side");
   const bottomEl = document.getElementById("s11Bottom");
-  var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
-  var callLabel = isWC ? "Ameyo" : "Exotel";
+  var clientName = document.getElementById("sidebarProjectName").textContent;
+  var isWC = clientName === "Client WC (C10)";
+  var isJE = clientName === "Client JE (C11)";
+  var isPK = clientName === "Client PK";
+  var callLabel = (isWC || isPK) ? "Ameyo" : (isJE ? "Frejun" : "Exotel");
 
   if (!payData || payData.length === 0) {
     sideEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:20px">No rows found in Payment Details sheet. Open Editor → Payment Details tab, enter data, click Save All Sheets, then regenerate.</div>';
@@ -2026,7 +2545,7 @@ function renderSlide11() {
     if (combined.includes("intercom")) {
       intercomAmt += amtInt;
       if (agents > 0) intercomSeats = Math.max(intercomSeats, agents);
-    } else if (combined.includes("exotel") || (isWC && combined.includes("ameyo"))) {
+    } else if (combined.includes("exotel") || ((isWC || isPK) && combined.includes("ameyo")) || (isJE && combined.includes("frejun"))) {
       callAmt += amtInt;
       if (agents > 0) callSeats = Math.max(callSeats, agents);
     } else if (combined.includes("doubletick") || combined.includes("double")) {
@@ -2776,6 +3295,7 @@ function resetAll() {
   state.file=null; state.rawData=[]; state.processed=[]; state.logs=[];
   state.exotelFile=null; state.exotelRaw=[]; state.exotelKPIs=null;
   state.ameyoFile=null; state.ameyoRaw=[]; state.ameyoKPIs=null;
+  state.frejunFile=null; state.frejunRaw=[]; state.frejunKPIs=null;
   state.medianCloseTime = null;
   Object.keys(state.charts).forEach(k=>{if(state.charts[k]){state.charts[k].destroy()}});
   state.charts={};
@@ -2800,8 +3320,11 @@ function resetAll() {
   if(exInput)exInput.value="";
   var amInput=document.getElementById("ameyoFileInput");
   if(amInput)amInput.value="";
+  var fjInput=document.getElementById("frejunFileInput");
+  if(fjInput)fjInput.value="";
   setExotelUploadState("idle","");
   setAmeyoUploadState("idle","");
+  setFrejunUploadState("idle","");
   setUploadState("idle","");
   document.getElementById("processBtn").disabled=true;
   document.getElementById("exportPdfBtn").disabled=true;
@@ -2857,6 +3380,7 @@ function saveClientState(clientName) {
     processed: state.processed,
     exotelKPIs: state.exotelKPIs,
     ameyoKPIs: state.ameyoKPIs,
+    frejunKPIs: state.frejunKPIs,
     medianCloseTime: state.medianCloseTime,
   };
 }
@@ -2872,6 +3396,7 @@ function loadClientState(clientName) {
   state.processed = data.processed;
   state.exotelKPIs = data.exotelKPIs;
   state.ameyoKPIs = data.ameyoKPIs;
+  state.frejunKPIs = data.frejunKPIs;
   state.medianCloseTime = data.medianCloseTime;
   return true;
 }
@@ -2887,13 +3412,15 @@ function switchClient(navId, name) {
   // Reset upload UI & per-client transient state
   state.file = null; state.exotelFile = null; state.exotelRaw = [];
   state.ameyoFile = null; state.ameyoRaw = [];
+  state.frejunFile = null; state.frejunRaw = []; state.frejunKPIs = null;
   state.logs = [];
   var logSec = document.getElementById("logSection"); if(logSec) logSec.style.display = "none";
   var logCon = document.getElementById("logContainer"); if(logCon) logCon.innerHTML = "";
-  setUploadState("idle",""); setExotelUploadState("idle",""); setAmeyoUploadState("idle","");
+  setUploadState("idle",""); setExotelUploadState("idle",""); setAmeyoUploadState("idle",""); setFrejunUploadState("idle","");
   var fInp = document.getElementById("fileInput"); if(fInp) fInp.value = "";
   var exInp = document.getElementById("exotelFileInput"); if(exInp) exInp.value = "";
   var amInp = document.getElementById("ameyoFileInput"); if(amInp) amInp.value = "";
+  var fjInp = document.getElementById("frejunFileInput"); if(fjInp) fjInp.value = "";
   document.getElementById("processBtn").disabled = true;
   document.getElementById("exportPdfBtn").disabled = true;
   // Clear manual entry inputs
@@ -2908,10 +3435,15 @@ function switchClient(navId, name) {
   document.getElementById(navId).classList.add("active");
 
   // Show/hide call report upload zones based on client
+  var isJE = name === "Client JE (C11)";
+  var isWC = name === "Client WC (C10)";
+  var isPK = name === "Client PK";
   var exo = document.getElementById("exotelUploadZone");
   var amy = document.getElementById("ameyoUploadZone");
-  if (exo) exo.style.display = name === "Client WC (C10)" ? "none" : "block";
-  if (amy) amy.style.display = name === "Client WC (C10)" ? "block" : "none";
+  var fjz = document.getElementById("frejunUploadZone");
+  if (exo) exo.style.display = (isJE || isWC || isPK) ? "none" : "block";
+  if (amy) amy.style.display = (isWC || isPK) ? "block" : "none";
+  if (fjz) fjz.style.display = isJE ? "block" : "none";
 
   // Restore saved state for target client
   var hasData = loadClientState(name);
