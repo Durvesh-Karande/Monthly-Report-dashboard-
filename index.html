@@ -20,9 +20,17 @@
       <span class="sidebar-title">Report Generator</span>
     </div>
     <nav class="sidebar-nav">
-      <a href="#config" class="nav-link active">
+      <a href="#" class="nav-link" id="navGlobalSettings" onclick="showGlobalSettings();return false">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Global Settings
+      </a>
+      <a href="#" class="nav-link active" id="navClientSJ" onclick="switchClient('navClientSJ', 'Client SJ');return false">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
+        Client SJ
+      </a>
+      <a href="#" class="nav-link" id="navClientWC" onclick="switchClient('navClientWC', 'Client WC (C10)');return false">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Client WC (C10)
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -51,21 +59,18 @@
 
   <!-- Main content -->
   <main class="main-content" id="mainContent">
-    <!-- ===== SECTION: Config ===== -->
-    <section class="config-section" id="config">
-      <h1>Monthly Performance Report Generator</h1>
+    <!-- ===== SECTION: Global Settings ===== -->
+    <section class="config-section" id="globalSettings" style="display:none">
+      <h1>Global Settings</h1>
+      <p class="section-desc">These settings apply to all client reports.</p>
       <div class="config-grid">
         <div class="form-group">
-          <label>Client Name</label>
-          <input type="text" id="projectName" placeholder="e.g. Client SJ" value="Client SJ">
-        </div>
-        <div class="form-group">
           <label>Month</label>
-          <select id="monthSelect"><option value="">Select month</option></select>
+          <select id="globalMonth"><option value="">Select month</option></select>
         </div>
         <div class="form-group">
           <label>Year</label>
-          <select id="yearSelect">
+          <select id="globalYear">
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2027">2027</option>
@@ -73,7 +78,7 @@
         </div>
         <div class="form-group">
           <label>Week Filter</label>
-          <select id="weekSelect">
+          <select id="globalWeek">
             <option value="All">All Weeks</option>
             <option value="Week 1">Week 1</option>
             <option value="Week 2">Week 2</option>
@@ -83,16 +88,27 @@
         </div>
         <div class="form-group">
           <label>Date Range</label>
-          <input type="text" id="dateRange" placeholder="e.g. 1 - 30 Apr">
+          <input type="text" id="globalDateRange" placeholder="e.g. 1 - 30 Apr">
         </div>
       </div>
     </section>
 
-    <!-- ===== SECTION: Data Tools (3-column row) ===== -->
-    <section class="data-tools-section">
-      <h2>Data Tools</h2>
-      <div class="data-tools-grid">
-        <!-- Upload Intercom CSV -->
+    <!-- ===== SECTION: Config ===== -->
+    <section class="config-section" id="config">
+      <h1>Monthly Performance Report Generator <span id="headingClientName">for Client SJ</span></h1>
+      <span id="sidebarProjectName" style="display:none;">Client SJ</span>
+      <div style="display:none">
+        <select id="monthSelect"></select>
+        <select id="yearSelect"></select>
+        <select id="weekSelect"></select>
+        <input type="text" id="dateRange">
+      </div>
+    </section>
+
+    <!-- ===== SECTION: Data Uploads ===== -->
+    <section class="upload-section" id="uploadSection">
+      <h2>Data Uploads</h2>
+      <div class="upload-grid">
         <div class="upload-zone" id="uploadZone">
           <input type="file" accept=".csv,.xlsx,.xls" id="fileInput" onchange="handleFile(this.files[0])">
           <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -101,7 +117,6 @@
           <svg class="status-icon check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <svg class="status-icon error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
-        <!-- Upload Exotel CSV -->
         <div class="upload-zone" id="exotelUploadZone">
           <input type="file" accept=".csv,.xlsx,.xls" id="exotelFileInput" onchange="handleExotelFile(this.files[0])">
           <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.26 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -110,60 +125,68 @@
           <svg class="status-icon check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <svg class="status-icon error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         </div>
-        <!-- Data Entry Card -->
-        <div class="data-entry-card" id="enterData" onclick="openDataEntryModal()" style="cursor:pointer">
-          <div class="data-entry-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="2.5rem" height="2.5rem"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 7h10v2H7z"/><path d="M7 11h10v2H7z"/><path d="M7 15h4v2H7z"/></svg>
-          </div>
-          <div class="upload-label">Data Entry</div>
-          <div class="upload-hint">Edit TL KPI, QA KPI & more</div>
-          <button class="btn btn-primary data-entry-btn" onclick="event.stopPropagation();openDataEntryModal()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            Open Editor
-          </button>
+        <div class="upload-zone" id="ameyoUploadZone" style="display:none">
+          <input type="file" accept=".csv,.xlsx,.xls" id="ameyoFileInput" onchange="handleAmeyoFile(this.files[0])">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.26 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div class="upload-label">Upload Ameyo Call Report CSV</div>
+          <div class="upload-hint" id="ameyoUploadHint">Drag & drop or click to browse</div>
+          <svg class="status-icon check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <svg class="status-icon error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: Data Entry ===== -->
+    <section class="upload-section" id="dataEntrySection">
+      <h2>Data Entry</h2>
+      <div class="upload-grid">
+        <div class="data-entry-card" onclick="openDataEntryModal()">
+          <svg class="data-entry-icon" width="2.5rem" height="2.5rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 7h10v2H7z"/><path d="M7 11h10v2H7z"/><path d="M7 15h6v2H7z"/></svg>
+          <div class="upload-label">Multi-Sheet Data Entry</div>
+          <div class="upload-hint">Click to open table editor (TL KPI, QA KPI, Agent Productivity, Agent KPI, Escalation)</div>
+          <button class="btn btn-primary data-entry-btn" onclick="event.stopPropagation();openDataEntryModal()">Open Editor</button>
         </div>
       </div>
     </section>
 
     <!-- ===== SECTION: Manual Entry ===== -->
     <section class="manual-section" id="manualSection">
-      <h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Manual Entry - Chat KPIs</h2>
+      <h2>Manual Data Entry</h2>
+      <p class="section-desc">Enter chat/call volume manually if not provided by upload.</p>
       <div class="manual-grid">
         <div class="form-group">
-          <label>Average First Response Time</label>
-          <input type="text" class="manual-input" id="manualFirstResponse" placeholder="HH:MM:SS">
+          <label>Avg First Response Time (min)</label>
+          <input type="text" class="manual-input" id="manualFirstResponse" placeholder="e.g. 2.5">
         </div>
         <div class="form-group">
-          <label>Average Response Time</label>
-          <input type="text" class="manual-input" id="manualAvgResponse" placeholder="HH:MM:SS">
+          <label>Avg Response Time (min)</label>
+          <input type="text" class="manual-input" id="manualAvgResponse" placeholder="e.g. 3.1">
         </div>
         <div class="form-group">
-          <label>Median Handling Time</label>
-          <input type="text" class="manual-input" id="manualHandlingTime" placeholder="HH:MM:SS">
-        </div>
-      </div>
-      <div class="manual-grid" style="margin-top:0.75rem">
-        <div class="form-group">
-          <label>Average Chats (Manual)</label>
-          <input type="text" class="manual-input" id="manualAvgChats" placeholder="e.g. 150">
+          <label>Avg Handling Time (min)</label>
+          <input type="text" class="manual-input" id="manualHandlingTime" placeholder="e.g. 8.2">
         </div>
         <div class="form-group">
-          <label>Average Calls (Manual)</label>
-          <input type="text" class="manual-input" id="manualAvgCalls" placeholder="e.g. 85">
+          <label>Total Chats</label>
+          <input type="text" class="manual-input" id="manualAvgChats" placeholder="e.g. 1420">
         </div>
         <div class="form-group">
-          <label>Historical Avg Chat Volume</label>
-          <input type="text" class="manual-input" id="manualHistAvgChats" placeholder="e.g. 1200">
+          <label>Total Calls</label>
+          <input type="text" class="manual-input" id="manualAvgCalls" placeholder="e.g. 680">
         </div>
         <div class="form-group">
-          <label>Historical Avg Call Volume</label>
-          <input type="text" class="manual-input" id="manualHistAvgCalls" placeholder="e.g. 600">
+          <label>Historical Avg Chats</label>
+          <input type="text" class="manual-input" id="manualHistAvgChats" placeholder="e.g. 1350">
+        </div>
+        <div class="form-group">
+          <label>Historical Avg Calls</label>
+          <input type="text" class="manual-input" id="manualHistAvgCalls" placeholder="e.g. 650">
         </div>
       </div>
     </section>
 
     <!-- ===== SECTION: Actions ===== -->
-    <section class="actions">
+    <section class="actions" id="actions">
       <button class="btn btn-primary" id="processBtn" onclick="processFile()" disabled>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Generate Report
@@ -468,13 +491,15 @@
               <canvas id="chartSlide15Qa"></canvas>
             </div>
           </div>
-          <div class="slide15-table-wrap">
-            <div class="slide15-table-title">TL Details</div>
-            <div id="s15TlTable"></div>
-          </div>
-          <div class="slide15-table-wrap">
-            <div class="slide15-table-title">QA Details</div>
-            <div id="s15QaTable"></div>
+          <div class="slide15-tables-row">
+            <div class="slide15-table-wrap">
+              <div class="slide15-table-title">TL Details</div>
+              <div id="s15TlTable"></div>
+            </div>
+            <div class="slide15-table-wrap">
+              <div class="slide15-table-title">QA Details</div>
+              <div id="s15QaTable"></div>
+            </div>
           </div>
         </div>
       </div></div>
@@ -489,7 +514,7 @@
   <div class="excel-modal-overlay" id="excelModal" style="display:none" onclick="if(event.target===this)closeExcelEditor()">
     <div class="excel-modal">
       <div class="excel-modal-header">
-        <h3 id="excelModalTitle">📊 Multi-Sheet Data Entry</h3>
+        <h3 id="excelModalTitle">Multi-Sheet Data Entry</h3>
         <button class="excel-modal-close" onclick="closeExcelEditor()">✕</button>
       </div>
       <div class="excel-modal-body">
@@ -507,7 +532,7 @@
         <div class="excel-sheet-tabs" id="excelSheetTabs"></div>
       </div>
       <div class="excel-modal-footer">
-        <button class="btn btn-primary" onclick="saveAllSheets()">💾 Save All Sheets</button>
+        <button class="btn btn-primary" onclick="saveAllSheets()">Save All Sheets</button>
         <button class="btn btn-success btn-add-row" onclick="addExcelGridRow()">+ Add Row</button>
         <button class="btn btn-outline" onclick="clearExcelGrid()">Clear Sheet</button>
         <button class="btn btn-outline" onclick="closeExcelEditor()">Cancel</button>

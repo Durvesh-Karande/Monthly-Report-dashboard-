@@ -15,14 +15,16 @@ const CIRCLE_MAP = {
   AN:"Andaman & Nicobar", CH:"Chandigarh", DN:"Dadra and Nagar Haveli",
 };
 
-const KPI_COLORS = ["#8b5cf6","#3b82f6","#10b981","#f59e0b","#fb7185","#06b6d4","#a78bfa","#fbbf24"];
+const KPI_COLORS = ["#0d9488","#3b82f6","#10b981","#f59e0b","#f43f5e","#06b6d4","#8b5cf6","#fbbf24"];
 
 // ===== State =====
 let state = {
   file: null, rawData: [], processed: [], logs: [],
   exotelFile: null, exotelRaw: [], exotelKPIs: null,
+  ameyoFile: null, ameyoRaw: [], ameyoKPIs: null,
   charts: {},
 };
+var clientStore = {};
 
 // ===== Multi-Sheet Configuration =====
 const SHEETS = [
@@ -43,15 +45,62 @@ function updateThemeLabel(t) { const el=document.getElementById("themeLabel"); i
 function toggleMobileMenu() { const s=document.getElementById("sidebar"),o=document.getElementById("mobileOverlay"),open=s.classList.contains("mobile-open"); s.classList.toggle("mobile-open",!open); o.style.display=open?"none":"block"; }
 
 // ===== Init =====
+function updateSidebarProject() {
+  const name = document.getElementById("sidebarProjectName").textContent || "Client";
+  var h = document.getElementById("headingClientName");
+  if (h) h.textContent = "for " + name;
+}
+
+function syncGlobalToClient() {
+  var gMonth = document.getElementById("globalMonth");
+  var gYear = document.getElementById("globalYear");
+  var gWeek = document.getElementById("globalWeek");
+  var gRange = document.getElementById("globalDateRange");
+  var cMonth = document.getElementById("monthSelect");
+  var cYear = document.getElementById("yearSelect");
+  var cWeek = document.getElementById("weekSelect");
+  var cRange = document.getElementById("dateRange");
+  if (gMonth && cMonth) cMonth.value = gMonth.value;
+  if (gYear && cYear) cYear.value = gYear.value;
+  if (gWeek && cWeek) cWeek.value = gWeek.value;
+  if (gRange && cRange) cRange.value = gRange.value;
+}
+
+function setupGlobalSync() {
+  var ids = ["globalMonth", "globalYear", "globalWeek", "globalDateRange"];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("change", syncGlobalToClient);
+    if (el && el.tagName === "INPUT") el.addEventListener("input", syncGlobalToClient);
+  });
+}
+
 function initConfig() {
   const m=document.getElementById("monthSelect");
-  MONTHS.forEach(mm=>{ const o=document.createElement("option"); o.value=mm; o.textContent=mm; m.appendChild(o); });
+  if (m) MONTHS.forEach(mm=>{ const o=document.createElement("option"); o.value=mm; o.textContent=mm; m.appendChild(o); });
+  const gm=document.getElementById("globalMonth");
+  if (gm) MONTHS.forEach(mm=>{ const o=document.createElement("option"); o.value=mm; o.textContent=mm; gm.appendChild(o); });
+  var ys = document.getElementById("yearSelect");
+  var gys = document.getElementById("globalYear");
+  [2025,2026,2027].forEach(function(y) {
+    if (ys) { var o=document.createElement("option"); o.value=y; o.textContent=y; ys.appendChild(o); }
+    if (gys && !gys.querySelector('option[value="'+y+'"]')) { var o=document.createElement("option"); o.value=y; o.textContent=y; gys.appendChild(o); }
+  });
+  var ws = document.getElementById("weekSelect");
+  var gws = document.getElementById("globalWeek");
+  ["All","Week 1","Week 2","Week 3","Week 4"].forEach(function(w) {
+    if (ws) { var o=document.createElement("option"); o.value=w; o.textContent=w; ws.appendChild(o); }
+    if (gws && !gws.querySelector('option[value="'+w+'"]')) { var o=document.createElement("option"); o.value=w; o.textContent=w; gws.appendChild(o); }
+  });
   const z=document.getElementById("uploadZone");
   z.addEventListener("dragover",e=>{e.preventDefault();z.classList.add("dragover")});
   z.addEventListener("dragleave",()=>z.classList.remove("dragover"));
   z.addEventListener("drop",e=>{e.preventDefault();z.classList.remove("dragover");if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
   const ez=document.getElementById("exotelUploadZone");
   if(ez){ez.addEventListener("dragover",e=>{e.preventDefault();ez.classList.add("dragover")});ez.addEventListener("dragleave",()=>ez.classList.remove("dragover"));ez.addEventListener("drop",e=>{e.preventDefault();ez.classList.remove("dragover");if(e.dataTransfer.files[0])handleExotelFile(e.dataTransfer.files[0])});}
+  const az=document.getElementById("ameyoUploadZone");
+  if(az){az.addEventListener("dragover",e=>{e.preventDefault();az.classList.add("dragover")});az.addEventListener("dragleave",()=>az.classList.remove("dragover"));az.addEventListener("drop",e=>{e.preventDefault();az.classList.remove("dragover");if(e.dataTransfer.files[0])handleAmeyoFile(e.dataTransfer.files[0])});}
+  updateSidebarProject();
 }
 
 // =====================================================================
@@ -380,6 +429,15 @@ function handleExotelFile(file) {
 }
 function setExotelUploadState(s,t){const z=document.getElementById("exotelUploadZone");if(!z)return;z.classList.remove("success","error","dragover");if(s==="success")z.classList.add("success");if(s==="error")z.classList.add("error");const h=document.getElementById("exotelUploadHint");if(h)h.textContent=t||"Drag & drop or click to browse";}
 
+function handleAmeyoFile(file) {
+  if(!file)return;
+  const ext=file.name.split(".").pop().toLowerCase();
+  if(!["csv","xlsx","xls"].includes(ext)){setAmeyoUploadState("error","Unsupported");return}
+  state.ameyoFile=file;
+  setAmeyoUploadState("idle",file.name);
+}
+function setAmeyoUploadState(s,t){const z=document.getElementById("ameyoUploadZone");if(!z)return;z.classList.remove("success","error","dragover");if(s==="success")z.classList.add("success");if(s==="error")z.classList.add("error");const h=document.getElementById("ameyoUploadHint");if(h)h.textContent=t||"Drag & drop or click to browse";}
+
 // ===== Logging =====
 function addLog(msg,type="info"){const t=new Date().toLocaleTimeString("en-US",{hour12:false});state.logs.push({time:t,msg,type});renderLog();}
 function renderLog(){const s=document.getElementById("logSection"),c=document.getElementById("logContainer");if(!c)return;if(state.logs.length===0){s.style.display="none";return}s.style.display="block";c.innerHTML=state.logs.map(l=>`<div class="log-entry ${l.type}"><span class="log-time">${l.time}</span><span class="log-msg">${l.msg}</span></div>`).join("");c.scrollTop=c.scrollHeight;}
@@ -407,6 +465,23 @@ function extractDay(dateStr){if(!dateStr)return 1;const s=String(dateStr).trim()
 function getWeekNum(day){if(day<=7)return"Week 1";if(day<=14)return"Week 2";if(day<=21)return"Week 3";return"Week 4";}
 function findCol(row,...names){const keys=Object.keys(row);for(const n of names){const k=keys.find(kk=>kk.toLowerCase().trim()===n.toLowerCase().trim());if(k!==undefined)return row[k]}return null;}
 
+function validateColumns(rows, expectedGroups, label) {
+  if (!rows || rows.length === 0) { addLog(label + ": No data rows to validate","warn"); return false; }
+  var headers = Object.keys(rows[0]);
+  var allOk = true;
+  expectedGroups.forEach(function(group) {
+    var found = group.names.some(function(n) {
+      return headers.some(function(h) { return h.toLowerCase().trim() === n.toLowerCase().trim(); });
+    });
+    if (!found) {
+      var hint = group.hint || group.names[0];
+      addLog(label + ": Missing column — expected something like \"" + hint + "\" (variants: " + group.names.join(", ") + ")", group.critical ? "error" : "warn");
+      if (group.critical) allOk = false;
+    }
+  });
+  return allOk;
+}
+
 // ===== Process =====
 async function processFile() {
   if (!state.file) { addLog("Please upload an Intercom file first","error"); return; }
@@ -417,13 +492,71 @@ async function processFile() {
   try { state.rawData = await parseFile(state.file); addLog(`Parsed ${state.rawData.length} rows`,"success"); } catch(err) { addLog(`Parse error: ${err.message}`,"error"); setUploadState("error",err.message); return; }
   setUploadState("success",`${state.file.name} — ${state.rawData.length} rows`);
 
-  if (state.exotelFile) {
+  // Validate Intercom columns
+  var intercomOk = validateColumns(state.rawData, [
+    { names:["Created at","created at","Created At"], hint:"Created at", critical:true },
+    { names:["Conversation tags","conversation tags","Conversation Tags"], hint:"Conversation tags", critical:false },
+    { names:["Location","location"], hint:"Location", critical:false },
+    { names:["Reopened","reopened"], hint:"Reopened", critical:false },
+    { names:["Closed","closed"], hint:"Closed", critical:false },
+    { names:["Teammate replies","teammate replies"], hint:"Teammate replies", critical:false },
+    { names:["Time to last close (seconds)","Time to last close"], hint:"Time to last close (seconds)", critical:false },
+    { names:["Time to first reply (seconds)","Time to first reply"], hint:"Time to first reply (seconds)", critical:false },
+  ], "Intercom");
+  if (!intercomOk) { addLog("Intercom CSV is missing critical columns. Report will be incomplete.","error"); return; }
+
+  var currentClient = document.getElementById("sidebarProjectName").textContent || "";
+  if (currentClient === "Client WC (C10)" && state.ameyoFile) {
+    addLog("Processing Ameyo data...","info");
+    try { state.ameyoRaw = await parseFile(state.ameyoFile); addLog(`Parsed ${state.ameyoRaw.length} Ameyo rows`,"success"); } catch(err) { addLog(`Ameyo parse error: ${err.message}`,"error"); return; }
+    // Detect transposed Ameyo CSV (field names in rows, data in columns)
+    var amKeys = Object.keys(state.ameyoRaw[0] || {});
+    var firstKey = amKeys[0] || "";
+    var firstVals = state.ameyoRaw.map(function(r){return String(r[firstKey]||"").toLowerCase().trim();});
+    var needsTranspose = amKeys.length > 1 && firstVals.some(function(v){return v==="answered/hungup"||v==="answered hungup"||v==="answered_hungup";}) && firstVals.some(function(v){return v==="call time"||v==="call_time";});
+    if (needsTranspose) {
+      addLog("Detected transposed Ameyo format — pivoting columns to rows...","info");
+      var pivotCols = amKeys.slice(1);
+      var pivoted = [];
+      pivotCols.forEach(function(col) {
+        var rec = {};
+        state.ameyoRaw.forEach(function(row) {
+          var field = String(row[firstKey] || "").trim();
+          if (field) rec[field] = row[col];
+        });
+        pivoted.push(rec);
+      });
+      state.ameyoRaw = pivoted;
+      addLog(`Pivoted to ${pivoted.length} call records`,"success");
+    }
+    var ameyoOk = validateColumns(state.ameyoRaw, [
+      { names:["Answered/Hungup","answered/hungup","Answered Hungup","Answered_Hungup"], hint:"Answered/Hungup", critical:true },
+      { names:["Call Time","call time","Call Time","Call_Time"], hint:"Call Time", critical:true },
+      { names:["User Talk Time","user talk time","User_Talk_Time","User Talktime"], hint:"User Talk Time", critical:false },
+      { names:["User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"], hint:"User Ringing Time", critical:false },
+      { names:["User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code"], hint:"User Disposition Code", critical:false },
+      { names:["Phone","phone"], hint:"Phone", critical:false },
+    ], "Ameyo");
+    if (!ameyoOk) { addLog("Ameyo CSV is missing critical columns. Call data will not be processed.","error"); return; }
+    try { state.ameyoKPIs = processAmeyoData(state.ameyoRaw); setAmeyoUploadState("success",`${state.ameyoFile.name} — ${state.ameyoRaw.length} rows`); addLog(`Ameyo: ${state.ameyoKPIs.total} calls`,"success"); state.exotelKPIs = state.ameyoKPIs; state.exotelRaw = state.ameyoRaw; } catch(err) { addLog(`Ameyo processing error: ${err.message}`,"error"); }
+  } else if (state.exotelFile) {
     addLog("Processing Exotel data...","info");
-    try { state.exotelRaw = await parseFile(state.exotelFile); addLog(`Parsed ${state.exotelRaw.length} Exotel rows`,"success"); state.exotelKPIs = processExotelData(state.exotelRaw); setExotelUploadState("success",`${state.exotelFile.name} — ${state.exotelRaw.length} rows`); addLog(`Exotel: ${state.exotelKPIs.total} calls`,"success"); } catch(err) { addLog(`Exotel error: ${err.message}`,"error"); }
+    try { state.exotelRaw = await parseFile(state.exotelFile); addLog(`Parsed ${state.exotelRaw.length} Exotel rows`,"success"); } catch(err) { addLog(`Exotel parse error: ${err.message}`,"error"); return; }
+    var exotelOk = validateColumns(state.exotelRaw, [
+      { names:["Status","status"], hint:"Status", critical:true },
+      { names:["StartTime","starttime","Start Time","start time"], hint:"StartTime", critical:true },
+      { names:["ConversationDuration","Conversation Duration","conversationduration"], hint:"ConversationDuration", critical:false },
+      { names:["Duration","duration"], hint:"Duration", critical:false },
+      { names:["Price","price"], hint:"Price", critical:false },
+      { names:["FromCircle","fromcircle","From Circle"], hint:"FromCircle", critical:false },
+      { names:["DispositionCodes","dispositioncodes","Disposition Codes"], hint:"DispositionCodes", critical:false },
+    ], "Exotel");
+    if (!exotelOk) { addLog("Exotel CSV is missing critical columns. Call data will not be processed.","error"); return; }
+    try { state.exotelKPIs = processExotelData(state.exotelRaw); setExotelUploadState("success",`${state.exotelFile.name} — ${state.exotelRaw.length} rows`); addLog(`Exotel: ${state.exotelKPIs.total} calls`,"success"); } catch(err) { addLog(`Exotel processing error: ${err.message}`,"error"); }
   }
 
   const month = document.getElementById("monthSelect").value || "January";
-  const projectName = document.getElementById("projectName").value || "Client";
+  const projectName = document.getElementById("sidebarProjectName").textContent || "Client";
   const weekFilter = document.getElementById("weekSelect").value;
 
   const dayGroups = {};
@@ -483,6 +616,10 @@ async function processFile() {
   }
 
   state.medianCloseTime = secondsToHMS(Math.round(median(allCloseTimes)));
+
+  // Save to per-client store
+  var curName = document.getElementById("sidebarProjectName").textContent;
+  saveClientState(curName);
 
   addLog(`Generated ${state.processed.length} daywise rows`,"success");
   document.getElementById("exportPdfBtn").disabled = false;
@@ -613,7 +750,7 @@ function processExotelData(rows) {
   const topLocations = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
   const month = document.getElementById("monthSelect")?.value || "January";
-  const projectName = document.getElementById("projectName")?.value || "Client";
+  const projectName = document.getElementById("sidebarProjectName")?.textContent || "Client";
   const weekFilter = document.getElementById("weekSelect")?.value || "All";
 
   // --- Issue Count & AHT Table (top 10) ---
@@ -714,6 +851,132 @@ function processExotelData(rows) {
   };
 }
 
+function processAmeyoData(rows) {
+  const get = (r,...n)=>findCol(r,...n);
+  const getS = r => String(get(r,"Answered/Hungup","answered/hungup","Answered Hungup","Answered_Hungup")||"").toLowerCase().trim();
+  const getCallTime = r => String(get(r,"Call Time","call time","Call Time","Call_Time")||"").trim();
+  const getDate = r => { const ct=getCallTime(r); if(!ct)return 1; const p=ct.split(/\s+/); const d=parseInt(p[0],10); return(d>=1&&d<=31)?d:1; };
+  const hmsToSec = function(s){if(!s)return 0;var p=String(s).split(":");return p.length===3?parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]):safeNum(s);};
+
+  const completed = rows.filter(r=>getS(r).includes("answer"));
+  const missed    = rows.filter(r=>!getS(r).includes("answer")&&(getS(r).includes("hung")||getS(r).includes("abandon")));
+  const attempts  = rows.filter(r=>!getS(r).includes("answer")&&!getS(r).includes("hung")&&!getS(r).includes("abandon"));
+
+  // Per-date aggregation
+  const dateMap = {};
+  rows.forEach(r => {
+    var d = getDate(r);
+    if (!d) return;
+    if (!dateMap[d]) dateMap[d] = { completed:0, missed:0, attempts:0, convDurs:[], ringTimes:[], prices:[], priceCompleted:0, priceMissed:0, priceAttempt:0 };
+    var sts = "", s = getS(r);
+    if (s.includes("answer")) sts = "completed";
+    else if (s.includes("hung")||s.includes("abandon")) sts = "missed-call";
+    else sts = "call-attempt";
+    if (sts === "completed") {
+      dateMap[d].completed++;
+      var cd = hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));
+      dateMap[d].convDurs.push(cd);
+      var rt = hmsToSec(get(r,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"));
+      dateMap[d].ringTimes.push(rt);
+    } else if (sts === "missed-call") dateMap[d].missed++;
+    else dateMap[d].attempts++;
+  });
+
+  var sortedDates = Object.keys(dateMap).map(Number).sort(function(a,b){return a-b;});
+
+  // Table 1: Call Count per date
+  var dateCallCounts = sortedDates.map(function(d){return {date:d, completed:dateMap[d].completed, missed:dateMap[d].missed, attempts:dateMap[d].attempts, total:dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts};});
+
+  // Table 2: AHT per date
+  var dateAHT = sortedDates.map(function(d){var c=dateMap[d].convDurs; return {date:d, avgAHT:c.length?c.reduce(function(a,b){return a+b;},0)/c.length:0};});
+
+  // Table 3: Ring Time per date
+  var dateRing = sortedDates.map(function(d){var r=dateMap[d].ringTimes; return {date:d, avgRing:r.length?r.reduce(function(a,b){return a+b;},0)/r.length:0};});
+
+  // Table 4: Avg Cost Per Call (all 0 for Ameyo)
+  var dateCost = sortedDates.map(function(d){return {date:d, avgCost:0};});
+
+  // Table 5: Cost Spend per date (all 0 for Ameyo)
+  var dateCostSpend = sortedDates.map(function(d){return {date:d, completed:0, missed:0, attempts:0, total:0};});
+
+  // Overall aggregates
+  var convDurs = completed.map(function(r){return hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));});
+  var avgAHT = convDurs.length ? convDurs.reduce(function(a,b){return a+b;},0)/convDurs.length : 0;
+
+  var ringTimes = completed.map(function(r){return hmsToSec(get(r,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"));});
+  var avgRing = ringTimes.length ? ringTimes.reduce(function(a,b){return a+b;},0)/ringTimes.length : 0;
+
+  var avgCostPerCall = 0;
+  var totalCost = 0;
+  var missedCost = 0;
+  var attemptCost = 0;
+
+  // Week data
+  var weekData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  var weekCompletedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  var weekMissedData = {"Week 1":0,"Week 2":0,"Week 3":0,"Week 4":0};
+  rows.forEach(function(r){
+    var day = getDate(r);
+    var wk = getWeekNum(day);
+    weekData[wk]++;
+    var s = getS(r);
+    if (s.includes("answer")) weekCompletedData[wk]++;
+    else if (s.includes("hung")||s.includes("abandon")) weekMissedData[wk]++;
+  });
+
+  // Location Table — use Phone prefix area codes if available
+  var locCounts = {};
+  rows.forEach(function(r){var c=String(get(r,"Phone","phone")||"").trim();if(c){var p=c.replace(/[^0-9]/g,"").substring(0,4);if(p)locCounts[p]=(locCounts[p]||0)+1;}});
+  var topLocations = Object.entries(locCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
+
+  var month = document.getElementById("monthSelect")?.value || "January";
+  var projectName = document.getElementById("sidebarProjectName")?.textContent || "Client";
+  var weekFilter = document.getElementById("weekSelect")?.value || "All";
+
+  // Issue Count & AHT Table (top 10) — from User Disposition Code
+  var issueCounts = {}, issueDurs = {};
+  completed.forEach(function(r){var c=String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();if(c){issueCounts[c]=(issueCounts[c]||0)+1;if(!issueDurs[c])issueDurs[c]=[];issueDurs[c].push(hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime")));}});
+  var topIssues = Object.entries(issueCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(e){var code=e[0],count=e[1]; return {code:code,count:count,avgAHT:secondsToHMS(Math.round((issueDurs[code]||[0]).reduce(function(a,b){return a+b;},0)/(issueDurs[code]||[1]).length))};});
+
+  var issueCountTable = topIssues.map(function(x){return {Month:month,Week:weekFilter,Date:"",Client:projectName,MOC:"Inbound",DispositionCodes:x.code,Count:x.count,"Average of ConversationDuration":x.avgAHT};});
+
+  // Difference Table
+  var totalVolume = completed.length + missed.length + attempts.length;
+  var taggedCount = completed.filter(function(r){var c=String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();return c.length>0;}).length;
+  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":topIssues.reduce(function(s,i){return s+i.count;},0)};
+
+  // Interval-Wise Table
+  var intervalCounts={};for(var i=0;i<24;i++)intervalCounts[i]=0;
+  rows.forEach(function(r){var ct=getCallTime(r);if(!ct)return;var p=ct.split(/\s+/);var timePart="";for(var ti=0;ti<p.length;ti++){if(p[ti].includes(":")){timePart=p[ti];break;}}if(!timePart)return;var h=parseInt(timePart.split(":")[0],10);if(isNaN(h))return;var ampm=p.find(function(t){return t.toLowerCase()==="am"||t.toLowerCase()==="pm";});if(ampm&&ampm.toLowerCase()==="pm"&&h<12)h+=12;if(ampm&&ampm.toLowerCase()==="am"&&h===12)h=0;if(h>=0&&h<24)intervalCounts[h]++;});
+  var monthIndex = MONTHS.indexOf(month);
+  var year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
+  var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
+  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+i+"-"+(i+1===24?"0":i+1)+" "+(i<12?"AM":"PM")+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
+
+  // Repeat Count Table (top 10)
+  var repeatRaw = {};
+  completed.forEach(function(r){var c=String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();var from=String(get(r,"Phone","phone")||"").trim();if(!c||!from)return;if(!repeatRaw[c])repeatRaw[c]=new Set();repeatRaw[c].add(from);});
+  var repeatTable = Object.entries(repeatRaw).map(function(e){return{code:e[0],count:e[1].size};}).filter(function(x){return x.count>1;}).sort(function(a,b){return b.count-a.count;}).slice(0,10).map(function(x){return{DispositionCodes:x.code,"Count of Count of From":x.count};});
+
+  // Summary Table
+  var summaryTable = sortedDates.map(function(d){return{Date:d,"Inbound Calls":dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts,Completed:dateMap[d].completed,"Missed Calls":dateMap[d].missed,"Inbound AHT":secondsToHMS(Math.round((dateAHT.find(function(x){return x.date===d;})||{avgAHT:0}).avgAHT)),"Average Ring Time":secondsToHMS(Math.round((dateRing.find(function(x){return x.date===d;})||{avgRing:0}).avgRing)),"Average Cost Per Call":"$0.0000","Price":"$0.00","Completed Call Price":"$0.00","Missed Call Price":"$0.00","Call Attempt Price":"$0.00"};});
+  var totalInbound = dateCallCounts.reduce(function(s,r){return s+r.total;},0);
+  var totalCompleted = dateCallCounts.reduce(function(s,r){return s+r.completed;},0);
+  var totalMissed = dateCallCounts.reduce(function(s,r){return s+r.missed;},0);
+  var avgAHTAll = dateAHT.length?dateAHT.reduce(function(s,r){return s+r.avgAHT;},0)/dateAHT.length:0;
+  var avgRingAll = dateRing.length?dateRing.reduce(function(s,r){return s+r.avgRing;},0)/dateRing.length:0;
+  summaryTable.push({Date:"Grand Total","Inbound Calls":totalInbound,Completed:totalCompleted,"Missed Calls":totalMissed,"Inbound AHT":secondsToHMS(Math.round(avgAHTAll)),"Average Ring Time":secondsToHMS(Math.round(avgRingAll)),"Average Cost Per Call":"$0.0000","Price":"$0.00","Completed Call Price":"$0.00","Missed Call Price":"$0.00","Call Attempt Price":"$0.00"});
+
+  return {
+    total:rows.length, completed:completed.length, missed:missed.length, attempts:attempts.length,
+    avgAHT, avgRing, avgCostPerCall, totalCost, missedCost, attemptCost,
+    weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
+    dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
+    summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+  };
+}
+
 // =====================================================================
 // ===== SLIDE 1: Cover =====
 // =====================================================================
@@ -721,10 +984,10 @@ function renderSlide1() {
   const section = document.getElementById("dashboardSection");
   section.style.display = "block";
 
-  const client = document.getElementById("projectName").value || "Client";
+  const client = document.getElementById("sidebarProjectName").textContent || "Client";
   const month = document.getElementById("monthSelect").value || "January";
   const year = document.getElementById("yearSelect").value || "2026";
-  const range = document.getElementById("dateRange").value || `${month} ${year}`;
+  const range = document.getElementById("dateRange").value || "";
 
   document.getElementById("slide1Client").textContent = client;
   document.getElementById("slide1Month").textContent = `${month} ${year}`;
@@ -759,17 +1022,17 @@ function renderSlide2() {
   const avgFirstResp = document.getElementById("manualFirstResponse").value.trim() || "—";
   const fcr = closed > 0 ? Math.round(((closed - reopenedVal) / closed) * 100) + "%" : "N/A";
 
-  const colors = ["#a78bfa", "#22c55e", "#ef4444", "#f43f5e"];
+  const colors = ["#0d9488", "#10b981", "#f43f5e", "#f59e0b"];
 
   document.getElementById("s2Kpis").innerHTML =
     `<div class="kpi-card" style="--kpi-color:${colors[0]}"><div class="kpi-val">${total.toLocaleString()}</div><div class="kpi-lbl">Chat Volume</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[1]}"><div class="kpi-val">${closed.toLocaleString()}</div><div class="kpi-lbl">Closed Chats</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[2]}"><div class="kpi-val">${noReplyVal.toLocaleString()}</div><div class="kpi-lbl">Closed With No Reply</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[3]}"><div class="kpi-val">${reopenedVal.toLocaleString()}</div><div class="kpi-lbl">Reopened Chats</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${avgFirstResp}</div><div class="kpi-lbl">Avg First Response Time</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#eab308"><div class="kpi-val">${avgResp}</div><div class="kpi-lbl">Avg Response Time</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#f97316"><div class="kpi-val">${medHandling}</div><div class="kpi-lbl">Median Handling Time</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${fcr}</div><div class="kpi-lbl">First Contact Rate</div></div>`;
+    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${avgFirstResp}</div><div class="kpi-lbl">Avg First Response</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">${avgResp}</div><div class="kpi-lbl">Avg Response Time</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${medHandling}</div><div class="kpi-lbl">Median Handling</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${fcr}</div><div class="kpi-lbl">First Contact Rate</div></div>`;
 
   destroyChart("chartSlide2");
   createChart("chartSlide2", "bar", weekLabels, [
@@ -777,10 +1040,10 @@ function renderSlide2() {
       label: "Chat Volume",
       data: weekData,
       backgroundColor: weekData.map((v, i) =>
-        `rgba(167,139,250,${0.4 + i * 0.15})`
+        `rgba(13,148,136,${0.4 + i * 0.15})`
       ),
       borderRadius: 4,
-      borderColor: "rgba(167,139,250,0.8)",
+      borderColor: "rgba(13,148,136,0.8)",
       borderWidth: 1,
       order: 2
     },
@@ -788,12 +1051,12 @@ function renderSlide2() {
       label: "Closed Chats",
       type: 'line',
       data: weekClosed,
-      borderColor: "#22c55e",
-      backgroundColor: "rgba(34,197,94,0.08)",
+      borderColor: "#10b981",
+      backgroundColor: "rgba(16,185,129,0.08)",
       borderWidth: 3,
       pointRadius: 6,
-      pointBackgroundColor: "#22c55e",
-      pointBorderColor: "#0b0d17",
+      pointBackgroundColor: "#10b981",
+      pointBorderColor: "#0f172a",
       pointBorderWidth: 2,
       tension: 0.3,
       fill: true,
@@ -803,7 +1066,7 @@ function renderSlide2() {
         anchor: 'end',
         align: 'top',
         offset: 4,
-        color: '#22c55e',
+        color: '#10b981',
         font: { size: 11, weight: '700' },
         textShadowColor: 'rgba(0,0,0,0.7)',
         textShadowBlur: 3,
@@ -863,10 +1126,10 @@ function renderSlide3() {
   const ring = secondsToHMS(Math.round(d.avgRing));
 
   document.getElementById("s3Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:#a78bfa"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#22c55e"><div class="kpi-val">${d.completed.toLocaleString()}</div><div class="kpi-lbl">Completed Calls</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#ef4444"><div class="kpi-val">${d.missed.toLocaleString()}</div><div class="kpi-lbl">Missed Calls</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#f97316"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${d.completed.toLocaleString()}</div><div class="kpi-lbl">Completed Calls</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${d.missed.toLocaleString()}</div><div class="kpi-lbl">Missed Calls</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${ring}</div><div class="kpi-lbl">Avg Ring + IVR Time</div></div>`;
 
   const maxVal = Math.max(...weekTotal, ...weekCompleted, 1);
@@ -878,10 +1141,10 @@ function renderSlide3() {
       label: "Calls Volume",
       data: weekTotal,
       backgroundColor: weekTotal.map((v, i) =>
-        `rgba(249,115,22,${0.4 + i * 0.15})`
+        `rgba(59,130,246,${0.4 + i * 0.15})`
       ),
       borderRadius: 4,
-      borderColor: "rgba(249,115,22,0.8)",
+      borderColor: "rgba(59,130,246,0.8)",
       borderWidth: 1,
       order: 2
     },
@@ -889,12 +1152,12 @@ function renderSlide3() {
       label: "Completed Calls",
       type: 'line',
       data: weekCompleted,
-      borderColor: "#22c55e",
-      backgroundColor: "rgba(34,197,94,0.08)",
+      borderColor: "#10b981",
+      backgroundColor: "rgba(16,185,129,0.08)",
       borderWidth: 3,
       pointRadius: 6,
-      pointBackgroundColor: "#22c55e",
-      pointBorderColor: "#0b0d17",
+      pointBackgroundColor: "#10b981",
+      pointBorderColor: "#0f172a",
       pointBorderWidth: 2,
       tension: 0.3,
       fill: true,
@@ -904,7 +1167,7 @@ function renderSlide3() {
         anchor: 'end',
         align: 'top',
         offset: 4,
-        color: '#22c55e',
+        color: '#10b981',
         font: { size: 11, weight: '700' },
         textShadowColor: 'rgba(0,0,0,0.7)',
         textShadowBlur: 3,
@@ -1010,16 +1273,16 @@ function renderSlide4() {
     }
   };
 
-  const purple = "#a78bfa";
-  const orange = "#f97316";
+  const teal = "#0d9488";
+  const blue = "#3b82f6";
 
   destroyChart("chartSlide4Chat");
   createChart("chartSlide4Chat", "bar", hourLabels, [{
     label: "Avg Chat Volume",
     data: chatData,
-    backgroundColor: chatData.map((v, i) => `rgba(167,139,250,${0.35 + (i % 4) * 0.08})`),
+    backgroundColor: chatData.map((v, i) => `rgba(13,148,136,${0.35 + (i % 4) * 0.08})`),
     borderRadius: 3,
-    borderColor: "rgba(167,139,250,0.5)",
+    borderColor: "rgba(13,148,136,0.5)",
     borderWidth: 0.5
   }], {
     plugins: {
@@ -1027,7 +1290,7 @@ function renderSlide4() {
       datalabels: {
         display: true,
         anchor: 'end', align: 'end', offset: 2,
-        color: purple,
+        color: teal,
         font: { size: 8, weight: '700' },
         textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3,
         formatter: v => v > 0 ? v : ''
@@ -1040,9 +1303,9 @@ function renderSlide4() {
   createChart("chartSlide4Calls", "bar", hourLabels, [{
     label: "Avg Call Volume",
     data: callData,
-    backgroundColor: callData.map((v, i) => `rgba(249,115,22,${0.35 + (i % 4) * 0.08})`),
+    backgroundColor: callData.map((v, i) => `rgba(59,130,246,${0.35 + (i % 4) * 0.08})`),
     borderRadius: 3,
-    borderColor: "rgba(249,115,22,0.5)",
+    borderColor: "rgba(59,130,246,0.5)",
     borderWidth: 0.5
   }], {
     plugins: {
@@ -1050,7 +1313,7 @@ function renderSlide4() {
       datalabels: {
         display: true,
         anchor: 'end', align: 'end', offset: 2,
-        color: orange,
+        color: blue,
         font: { size: 8, weight: '700' },
         textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3,
         formatter: v => v > 0 ? v : ''
@@ -1088,31 +1351,33 @@ function renderSlide5() {
   function renderCards(containerId, histVal, currentVal, diff, diffSign, color) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    const diffColor = diff >= 0 ? "#22c55e" : "#ef4444";
+    const diffColor = diff >= 0 ? "#10b981" : "#f43f5e";
+    const arrow = diff >= 0 ? "↑" : "↓";
     el.innerHTML =
       `<div class="slide5-card"><div class="val" style="color:rgba(255,255,255,0.6)">${histVal.toLocaleString()}</div><div class="lbl">Historical Avg</div></div>` +
       `<div class="slide5-card"><div class="val" style="color:${color}">${currentVal.toLocaleString()}</div><div class="lbl">Current Volume</div></div>` +
-      `<div class="slide5-card"><div class="val" style="color:${diffColor}">${diffSign}${diff.toLocaleString()}</div><div class="lbl">Difference</div></div>`;
+      `<div class="slide5-card"><div class="val" style="color:${diffColor}">${arrow} ${diffSign}${Math.abs(diff).toLocaleString()}</div><div class="lbl">Difference</div></div>`;
   }
 
   function renderStatus(containerId, currentVal, histVal, label) {
     const el = document.getElementById(containerId);
     if (!el) return;
+    const arrow = currentVal > histVal ? "↑" : currentVal < histVal ? "↓" : "→";
     if (currentVal > histVal) {
-      el.textContent = `This month's ${label} volume is higher than normal`;
-      el.style.color = "#22c55e";
+      el.textContent = `${arrow} This month's ${label} volume is higher than normal`;
+      el.style.color = "#10b981";
     } else if (currentVal < histVal) {
-      el.textContent = `This month's ${label} volume is lower than normal`;
-      el.style.color = "#ef4444";
+      el.textContent = `${arrow} This month's ${label} volume is lower than normal`;
+      el.style.color = "#f43f5e";
     } else {
-      el.textContent = `This month's ${label} volume is at normal levels`;
+      el.textContent = `${arrow} This month's ${label} volume is at normal levels`;
       el.style.color = "rgba(255,255,255,0.5)";
     }
   }
 
-  renderCards("s5ChatCards", histChatVal, chatTotal, chatDiff, chatDiffSign, "#a78bfa");
+  renderCards("s5ChatCards", histChatVal, chatTotal, chatDiff, chatDiffSign, "#0d9488");
   renderStatus("s5ChatStatus", chatTotal, histChatVal, "chat");
-  renderCards("s5CallCards", histCallVal, callTotal, callDiff, callDiffSign, "#f97316");
+  renderCards("s5CallCards", histCallVal, callTotal, callDiff, callDiffSign, "#3b82f6");
   renderStatus("s5CallStatus", callTotal, histCallVal, "call");
 
   const chatYMax = Math.ceil(Math.max(chatTotal, histChatVal, 1) * 1.25);
@@ -1156,8 +1421,8 @@ function renderSlide5() {
     });
   }
 
-  buildComparisonChart("chartSlide5Chat", chatTotal, histChatVal, "#a78bfa", chatYMax);
-  buildComparisonChart("chartSlide5Calls", callTotal, histCallVal, "#f97316", callYMax);
+  buildComparisonChart("chartSlide5Chat", chatTotal, histChatVal, "#0d9488", chatYMax);
+  buildComparisonChart("chartSlide5Calls", callTotal, histCallVal, "#3b82f6", callYMax);
 }
 
 // =====================================================================
@@ -1340,13 +1605,15 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     var r = RADIUS_MIN + (count / maxVal) * (RADIUS_MAX - RADIUS_MIN);
     if (k === 0) r = r * 1.3;
 
-    // Outer glow
-    var glowR = r * (k === 0 ? 3 : 2.5);
+    // Outer glow (increased opacity)
+    var glowR = r * (k === 0 ? 4 : 3);
     var grad = ctx.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], glowR);
-    grad.addColorStop(0, dotColor.replace("0.75","0.25"));
+    var glowAlpha = dotColor.match(/[\d.]+\)$/);
+    var baseAlpha = glowAlpha ? parseFloat(glowAlpha[0]) : 0.85;
+    grad.addColorStop(0, dotColor.replace(String(baseAlpha), String(baseAlpha * 0.4)));
     grad.addColorStop(1, "transparent");
     ctx.beginPath();
-    ctx.arc(pos[0], pos[1], r * 2.5, 0, Math.PI * 2);
+    ctx.arc(pos[0], pos[1], glowR, 0, Math.PI * 2);
     ctx.fillStyle = grad;
     ctx.fill();
 
@@ -1355,31 +1622,31 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     ctx.arc(pos[0], pos[1], r, 0, Math.PI * 2);
     ctx.fillStyle = dotColor;
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.6)";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
     // Count label
-    var countSize = Math.max(8, Math.min(13, 7 + r * 0.3));
-    if (k === 0) countSize = Math.min(countSize * 1.2, 16);
+    var countSize = Math.max(9, Math.min(14, 8 + r * 0.3));
+    if (k === 0) countSize = Math.min(countSize * 1.2, 17);
     ctx.fillStyle = "#fff";
     ctx.font = "bold " + countSize + "px Inter,sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.shadowColor = "rgba(0,0,0,0.8)";
-    ctx.shadowBlur = 4;
+    ctx.shadowColor = "rgba(0,0,0,0.9)";
+    ctx.shadowBlur = 6;
     ctx.fillText(count, pos[0], pos[1] + 0.5);
     ctx.shadowBlur = 0;
 
     // City name below dot — top city gets larger font
-    var nameFontSize = k === 0 ? 9 : 7;
-    ctx.fillStyle = k === 0 ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)";
+    var nameFontSize = k === 0 ? 10 : 8;
+    ctx.fillStyle = k === 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.65)";
     ctx.font = (k === 0 ? "700" : "600") + " " + nameFontSize + "px Inter,sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.shadowColor = "rgba(0,0,0,0.9)";
-    ctx.shadowBlur = 3;
-    ctx.fillText(cityName, pos[0], pos[1] + r + 2);
+    ctx.shadowColor = "rgba(0,0,0,0.95)";
+    ctx.shadowBlur = 5;
+    ctx.fillText(cityName, pos[0], pos[1] + r + 3);
     ctx.shadowBlur = 0;
   }
 }
@@ -1391,6 +1658,7 @@ function renderSlide6() {
   var data = state.processed;
   var exotel = state.exotelKPIs;
   if (!data || data.length === 0) return;
+  var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
 
   // Chat locations
   var locTotals = {};
@@ -1406,13 +1674,21 @@ function renderSlide6() {
   }
   var chatLocations = Object.entries(locTotals).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
 
-  // Call locations
-  var callLocations = exotel ? (exotel.topLocations || []) : [];
-  // Map exotel topLocations from {name, count} format to [name, count]
-  if (callLocations.length > 0 && typeof callLocations[0] === 'object' && callLocations[0].name !== undefined) {
-    callLocations = callLocations.map(function(l) { return [l.name, l.count]; });
+  // Call locations — only for non-WC clients
+  var callLocations = [];
+  if (!isWC) {
+    callLocations = exotel ? (exotel.topLocations || []) : [];
+    if (callLocations.length > 0 && typeof callLocations[0] === 'object' && callLocations[0].name !== undefined) {
+      callLocations = callLocations.map(function(l) { return [l.name, l.count]; });
+    }
+    callLocations = callLocations.sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
   }
-  callLocations = callLocations.sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+
+  // Hide/show call locations panel
+  var callPanel = document.querySelector("#slide6 .slide6-panel:nth-child(2)");
+  if (callPanel) callPanel.style.display = isWC ? "none" : "flex";
+  var chatPanel = document.querySelector("#slide6 .slide6-panel:nth-child(1)");
+  if (chatPanel) chatPanel.style.width = isWC ? "100%" : "";
 
   // Find max for scaling
   var chatMax = 1, callMax = 1;
@@ -1422,8 +1698,8 @@ function renderSlide6() {
 
   destroyChart("chartSlide6Chat");
   destroyChart("chartSlide6Calls");
-  drawIndiaMap("mapSlide6Chat", chatLocations, "rgba(139,92,246,0.75)", globalMax);
-  drawIndiaMap("mapSlide6Calls", callLocations, "rgba(249,115,22,0.75)", globalMax);
+  drawIndiaMap("mapSlide6Chat", chatLocations, "rgba(13,148,136,0.85)", globalMax);
+  drawIndiaMap("mapSlide6Calls", callLocations, "rgba(59,130,246,0.85)", globalMax);
 }
 
 // =====================================================================
@@ -1486,8 +1762,8 @@ function renderSlide7() {
   const callLabels = callTop.map(e => e[0]);
   const callValues = callTop.map(e => e[1]);
 
-  buildVertBar("chartSlide7Chat", chatLabels, chatValues, "rgba(167,139,250,0.7)");
-  buildVertBar("chartSlide7Calls", callLabels, callValues, "rgba(249,115,22,0.7)");
+  buildVertBar("chartSlide7Chat", chatLabels, chatValues, "rgba(13,148,136,0.7)");
+  buildVertBar("chartSlide7Calls", callLabels, callValues, "rgba(59,130,246,0.7)");
 }
 
 // =====================================================================
@@ -1509,8 +1785,8 @@ function renderSlide8() {
   createChart("chartSlide8Calls", "bar", labels, [{
     label: "Repeat Customers",
     data: values,
-    backgroundColor: "rgba(249,115,22,0.7)",
-    borderColor: "#f97316",
+    backgroundColor: "rgba(59,130,246,0.7)",
+    borderColor: "#3b82f6",
     borderWidth: 0.5,
     borderRadius: 3
   }], {
@@ -1553,31 +1829,24 @@ function renderSlide9() {
   const chatDisposed = data.reduce((s, r) => s + r["Tagged"], 0);
   const chatRate = chatCompleted > 0 ? ((chatDisposed / chatCompleted) * 100).toFixed(1) : "—";
 
-  let callDisposed = 0;
-  if (exotel && state.exotelRaw) {
-    for (const r of state.exotelRaw) {
-      const s = String(findCol(r, "Status", "status") || "").toLowerCase().trim();
-      const c = String(findCol(r, "DispositionCodes", "dispositioncodes", "Disposition Codes") || "").trim();
-      if (s === "completed" && c.length > 0) callDisposed++;
-    }
-  }
+  const callDisposed = exotel && exotel.differenceTable ? (exotel.differenceTable["Tagged"] || 0) : 0;
   const callCompleted = exotel ? exotel.completed : 0;
   const callRate = callCompleted > 0 ? ((callDisposed / callCompleted) * 100).toFixed(1) : "—";
 
   document.getElementById("s9ChatRate").textContent = `${chatRate}%`;
-  document.getElementById("s9ChatRate").style.color = chatDisposed >= chatCompleted / 2 ? "#22c55e" : "#f97316";
+  document.getElementById("s9ChatRate").style.color = chatDisposed >= chatCompleted / 2 ? "#10b981" : "#f59e0b";
   document.getElementById("s9CallRate").textContent = `${callRate}%`;
-  document.getElementById("s9CallRate").style.color = callDisposed >= callCompleted / 2 ? "#22c55e" : "#f97316";
+  document.getElementById("s9CallRate").style.color = callDisposed >= callCompleted / 2 ? "#10b981" : "#f59e0b";
 
   document.getElementById("s9ChatInsight").textContent =
     `${chatDisposed.toLocaleString()} out of ${chatCompleted.toLocaleString()} closed chats were tagged (${chatRate}%)`;
   document.getElementById("s9ChatInsight").style.color =
-    chatDisposed >= chatCompleted / 2 ? "rgba(34,197,94,0.7)" : "rgba(239,68,68,0.7)";
+    chatDisposed >= chatCompleted / 2 ? "rgba(16,185,129,0.7)" : "rgba(244,63,94,0.7)";
 
   document.getElementById("s9CallInsight").textContent =
     `${callDisposed.toLocaleString()} out of ${callCompleted.toLocaleString()} completed calls were disposed (${callRate}%)`;
   document.getElementById("s9CallInsight").style.color =
-    callDisposed >= callCompleted / 2 ? "rgba(34,197,94,0.7)" : "rgba(239,68,68,0.7)";
+    callDisposed >= callCompleted / 2 ? "rgba(16,185,129,0.7)" : "rgba(244,63,94,0.7)";
 
   function buildComparisonBar(canvasId, completedVal, disposedVal, label1, label2, color) {
     destroyChart(canvasId);
@@ -1619,8 +1888,8 @@ function renderSlide9() {
     });
   }
 
-  buildComparisonBar("chartSlide9Chat", chatCompleted, chatDisposed, "Closed", "Tagged", "rgba(167,139,250,0.75)");
-  buildComparisonBar("chartSlide9Calls", callCompleted, callDisposed, "Completed", "Disposed", "rgba(249,115,22,0.75)");
+  buildComparisonBar("chartSlide9Chat", chatCompleted, chatDisposed, "Closed", "Tagged", "rgba(13,148,136,0.75)");
+  buildComparisonBar("chartSlide9Calls", callCompleted, callDisposed, "Completed", "Disposed", "rgba(59,130,246,0.75)");
 }
 
 // =====================================================================
@@ -1655,9 +1924,9 @@ function renderSlide10() {
   });
 
   document.getElementById("s10Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#22c55e"><div class="kpi-val">${resolvedSum.toLocaleString()}</div><div class="kpi-lbl">Resolved</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#fb7185"><div class="kpi-val">${pendingSum.toLocaleString()}</div><div class="kpi-lbl">Pending</div></div>`;
+    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${resolvedSum.toLocaleString()}</div><div class="kpi-lbl">Resolved</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${pendingSum.toLocaleString()}</div><div class="kpi-lbl">Pending</div></div>`;
 
   let tableHtml = `<table><thead><tr><th>Issue Type</th><th>Total</th><th>Resolved</th><th>Pending</th><th>Reason / Status</th></tr></thead><tbody>`;
   sorted.forEach(row => {
@@ -1676,24 +1945,24 @@ function renderSlide10() {
     {
       label: "Resolved",
       data: resolvedArr,
-      backgroundColor: "rgba(34,197,94,0.75)",
-      borderColor: "#22c55e",
+      backgroundColor: "rgba(16,185,129,0.75)",
+      borderColor: "#10b981",
       borderWidth: 1,
       borderRadius: 2
     },
     {
       label: "Pending",
       data: pendingArr,
-      backgroundColor: "rgba(251,113,133,0.75)",
-      borderColor: "#fb7185",
+      backgroundColor: "rgba(244,63,94,0.75)",
+      borderColor: "#f43f5e",
       borderWidth: 1,
       borderRadius: 2
     },
     {
       label: "Other",
       data: otherArr,
-      backgroundColor: "rgba(255,255,255,0.1)",
-      borderColor: "rgba(255,255,255,0.15)",
+      backgroundColor: "rgba(255,255,255,0.08)",
+      borderColor: "rgba(255,255,255,0.12)",
       borderWidth: 1,
       borderRadius: 2
     }
@@ -1732,6 +2001,8 @@ function renderSlide11() {
   const payData = getTableData("paymentData");
   const sideEl = document.getElementById("s11Side");
   const bottomEl = document.getElementById("s11Bottom");
+  var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
+  var callLabel = isWC ? "Ameyo" : "Exotel";
 
   if (!payData || payData.length === 0) {
     sideEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:20px">No rows found in Payment Details sheet. Open Editor → Payment Details tab, enter data, click Save All Sheets, then regenerate.</div>';
@@ -1740,8 +2011,8 @@ function renderSlide11() {
     return;
   }
 
-  let intercomAmt = 0, exotelAmt = 0, gst = 0;
-  let intercomSeats = 0, exotelSeats = 0, doubletickSeats = 0;
+  let intercomAmt = 0, callAmt = 0, gst = 0;
+  let intercomSeats = 0, callSeats = 0, doubletickSeats = 0;
 
   payData.forEach((row, idx) => {
     const col0 = String(row[0] || "").trim();
@@ -1755,9 +2026,9 @@ function renderSlide11() {
     if (combined.includes("intercom")) {
       intercomAmt += amtInt;
       if (agents > 0) intercomSeats = Math.max(intercomSeats, agents);
-    } else if (combined.includes("exotel")) {
-      exotelAmt += amtInt;
-      if (agents > 0) exotelSeats = Math.max(exotelSeats, agents);
+    } else if (combined.includes("exotel") || (isWC && combined.includes("ameyo"))) {
+      callAmt += amtInt;
+      if (agents > 0) callSeats = Math.max(callSeats, agents);
     } else if (combined.includes("doubletick") || combined.includes("double")) {
       if (agents > 0) doubletickSeats = Math.max(doubletickSeats, agents);
     }
@@ -1766,29 +2037,29 @@ function renderSlide11() {
   });
 
   intercomAmt = Math.round(intercomAmt);
-  exotelAmt = Math.round(exotelAmt);
+  callAmt = Math.round(callAmt);
   gst = Math.round(gst);
-  const totalSubs = intercomAmt + exotelAmt;
+  const totalSubs = intercomAmt + callAmt;
 
   var fmt = function(v) { return '₹' + Number(v).toLocaleString('en-IN'); };
 
   sideEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#a78bfa"><div class="kpi-val">' + fmt(totalSubs) + '</div><div class="kpi-lbl">Amount Spent (Incl. GST)</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + fmt(totalSubs) + '</div><div class="kpi-lbl">Amount Spent (Incl. GST)</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + fmt(gst) + '</div><div class="kpi-lbl">GST</div></div>';
 
   bottomEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#60a5fa"><div class="kpi-val">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Intercom Seats</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#34d399"><div class="kpi-val">' + exotelSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Exotel Seats</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#fb923c"><div class="kpi-val">' + doubletickSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Doubletick Seats</div></div>';
+    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Intercom Seats</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">' + callSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">' + callLabel + ' Seats</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + doubletickSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Doubletick Seats</div></div>';
 
   destroyChart("chartSlide11");
-  if (intercomAmt === 0 && exotelAmt === 0) return;
+  if (intercomAmt === 0 && callAmt === 0) return;
 
-  createChart("chartSlide11", "pie", ["Intercom", "Exotel"], [
+  createChart("chartSlide11", "pie", ["Intercom", callLabel], [
     {
-      data: [intercomAmt, exotelAmt],
-      backgroundColor: ["rgba(139,92,246,0.75)", "rgba(249,115,22,0.75)"],
-      borderColor: ["#8b5cf6", "#f97316"],
+      data: [intercomAmt, callAmt],
+      backgroundColor: ["rgba(13,148,136,0.75)", "rgba(59,130,246,0.75)"],
+      borderColor: ["#0d9488", "#3b82f6"],
       borderWidth: 2
     }
   ], {
@@ -1854,34 +2125,34 @@ function renderSlide12() {
   const whatsappArr = rows.map(function(r) { return r.whatsapp; });
 
   sideEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#a78bfa"><div class="kpi-val">' + totalAgents + '</div><div class="kpi-lbl">Total Agents</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#60a5fa"><div class="kpi-val">' + nonVoiceAgents + '</div><div class="kpi-lbl">Non-Voice Agents (Chats)</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#34d399"><div class="kpi-val">' + inboundAgents + '</div><div class="kpi-lbl">Inbound Agents (Calls)</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#fb923c"><div class="kpi-val">' + whatsappAgents + '</div><div class="kpi-lbl">WhatsApp Agents</div></div>';
+    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + totalAgents + '</div><div class="kpi-lbl">Total Agents</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + nonVoiceAgents + '</div><div class="kpi-lbl">Non-Voice Agents (Chats)</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">' + inboundAgents + '</div><div class="kpi-lbl">Inbound Agents (Calls)</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + whatsappAgents + '</div><div class="kpi-lbl">WhatsApp Agents</div></div>';
 
   destroyChart("chartSlide12");
   createChart("chartSlide12", "bar", labels, [
     {
       label: "Chats",
       data: chatsArr,
-      backgroundColor: "rgba(139,92,246,0.75)",
-      borderColor: "#8b5cf6",
+      backgroundColor: "rgba(13,148,136,0.75)",
+      borderColor: "#0d9488",
       borderWidth: 1,
       borderRadius: 2
     },
     {
       label: "Calls",
       data: callsArr,
-      backgroundColor: "rgba(34,197,94,0.75)",
-      borderColor: "#22c55e",
+      backgroundColor: "rgba(59,130,246,0.75)",
+      borderColor: "#3b82f6",
       borderWidth: 1,
       borderRadius: 2
     },
     {
       label: "WhatsApp",
       data: whatsappArr,
-      backgroundColor: "rgba(251,146,60,0.75)",
-      borderColor: "#fb923c",
+      backgroundColor: "rgba(245,158,11,0.75)",
+      borderColor: "#f59e0b",
       borderWidth: 1,
       borderRadius: 2
     }
@@ -1999,8 +2270,8 @@ function renderSlide13() {
     }], chartOpts());
   };
 
-  buildChart("chartSlide13Top", topArr, "rgba(52,211,153,0.75)");
-  buildChart("chartSlide13Bottom", bottomArr, "rgba(251,113,133,0.75)");
+  buildChart("chartSlide13Top", topArr, "rgba(16,185,129,0.75)");
+  buildChart("chartSlide13Bottom", bottomArr, "rgba(244,63,94,0.75)");
 
   var html = '<table><thead><tr><th>Rank</th><th>Agent Name</th><th>Attendance Score</th><th>Quality Score</th><th>Productivity</th><th>Achieved Points</th></tr></thead><tbody>';
   var rank = 1;
@@ -2065,11 +2336,11 @@ function renderSlide14() {
   var avgCompliance = Math.round(totCompliance / count);
 
   kpisEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#60a5fa"><div class="kpi-val">' + avgAttendance + '%</div><div class="kpi-lbl">Avg Attendance Score</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#34d399"><div class="kpi-val">' + avgQuality + '%</div><div class="kpi-lbl">Avg Quality Score</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + avgAttendance + '%</div><div class="kpi-lbl">Avg Attendance Score</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">' + avgQuality + '%</div><div class="kpi-lbl">Avg Quality Score</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + avgCompliance + '%</div><div class="kpi-lbl">Avg Compliance Score</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#fb7185"><div class="kpi-val">' + fmt(totEscalation) + '</div><div class="kpi-lbl">Audit Escalation</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#a78bfa"><div class="kpi-val">' + fmt(totAchieved) + ' / ' + fmt(totalPossible) + '</div><div class="kpi-lbl">Achieved Points vs Total</div></div>';
+    '<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">' + fmt(totEscalation) + '</div><div class="kpi-lbl">Audit Escalation</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + fmt(totAchieved) + ' / ' + fmt(totalPossible) + '</div><div class="kpi-lbl">Achieved Points vs Total</div></div>';
 
   // Quality Score — bar chart with average target line
   var agentsSorted = agents.slice().sort(function(a, b) { return b.quality - a.quality; });
@@ -2088,7 +2359,7 @@ function renderSlide14() {
       backgroundColor: "transparent",
       borderWidth: 1.5,
       pointBackgroundColor: qVals.map(function(v) {
-        return v >= 80 ? "#34d399" : v >= 60 ? "#f59e0b" : "#fb7185";
+        return v >= 80 ? "#10b981" : v >= 60 ? "#f59e0b" : "#f43f5e";
       }),
       pointBorderColor: "rgba(255,255,255,0.3)",
       pointBorderWidth: 1,
@@ -2146,8 +2417,8 @@ function renderSlide14() {
   createChart("chartSlide14Achieved", "bar", aLabels, [{
     label: "Achieved Points",
     data: aVals,
-    backgroundColor: "rgba(167,139,250,0.75)",
-    borderColor: "#a78bfa",
+    backgroundColor: "rgba(13,148,136,0.75)",
+    borderColor: "#0d9488",
     borderWidth: 0,
     borderRadius: 3
   }], {
@@ -2204,11 +2475,11 @@ function renderSlide15() {
   destroyChart("chartSlide15Tl");
   if (tlLabels.length > 0) {
     createChart("chartSlide15Tl", "bar", tlLabels, [
-      { label: "Team Attendance", data: tlA, backgroundColor: "rgba(96,165,250,0.75)", borderColor: "#60a5fa", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Team Quality", data: tlQ, backgroundColor: "rgba(52,211,153,0.75)", borderColor: "#34d399", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Preshift Briefing", data: tlB, backgroundColor: "rgba(251,146,60,0.75)", borderColor: "#fb923c", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Shift Adherence", data: tlS, backgroundColor: "rgba(167,139,250,0.75)", borderColor: "#a78bfa", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "TL Audit", data: tlAu, backgroundColor: "rgba(251,113,133,0.75)", borderColor: "#fb7185", borderWidth: 1, borderRadius: 2, barThickness: 30 }
+      { label: "Team Attendance", data: tlA, backgroundColor: "rgba(59,130,246,0.75)", borderColor: "#3b82f6", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Team Quality", data: tlQ, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Preshift Briefing", data: tlB, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Shift Adherence", data: tlS, backgroundColor: "rgba(13,148,136,0.75)", borderColor: "#0d9488", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "TL Audit", data: tlAu, backgroundColor: "rgba(244,63,94,0.75)", borderColor: "#f43f5e", borderWidth: 1, borderRadius: 2, barThickness: 30 }
     ], {
       indexAxis: 'y',
       plugins: {
@@ -2225,7 +2496,13 @@ function renderSlide15() {
   // --- QA Stacked Horizontal Bar ---
   // QA cols: 0=QA Name, 1=Manager, 2=Head Count, 3=Audits Count, 4=Audit Score(%), 5=Hygiene Hours, 6=Asset Maintenance(Y/N), 7=Shift Huddles(Y/N), 8=Track Record(Y/N), 9=EOD Reports, 10=Refresher Training/LLR, 11=Total Point
   var qaLabels = [], qaAS = [], qaAM = [], qaSH = [], qaTR = [];
-  var ynVal = function(v) { var s = String(v).trim().toUpperCase(); return s === 'Y' || s === 'YES' ? 100 : 0; };
+  var ynVal = function(v) {
+    var s = String(v).trim().toUpperCase().replace(/%/g, '');
+    if (s === 'Y' || s === 'YES') return 100;
+    var n = parseFloat(s);
+    if (!isNaN(n)) return Math.round(Math.min(n, 100));
+    return 0;
+  };
 
   if (!isEmpty(qaData)) {
     qaData.forEach(function(row) {
@@ -2242,10 +2519,10 @@ function renderSlide15() {
   destroyChart("chartSlide15Qa");
   if (qaLabels.length > 0) {
     createChart("chartSlide15Qa", "bar", qaLabels, [
-      { label: "Audit Score", data: qaAS, backgroundColor: "rgba(52,211,153,0.75)", borderColor: "#34d399", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Asset Maintenance", data: qaAM, backgroundColor: "rgba(96,165,250,0.75)", borderColor: "#60a5fa", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Shift Huddles", data: qaSH, backgroundColor: "rgba(251,146,60,0.75)", borderColor: "#fb923c", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Track Record", data: qaTR, backgroundColor: "rgba(167,139,250,0.75)", borderColor: "#a78bfa", borderWidth: 1, borderRadius: 2, barThickness: 30 }
+      { label: "Audit Score", data: qaAS, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Asset Maintenance", data: qaAM, backgroundColor: "rgba(59,130,246,0.75)", borderColor: "#3b82f6", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Shift Huddles", data: qaSH, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Track Record", data: qaTR, backgroundColor: "rgba(13,148,136,0.75)", borderColor: "#0d9488", borderWidth: 1, borderRadius: 2, barThickness: 30 }
     ], {
       indexAxis: 'y',
       plugins: {
@@ -2288,7 +2565,7 @@ function renderSlide15() {
 // ===== SLIDE UTILITIES =====
 // =====================================================================
 function renderKpiCard(value, label, color) {
-  return `<div class="pbi-kpi" style="--kpi-color:${color};border-color:${color}20;background:rgba(15,20,40,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)"><div class="kpi-val" style="color:${color};text-shadow:0 0 20px ${color}30">${value}</div><div class="kpi-lbl">${label}</div></div>`;
+  return `<div class="kpi-card" style="--kpi-color:${color}"><div class="kpi-val">${value}</div><div class="kpi-lbl">${label}</div></div>`;
 }
 
 function destroyChart(key) { if(state.charts[key]){state.charts[key].destroy();delete state.charts[key];} }
@@ -2365,7 +2642,7 @@ function createChart(canvasId, type, labels, datasets, options) {
         padding: {top:10,bottom:10,left:14,right:14},
         cornerRadius: 8,
         boxPadding: 6,
-        borderColor: 'rgba(124,58,237,0.25)',
+        borderColor: 'rgba(59,130,246,0.25)',
         borderWidth: 1,
         displayColors: true,
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
@@ -2448,9 +2725,15 @@ async function exportPDF() {
   const pptH = 190.5;
   const pdf = new jsPDF({ orientation: 'l', unit: 'mm', format: [pptW, pptH] });
 
-  // Temporarily disable scaling to capture at full resolution
-  const viewports = document.querySelectorAll('.slide-viewport');
-  viewports.forEach(vp => { vp.style.overflow = 'visible'; });
+  // Temporarily remove CSS transforms + absolute position for clean capture
+  var slideStyles = [];
+  slides.forEach(function(s,i){
+    slideStyles[i]={ transform:s.style.transform, position:s.style.position };
+    s.style.transform="none"; s.style.position="relative";
+  });
+  var viewports = document.querySelectorAll('.slide-viewport');
+  var vpOverflows = [];
+  viewports.forEach(function(v,i){ vpOverflows[i]=v.style.overflow; v.style.overflow="visible"; });
 
   for (let i = 0; i < slides.length; i++) {
     addLog(`Capturing slide ${i + 1}/${slides.length}...`,"info");
@@ -2458,19 +2741,27 @@ async function exportPDF() {
     try {
       const canvas = await html2canvas(el, {
         scale: 2, useCORS: true, backgroundColor: "#ffffff",
-        logging: false,
+        logging: false, allowTaint: false,
       });
-      const img = canvas.toDataURL("image/png");
+      var img;
+      try {
+        img = canvas.toDataURL("image/png");
+      } catch(e) {
+        addLog(`Slide ${i+1}: canvas tainted by cross-origin content, trying JPEG...`,"error");
+        img = canvas.toDataURL("image/jpeg", 0.95);
+      }
       if (i > 0) pdf.addPage();
-      pdf.addImage(img, "PNG", 0, 0, pptW, pptH);
+      pdf.addImage(img, img.indexOf("jpeg")>0?"JPEG":"PNG", 0, 0, pptW, pptH);
     } catch (err) {
       addLog(`Error capturing slide ${i + 1}: ${err.message}`,"error");
     }
   }
 
-  viewports.forEach(vp => { vp.style.overflow = ''; });
+  // Restore styles
+  slides.forEach(function(s,i){ s.style.transform=slideStyles[i].transform; s.style.position=slideStyles[i].position; });
+  viewports.forEach(function(v,i){ v.style.overflow=vpOverflows[i]; });
 
-  const client = document.getElementById("projectName").value || "Client";
+  const client = document.getElementById("sidebarProjectName").textContent || "Client";
   const month = document.getElementById("monthSelect").value || "January";
   const year = document.getElementById("yearSelect").value || "2026";
   const filename = `${month.substring(0, 3)} ${year} ${client} Monthly Performance Review.pdf`;
@@ -2484,6 +2775,7 @@ async function exportPDF() {
 function resetAll() {
   state.file=null; state.rawData=[]; state.processed=[]; state.logs=[];
   state.exotelFile=null; state.exotelRaw=[]; state.exotelKPIs=null;
+  state.ameyoFile=null; state.ameyoRaw=[]; state.ameyoKPIs=null;
   state.medianCloseTime = null;
   Object.keys(state.charts).forEach(k=>{if(state.charts[k]){state.charts[k].destroy()}});
   state.charts={};
@@ -2491,7 +2783,7 @@ function resetAll() {
   const keys = Object.keys(localStorage);
   keys.forEach(key => { if (key.startsWith('table_')) localStorage.removeItem(key); });
 
-  document.getElementById("projectName").value="Client SJ";
+  updateSidebarProject();
   document.getElementById("monthSelect").value="";
   document.getElementById("weekSelect").value="All";
   document.getElementById("yearSelect").value="2026";
@@ -2506,13 +2798,19 @@ function resetAll() {
   document.getElementById("manualHistAvgCalls").value="";
   const exInput=document.getElementById("exotelFileInput");
   if(exInput)exInput.value="";
+  var amInput=document.getElementById("ameyoFileInput");
+  if(amInput)amInput.value="";
   setExotelUploadState("idle","");
+  setAmeyoUploadState("idle","");
   setUploadState("idle","");
   document.getElementById("processBtn").disabled=true;
   document.getElementById("exportPdfBtn").disabled=true;
   document.getElementById("previewSection").style.display="none";
   document.getElementById("dashboardSection").style.display="none";
   document.getElementById("logSection").style.display="none";
+  // Clear client store for current client
+  var curName = document.getElementById("sidebarProjectName").textContent;
+  if (curName) delete clientStore[curName];
 }
 
 // ===== Slide Responsive Scaling =====
@@ -2533,6 +2831,111 @@ function scaleSlides() {
 
 window.addEventListener('resize', scaleSlides);
 
+// ===== Global Settings / Nav Switching =====
+function showGlobalSettings() {
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection"];
+  sections.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = id === "globalSettings" ? "block" : "none";
+  });
+  document.getElementById("navGlobalSettings").classList.add("active");
+  document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
+}
+
+function showClientProject() {
+  syncGlobalToClient();
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection"];
+  sections.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = id === "globalSettings" ? "none" : "block";
+  });
+  document.getElementById("navGlobalSettings").classList.remove("active");
+}
+
+function saveClientState(clientName) {
+  clientStore[clientName] = {
+    processed: state.processed,
+    exotelKPIs: state.exotelKPIs,
+    ameyoKPIs: state.ameyoKPIs,
+    medianCloseTime: state.medianCloseTime,
+  };
+}
+
+function loadClientState(clientName) {
+  var data = clientStore[clientName];
+  if (!data) {
+    state.processed = [];
+    state.exotelKPIs = null;
+    state.medianCloseTime = null;
+    return false;
+  }
+  state.processed = data.processed;
+  state.exotelKPIs = data.exotelKPIs;
+  state.ameyoKPIs = data.ameyoKPIs;
+  state.medianCloseTime = data.medianCloseTime;
+  return true;
+}
+
+function switchClient(navId, name) {
+  // Save current client state
+  var oldName = document.getElementById("sidebarProjectName").textContent;
+  if (oldName && oldName !== name) saveClientState(oldName);
+
+  // Destroy all charts before switching
+  Object.keys(state.charts).forEach(function(k){if(state.charts[k]){state.charts[k].destroy();delete state.charts[k]}});
+
+  // Reset upload UI & per-client transient state
+  state.file = null; state.exotelFile = null; state.exotelRaw = [];
+  state.ameyoFile = null; state.ameyoRaw = [];
+  state.logs = [];
+  var logSec = document.getElementById("logSection"); if(logSec) logSec.style.display = "none";
+  var logCon = document.getElementById("logContainer"); if(logCon) logCon.innerHTML = "";
+  setUploadState("idle",""); setExotelUploadState("idle",""); setAmeyoUploadState("idle","");
+  var fInp = document.getElementById("fileInput"); if(fInp) fInp.value = "";
+  var exInp = document.getElementById("exotelFileInput"); if(exInp) exInp.value = "";
+  var amInp = document.getElementById("ameyoFileInput"); if(amInp) amInp.value = "";
+  document.getElementById("processBtn").disabled = true;
+  document.getElementById("exportPdfBtn").disabled = true;
+  // Clear manual entry inputs
+  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualAvgChats","manualAvgCalls","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = "";
+  });
+
+  document.getElementById("sidebarProjectName").textContent = name;
+  var h = document.getElementById("headingClientName");
+  if (h) h.textContent = "for " + name;
+  document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
+  document.getElementById(navId).classList.add("active");
+
+  // Show/hide call report upload zones based on client
+  var exo = document.getElementById("exotelUploadZone");
+  var amy = document.getElementById("ameyoUploadZone");
+  if (exo) exo.style.display = name === "Client WC (C10)" ? "none" : "block";
+  if (amy) amy.style.display = name === "Client WC (C10)" ? "block" : "none";
+
+  // Restore saved state for target client
+  var hasData = loadClientState(name);
+
+  showClientProject();
+
+  // Hide preview/dashboard if no data; re-render if there is data
+  var ps = document.getElementById("previewSection");
+  var ds = document.getElementById("dashboardSection");
+  if (hasData && state.processed.length > 0) {
+    ps.style.display = "block"; ds.style.display = "block";
+    renderPreview();
+    renderSlide1(); renderSlide2(); renderSlide3(); renderSlide4();
+    renderSlide5(); renderSlide6(); renderSlide7(); renderSlide8();
+    renderSlide9(); renderSlide10(); renderSlide11(); renderSlide12();
+    renderSlide13(); renderSlide14(); renderSlide15();
+    scaleSlides();
+  } else {
+    ps.style.display = "none"; ds.style.display = "none";
+  }
+}
+
+// Client nav links use inline switchClient() onclick
+
 // ===== Chart.js Data Labels Registration =====
 function initChartDataLabels() {
   if (typeof ChartDataLabels !== 'undefined' && Chart.registry && !Chart.registry.plugins.get('datalabels')) {
@@ -2546,9 +2949,11 @@ function initChartDataLabels() {
 document.addEventListener("DOMContentLoaded",()=>{
   initTheme();
   initConfig();
+  setupGlobalSync();
   initExcelPasteTracker();
   initChartDataLabels();
   scaleSlides();
+  showGlobalSettings();
   document.addEventListener('paste', handleExcelGridPaste);
   document.addEventListener('keydown', handleExcelGridKeydown);
 });
