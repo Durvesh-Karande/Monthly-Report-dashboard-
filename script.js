@@ -22,30 +22,80 @@ const KPI_COLORS = ["#0d9488","#3b82f6","#10b981","#f59e0b","#f43f5e","#06b6d4",
 // =====================================================================
 function hexToRgba(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return"rgba("+r+","+g+","+b+","+a+")";}
 var CLIENT_THEMES = {
+  /* ── Client SJ (C1): Bold Indigo ── */
   "Client SJ (C1)": {
-    c1:"#0d9488", c2:"#06b6d4",
-    sidebar:"#071813", slideHead:"#060e0c", headBorder:"rgba(13,148,136,0.35)",
-    badge:"#2dd4bf", badgeBg:"rgba(13,148,136,0.14)", badgeBorder:"rgba(13,148,136,0.28)"
+    c1:"#4B49AC", c2:"#98BDFF",
+    sidebar:"#EEF0F6",
+    slideHead:"linear-gradient(135deg, #4B49AC 0%, #2C2A6E 100%)", headBorder:"none",
+    badge:"#4B49AC", badgeBg:"rgba(75,73,172,0.12)", badgeBorder:"transparent",
+    coverBg:"#2C2A6E",
+    slideBg:"linear-gradient(135deg, #4B49AC 0%, #2C2A6E 80%, #1a1a4e 100%)",
+    panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
+    tableThBg:"rgba(75,73,172,0.1)", tableTh:"#4B49AC", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(75,73,172,0.04)", tableHover:"rgba(75,73,172,0.08)",
+    chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
+    headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
+  /* ── Client WC (C10): Sky Blue ── */
   "Client WC (C10)": {
-    c1:"#7c3aed", c2:"#a78bfa",
-    sidebar:"#0d0a1a", slideHead:"#09060f", headBorder:"rgba(124,58,237,0.35)",
-    badge:"#c4b5fd", badgeBg:"rgba(124,58,237,0.14)", badgeBorder:"rgba(124,58,237,0.28)"
+    c1:"#4B49AC", c2:"#98BDFF",
+    sidebar:"#EEF0F6",
+    slideHead:"linear-gradient(135deg, #4B49AC 0%, #3A56B8 100%)", headBorder:"none",
+    badge:"#7DA0FA", badgeBg:"rgba(125,160,250,0.12)", badgeBorder:"transparent",
+    coverBg:"#3A56B8",
+    slideBg:"linear-gradient(135deg, #4B49AC 0%, #3A56B8 80%, #1E3A7A 100%)",
+    panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
+    tableThBg:"rgba(125,160,250,0.1)", tableTh:"#7DA0FA", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(125,160,250,0.04)", tableHover:"rgba(125,160,250,0.08)",
+    chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
+    headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
+  /* ── Client JE (C11): Royal Blue ── */
   "Client JE (C11)": {
-    c1:"#ea580c", c2:"#fbbf24",
-    sidebar:"#180a03", slideHead:"#110703", headBorder:"rgba(234,88,12,0.35)",
-    badge:"#fb923c", badgeBg:"rgba(234,88,12,0.14)", badgeBorder:"rgba(234,88,12,0.28)"
+    c1:"#4B49AC", c2:"#7DA0FA",
+    sidebar:"#EEF0F6",
+    slideHead:"linear-gradient(135deg, #4B49AC 0%, #4545B8 100%)", headBorder:"none",
+    badge:"#7DA0FA", badgeBg:"rgba(125,160,250,0.12)", badgeBorder:"transparent",
+    coverBg:"#4545B8",
+    slideBg:"linear-gradient(135deg, #4B49AC 0%, #4545B8 80%, #22227A 100%)",
+    panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
+    tableThBg:"rgba(125,160,250,0.1)", tableTh:"#7DA0FA", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(125,160,250,0.04)", tableHover:"rgba(125,160,250,0.08)",
+    chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
+    headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
+  /* ── Client PK: Vibrant Purple ── */
   "Client PK": {
-    c1:"#2563eb", c2:"#38bdf8",
-    sidebar:"#060c22", slideHead:"#040918", headBorder:"rgba(37,99,235,0.35)",
-    badge:"#60a5fa", badgeBg:"rgba(37,99,235,0.14)", badgeBorder:"rgba(37,99,235,0.28)"
+    c1:"#4B49AC", c2:"#7978E9",
+    sidebar:"#EEF0F6",
+    slideHead:"linear-gradient(135deg, #4B49AC 0%, #5C3BB8 100%)", headBorder:"none",
+    badge:"#7978E9", badgeBg:"rgba(121,120,233,0.12)", badgeBorder:"transparent",
+    coverBg:"#5C3BB8",
+    slideBg:"linear-gradient(135deg, #4B49AC 0%, #5C3BB8 80%, #2A1A6E 100%)",
+    panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
+    tableThBg:"rgba(121,120,233,0.1)", tableTh:"#7978E9", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(121,120,233,0.04)", tableHover:"rgba(121,120,233,0.08)",
+    chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
+    headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
+  /* ── Client FC (C15): Coral Fusion ── */
   "Client FC (C15)": {
-    c1:"#e11d48", c2:"#f472b6",
-    sidebar:"#1a0509", slideHead:"#130407", headBorder:"rgba(225,29,72,0.35)",
-    badge:"#fb7185", badgeBg:"rgba(225,29,72,0.14)", badgeBorder:"rgba(225,29,72,0.28)"
+    c1:"#4B49AC", c2:"#F3797E",
+    sidebar:"#EEF0F6",
+    slideHead:"linear-gradient(135deg, #4B49AC 0%, #7B2D4E 100%)", headBorder:"none",
+    badge:"#F3797E", badgeBg:"rgba(243,121,126,0.12)", badgeBorder:"transparent",
+    coverBg:"#7B2D4E",
+    slideBg:"linear-gradient(135deg, #4B49AC 0%, #6C2D6E 60%, #3A1A3E 100%)",
+    panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
+    tableThBg:"rgba(243,121,126,0.1)", tableTh:"#F3797E", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(243,121,126,0.04)", tableHover:"rgba(243,121,126,0.08)",
+    chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
+    headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   }
 };
 var THEME = CLIENT_THEMES["Client SJ (C1)"];
@@ -56,22 +106,51 @@ function applyClientTheme(name){
   var t = CLIENT_THEMES[name] || CLIENT_THEMES["Client SJ (C1)"];
   THEME = t;
   var root = document.documentElement;
+  // App
   root.style.setProperty("--primary", t.c1);
   root.style.setProperty("--primary-light", hexToRgba(t.c1, 0.15));
   root.style.setProperty("--ring", t.c1);
   root.style.setProperty("--sidebar-bg", t.sidebar);
   root.style.setProperty("--kpi-1", t.c1);
   root.style.setProperty("--kpi-2", t.c2);
+  // Slide CSS variables
+  root.style.setProperty("--sl-bg", t.slideBg);
+  root.style.setProperty("--sl-panel", t.panelBg);
+  root.style.setProperty("--sl-panel-border", t.panelBorder);
+  root.style.setProperty("--sl-panel-alt", t.panelAlt);
+  root.style.setProperty("--sl-label", t.c1);
+  root.style.setProperty("--sl-text", t.slideText);
+  root.style.setProperty("--sl-text-muted", t.slideMuted);
+  root.style.setProperty("--sl-text-faint", t.slideFaint);
+  root.style.setProperty("--sl-kpi-bg", t.panelBg);
+  root.style.setProperty("--sl-kpi-border", t.panelBorder);
+  root.style.setProperty("--sl-kpi-val", t.slideText);
+  root.style.setProperty("--sl-kpi-lbl", t.slideMuted);
+  root.style.setProperty("--sl-table-th-bg", t.tableThBg);
+  root.style.setProperty("--sl-table-th", t.tableTh);
+  root.style.setProperty("--sl-table-td", t.tableTd);
+  root.style.setProperty("--sl-table-border", t.tableBorder);
+  root.style.setProperty("--sl-table-alt", t.tableAlt);
+  root.style.setProperty("--sl-table-hover", t.tableHover);
+  root.style.setProperty("--sl-cover-bg", t.coverBg);
+  root.style.setProperty("--sl-chart-tick", t.chartTick);
+  root.style.setProperty("--sl-chart-grid", t.chartGrid);
+  root.style.setProperty("--sl-slide-head", t.slideHead);
+  root.style.setProperty("--sl-slide-head-border", t.headBorder);
+  root.style.setProperty("--sl-badge", t.badge);
+  root.style.setProperty("--sl-badge-bg", t.badgeBg);
+  root.style.setProperty("--sl-badge-border", t.badgeBorder);
+  root.style.setProperty("--sl-head-title", t.headTitle || t.slideText);
+  root.style.setProperty("--sl-head-subtitle", t.headSubtitle || t.slideMuted);
+  // Remove stale inline styles from headers — CSS variables now handle them
   document.querySelectorAll(".slide-header").forEach(function(h){
-    h.style.background = t.slideHead;
-    h.style.borderBottomColor = t.headBorder;
+    h.style.background = "";
+    h.style.borderBottomColor = "";
   });
   document.querySelectorAll(".slide-num").forEach(function(n){
-    n.style.color = t.badge;
-    n.style.background = t.badgeBg;
-    n.style.borderColor = t.badgeBorder;
+    n.style.color = ""; n.style.background = ""; n.style.borderColor = "";
   });
-  // Clear stale inline styles from ALL nav links first, then style only the active one
+  // Nav links
   document.querySelectorAll(".nav-link").forEach(function(l){
     l.style.background = "";
     l.style.boxShadow = "";
@@ -1557,7 +1636,7 @@ function processFrejunData(rows) {
 // =====================================================================
 function renderSlide1() {
   const section = document.getElementById("dashboardSection");
-  section.style.display = "block";
+  section.style.display = "";
 
   const client = document.getElementById("sidebarProjectName").textContent || "Client";
   const month = document.getElementById("monthSelect").value || "January";
@@ -1599,27 +1678,54 @@ function renderSlide2() {
 
   const colors = [THEME.c1, "#10b981", "#f43f5e", "#f59e0b"];
 
+  // Week-over-week change arrows
+  function wowArrow(arr, idx) {
+    if (idx <= 0 || arr[idx - 1] === 0) return '';
+    var prev = arr[idx - 1], curr = arr[idx];
+    var pct = ((curr - prev) / prev * 100);
+    var cls = pct > 0 ? 'up' : (pct < 0 ? 'down' : 'neutral');
+    var arrow = pct > 0 ? '↑' : (pct < 0 ? '↓' : '→');
+    var absPct = Math.abs(pct);
+    if (absPct === Infinity || isNaN(absPct)) return '';
+    return '<div class="kpi-change ' + cls + '">' + arrow + ' ' + absPct.toFixed(1) + '% WoW</div>';
+  }
+
+  // Trend line: simple linear regression across weeks
+  var n = weekData.length;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var ti = 0; ti < n; ti++) { sumX += ti + 1; sumY += weekData[ti]; sumXY += (ti + 1) * weekData[ti]; sumX2 += (ti + 1) * (ti + 1); }
+  var slope = n > 1 ? (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX) : 0;
+  var intercept = n > 0 ? sumY / n - slope * sumX / n : 0;
+  var trendLine = weekData.map(function(_, i) { return Math.round(slope * (i + 1) + intercept); });
+
+  // Benchmark for Avg First Response (target: 2 mins)
+  var benchmarkTarget = 2;
+  var benchmarkLabel = 'Target: ' + benchmarkTarget + ' min';
+
   document.getElementById("s2Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:${colors[0]}"><div class="kpi-val">${total.toLocaleString()}</div><div class="kpi-lbl">Chat Volume</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:${colors[1]}"><div class="kpi-val">${closed.toLocaleString()}</div><div class="kpi-lbl">Closed Chats</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:${colors[0]}"><div class="kpi-val">${total.toLocaleString()}</div><div class="kpi-lbl">Chat Volume</div>${wowArrow(weekData, weekData.length - 1)}</div>` +
+    `<div class="kpi-card" style="--kpi-color:${colors[1]}"><div class="kpi-val">${closed.toLocaleString()}</div><div class="kpi-lbl">Closed Chats</div>${wowArrow(weekClosed, weekClosed.length - 1)}</div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[2]}"><div class="kpi-val">${noReplyVal.toLocaleString()}</div><div class="kpi-lbl">Closed With No Reply</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[3]}"><div class="kpi-val">${reopenedVal.toLocaleString()}</div><div class="kpi-lbl">Reopened Chats</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${avgFirstResp}</div><div class="kpi-lbl">Avg First Response</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${avgFirstResp}<span style="font-size:9px;font-weight:600;color:var(--sl-text-muted);margin-left:6px">/ ${benchmarkLabel}</span></div><div class="kpi-lbl">Avg First Response</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">${avgResp}</div><div class="kpi-lbl">Avg Response Time</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${medHandling}</div><div class="kpi-lbl">Median Handling</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${fcr}</div><div class="kpi-lbl">First Contact Rate</div></div>`;
+
+  // Dynamic bar colors: green if above avg, red if below
+  var avgVal = weekData.reduce(function(a,b){return a+b;},0) / weekData.filter(function(v){return v>0;}).length || 1;
 
   destroyChart("chartSlide2");
   createChart("chartSlide2", "bar", weekLabels, [
     {
       label: "Chat Volume",
       data: weekData,
-      backgroundColor: weekData.map((v, i) =>
-        tc1(0.4 + i * 0.15)
-      ),
+      backgroundColor: weekData.map(function(v) {
+        return v >= avgVal ? 'rgba(16,185,129,0.75)' : 'rgba(244,63,94,0.7)';
+      }),
       borderRadius: 4,
-      borderColor: tc1(0.8),
-      borderWidth: 1,
+      borderColor: weekData.map(function(v) { return v >= avgVal ? '#10b981' : '#f43f5e'; }),
+      borderWidth: 1.5,
       order: 2
     },
     {
@@ -1628,10 +1734,10 @@ function renderSlide2() {
       data: weekClosed,
       borderColor: "#10b981",
       backgroundColor: "rgba(16,185,129,0.08)",
-      borderWidth: 3,
+      borderWidth: 5,
       pointRadius: 6,
       pointBackgroundColor: "#10b981",
-      pointBorderColor: "#0f172a",
+      pointBorderColor: "#ffffff",
       pointBorderWidth: 2,
       tension: 0.3,
       fill: true,
@@ -1641,10 +1747,8 @@ function renderSlide2() {
         anchor: 'end',
         align: 'top',
         offset: 4,
-        color: '#10b981',
+        color: '#059669',
         font: { size: 11, weight: '700' },
-        textShadowColor: 'rgba(0,0,0,0.7)',
-        textShadowBlur: 3,
         formatter: v => v > 0 ? v.toLocaleString() : ''
       }
     }
@@ -1655,7 +1759,7 @@ function renderSlide2() {
         position: 'top',
         align: 'end',
         labels: {
-          color: 'rgba(255,255,255,0.6)',
+          color: THEME.slideMuted || '#64748b',
           font: { size: 9, weight: '600' },
           boxWidth: 12,
           padding: 12,
@@ -1663,23 +1767,21 @@ function renderSlide2() {
         }
       },
       datalabels: {
-        color: '#ffffff',
+        color: THEME.slideText || '#1e293b',
         font: { size: 14, weight: '800' },
         anchor: 'center',
         align: 'center',
-        formatter: v => v > 0 ? v.toLocaleString() : '',
-        textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowBlur: 4
+        formatter: v => v > 0 ? v.toLocaleString() : ''
       }
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 9 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick, font: { size: 9 } },
+        grid: { color: THEME.chartGrid, lineWidth: 0.5 }
       },
       x: {
-        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10, weight: '600' } }
+        ticks: { color: THEME.chartTick, font: { size: 10, weight: '600' } }
       }
     }
   });
@@ -1706,6 +1808,58 @@ function renderSlide3() {
   const aht = secondsToHMS(Math.round(d.avgAHT));
   const ring = secondsToHMS(Math.round(d.avgRing));
 
+  // Answer rate
+  var answerRate = d.total > 0 ? Math.round(d.completed / d.total * 100) : 0;
+
+  // Inject answer rate gauge into the chart panel's top-right
+  var chartPanel = document.getElementById("s3Chart");
+  if (chartPanel) {
+    var gaugeWrap = document.getElementById("s3GaugeWrap");
+    if (!gaugeWrap) {
+      gaugeWrap = document.createElement('div');
+      gaugeWrap.id = 's3GaugeWrap';
+      gaugeWrap.innerHTML = '<canvas id="s3Gauge" width="80" height="80"></canvas>';
+      chartPanel.appendChild(gaugeWrap);
+    }
+    // Always refresh position so stale inline styles never persist
+    gaugeWrap.style.cssText = 'position:absolute;top:8px;right:24px;width:80px;height:80px;z-index:5;pointer-events:none;';
+    // Draw the gauge on canvas using 2D API
+    var gc = document.getElementById('s3Gauge');
+    if (gc) {
+      gc.width = 80; gc.height = 80;
+      var gctx = gc.getContext('2d');
+      var cx = 40, cy = 40, rad = 34, lineW = 8;
+      // Background arc (gray ring)
+      gctx.beginPath();
+      gctx.arc(cx, cy, rad, Math.PI * 0.75, Math.PI * 2.25);
+      gctx.strokeStyle = 'rgba(85,87,112,0.12)';
+      gctx.lineWidth = lineW;
+      gctx.lineCap = 'round';
+      gctx.stroke();
+      // Filled arc (answer rate)
+      var endAngle = Math.PI * 0.75 + (answerRate / 100) * Math.PI * 1.5;
+      var gaugeColor = answerRate >= 80 ? '#10b981' : answerRate >= 60 ? '#f59e0b' : '#f43f5e';
+      gctx.beginPath();
+      gctx.arc(cx, cy, rad, Math.PI * 0.75, endAngle);
+      gctx.strokeStyle = gaugeColor;
+      gctx.lineWidth = lineW;
+      gctx.lineCap = 'round';
+      gctx.stroke();
+      // Center text
+      gctx.fillStyle = THEME.slideText || '#1D1D1F';
+      gctx.font = 'bold 16px Inter,sans-serif';
+      gctx.textAlign = 'center';
+      gctx.textBaseline = 'middle';
+      gctx.fillText(answerRate + '%', cx, cy - 4);
+      gctx.fillStyle = THEME.slideMuted || '#555770';
+      gctx.font = 'bold 7px Inter,sans-serif';
+      gctx.fillText('ANSWER RATE', cx, cy + 14);
+    }
+  }
+
+  // SLA threshold at 80% of max value
+  var slaThreshold = 80;
+
   var kpis = `<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${d.completed.toLocaleString()}</div><div class="kpi-lbl">Completed Calls</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${d.missed.toLocaleString()}</div><div class="kpi-lbl">Missed Calls</div></div>` +
@@ -1728,7 +1882,7 @@ function renderSlide3() {
       ),
       borderRadius: 4,
       borderColor: tc2(0.8),
-      borderWidth: 1,
+      borderWidth: 1.5,
       order: 2
     },
     {
@@ -1737,10 +1891,10 @@ function renderSlide3() {
       data: weekCompleted,
       borderColor: "#10b981",
       backgroundColor: "rgba(16,185,129,0.08)",
-      borderWidth: 3,
+      borderWidth: 5,
       pointRadius: 6,
       pointBackgroundColor: "#10b981",
-      pointBorderColor: "#0f172a",
+      pointBorderColor: "#ffffff",
       pointBorderWidth: 2,
       tension: 0.3,
       fill: true,
@@ -1750,21 +1904,20 @@ function renderSlide3() {
         anchor: 'end',
         align: 'top',
         offset: 4,
-        color: '#10b981',
+        color: '#059669',
         font: { size: 11, weight: '700' },
-        textShadowColor: 'rgba(0,0,0,0.7)',
-        textShadowBlur: 3,
         formatter: v => v > 0 ? v.toLocaleString() : ''
       }
     }
   ], {
+    layout: { padding: { right: 92, top: 8 } },
     plugins: {
       legend: {
         display: true,
         position: 'top',
         align: 'end',
         labels: {
-          color: 'rgba(255,255,255,0.6)',
+          color: THEME.slideMuted || '#64748b',
           font: { size: 9, weight: '600' },
           boxWidth: 12,
           padding: 12,
@@ -1772,24 +1925,22 @@ function renderSlide3() {
         }
       },
       datalabels: {
-        color: '#ffffff',
+        color: THEME.slideText || '#1e293b',
         font: { size: 14, weight: '800' },
         anchor: 'center',
         align: 'center',
-        formatter: v => v > 0 ? v.toLocaleString() : '',
-        textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowBlur: 4
+        formatter: v => v > 0 ? v.toLocaleString() : ''
       }
     },
     scales: {
       y: {
         beginAtZero: true,
         max: yMax,
-        ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 9 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick, font: { size: 9 } },
+        grid: { color: THEME.chartGrid, lineWidth: 0.5 }
       },
       x: {
-        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10, weight: '600' } }
+        ticks: { color: THEME.chartTick, font: { size: 10, weight: '600' } }
       }
     }
   });
@@ -1832,8 +1983,7 @@ function renderSlide4() {
   var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
   var callChart = document.getElementById("s4CallChart");
   var chatChart = document.getElementById("s4ChatChart");
-  if (callChart) callChart.style.display = isFC ? "none" : "block";
-  if (chatChart) chatChart.style.bottom = isFC ? "14px" : "";
+  if (callChart) callChart.style.display = isFC ? "none" : "";
 
   const chatInterval = computeChatIntervalData();
   const callInterval = exotel ? exotel.intervalAvg : {};
@@ -1847,15 +1997,40 @@ function renderSlide4() {
   const chatYMax = Math.ceil(chatMax * 1.25);
   const callYMax = Math.ceil(callMax * 1.25);
 
+  // Find peak hours
+  var chatPeakIdx = chatData.indexOf(chatMax);
+  var callPeakIdx = callData.indexOf(callMax);
+  var chatPeakLabel = hourLabels[chatPeakIdx] || '';
+  var callPeakLabel = hourLabels[callPeakIdx] || '';
+
+  // Inject peak hour badges into chart containers
+  function injectPeakBadge(containerId, label) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var existing = container.querySelector('.peak-badge');
+    if (!existing) {
+      var badge = document.createElement('div');
+      badge.className = 'peak-badge';
+      badge.style.cssText = 'position:absolute;top:4px;right:6px;background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.35);color:#f43f5e;font-size:8px;font-weight:800;padding:3px 10px;border-radius:12px;letter-spacing:0.04em;z-index:5;white-space:nowrap;';
+      badge.textContent = 'Peak: ' + label;
+      container.style.position = 'relative';
+      container.appendChild(badge);
+    } else {
+      existing.textContent = 'Peak: ' + label;
+    }
+  }
+  injectPeakBadge('s4ChatChart', chatPeakLabel);
+  injectPeakBadge('s4CallChart', callPeakLabel);
+
   const axisOpts = {
     y: {
       beginAtZero: true,
-      ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-      grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+      ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } },
+      grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
     },
     x: {
       ticks: {
-        color: 'rgba(255,255,255,0.5)', font: { size: 7, weight: '600' },
+        color: THEME.chartTick || '#555770', font: { size: 7, weight: '600' },
         maxTicksLimit: 12, autoSkip: true
       }
     }
@@ -1864,51 +2039,74 @@ function renderSlide4() {
   const teal = THEME.c1;
   const blue = THEME.c2;
 
-  destroyChart("chartSlide4Chat");
-  createChart("chartSlide4Chat", "bar", hourLabels, [{
-    label: "Avg Chat Volume",
-    data: chatData,
-    backgroundColor: chatData.map((v, i) => tc1(0.35 + (i % 4) * 0.08)),
-    borderRadius: 3,
-    borderColor: tc1(0.5),
-    borderWidth: 0.5
-  }], {
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        display: true,
-        anchor: 'end', align: 'end', offset: 2,
-        color: teal,
-        font: { size: 8, weight: '700' },
-        textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3,
-        formatter: v => v > 0 ? v : ''
-      }
-    },
-    scales: { ...axisOpts, y: { ...axisOpts.y, max: chatYMax } }
-  });
+  // Create gradient fill helper
+  function makeGradient(ctx, colorTop, colorBot) {
+    var g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height || 200);
+    g.addColorStop(0, colorTop);
+    g.addColorStop(1, colorBot);
+    return g;
+  }
 
-  destroyChart("chartSlide4Calls");
-  createChart("chartSlide4Calls", "bar", hourLabels, [{
-    label: "Avg Call Volume",
-    data: callData,
-    backgroundColor: callData.map((v, i) => tc2(0.35 + (i % 4) * 0.08)),
-    borderRadius: 3,
-    borderColor: tc2(0.5),
-    borderWidth: 0.5
-  }], {
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        display: true,
-        anchor: 'end', align: 'end', offset: 2,
-        color: blue,
-        font: { size: 8, weight: '700' },
-        textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3,
-        formatter: v => v > 0 ? v : ''
+  // Build chart config with peak highlight and gradient fill
+  function buildIntervalChart(canvasId, data, baseColor, peakIdx, yMax) {
+    destroyChart(canvasId);
+    var bgColors = data.map(function(v, i) {
+      if (v <= 0) return 'transparent';
+      if (i === peakIdx) return 'rgba(244,63,94,0.65)';
+      return hexToRgba(baseColor, 0.35 + (i % 4) * 0.08);
+    });
+    var borderColors = data.map(function(v, i) {
+      if (i === peakIdx) return '#f43f5e';
+      return hexToRgba(baseColor, 0.5);
+    });
+
+    // Line data for gradient fill overlay
+    var lineData = data.map(function(v) { return v; });
+
+    createChart(canvasId, "bar", hourLabels, [
+      {
+        label: "Volume",
+        data: data,
+        backgroundColor: bgColors,
+        borderRadius: 3,
+        borderColor: borderColors,
+        borderWidth: 0.5,
+        order: 2
+      },
+      {
+        label: "Trend",
+        type: 'line',
+        data: lineData,
+        borderColor: hexToRgba(baseColor, 0.5),
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        tension: 0.4,
+        fill: true,
+        backgroundColor: function(ctx) {
+          if (!ctx.chart) return 'transparent';
+          return makeGradient(ctx.chart.ctx, hexToRgba(baseColor, 0.12), 'transparent');
+        },
+        order: 0,
+        datalabels: { display: false }
       }
-    },
-    scales: { ...axisOpts, y: { ...axisOpts.y, max: callYMax } }
-  });
+    ], {
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: 'end', align: 'end', offset: 2,
+          color: THEME.slideText || '#1D1D1F',
+          font: { size: 8, weight: '700' },
+          formatter: function(v) { return v > 0 ? v : ''; }
+        }
+      },
+      scales: { ...axisOpts, y: { ...axisOpts.y, max: yMax } }
+    });
+  }
+
+  buildIntervalChart("chartSlide4Chat", chatData, THEME.c1, chatPeakIdx, chatYMax);
+  buildIntervalChart("chartSlide4Calls", callData, THEME.c2, callPeakIdx, callYMax);
 }
 
 // =====================================================================
@@ -1944,10 +2142,10 @@ function renderSlide5() {
   function renderCards(containerId, histVal, currentVal, diff, diffSign, color) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    const diffColor = diff >= 0 ? "#10b981" : "#f43f5e";
+    const diffColor = diff >= 0 ? "#059669" : "#e11d48";
     const arrow = diff >= 0 ? "↑" : "↓";
     el.innerHTML =
-      `<div class="slide5-card"><div class="val" style="color:rgba(255,255,255,0.6)">${histVal.toLocaleString()}</div><div class="lbl">Historical Avg</div></div>` +
+      `<div class="slide5-card"><div class="val" style="color:var(--sl-text-muted)">${histVal.toLocaleString()}</div><div class="lbl">Historical Avg</div></div>` +
       `<div class="slide5-card"><div class="val" style="color:${color}">${currentVal.toLocaleString()}</div><div class="lbl">Current Volume</div></div>` +
       `<div class="slide5-card"><div class="val" style="color:${diffColor}">${arrow} ${diffSign}${Math.abs(diff).toLocaleString()}</div><div class="lbl">Difference</div></div>`;
   }
@@ -1955,16 +2153,16 @@ function renderSlide5() {
   function renderStatus(containerId, currentVal, histVal, label) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    const arrow = currentVal > histVal ? "↑" : currentVal < histVal ? "↓" : "→";
+    el.style.color = "";
+    var pct = histVal > 0 ? Math.abs(Math.round((currentVal - histVal) / histVal * 100)) : 0;
     if (currentVal > histVal) {
-      el.textContent = `${arrow} This month's ${label} volume is higher than normal`;
-      el.style.color = "#10b981";
+      el.innerHTML = '<span class="slide5-badge above">🟢 Above Avg</span>' +
+        '<span style="font-size:9px;margin-left:8px;color:#059669;font-weight:700">+' + pct + '% vs Historical</span>';
     } else if (currentVal < histVal) {
-      el.textContent = `${arrow} This month's ${label} volume is lower than normal`;
-      el.style.color = "#f43f5e";
+      el.innerHTML = '<span class="slide5-badge below">🔴 Below Avg</span>' +
+        '<span style="font-size:9px;margin-left:8px;color:#e11d48;font-weight:700">-' + pct + '% vs Historical</span>';
     } else {
-      el.textContent = `${arrow} This month's ${label} volume is at normal levels`;
-      el.style.color = "rgba(255,255,255,0.5)";
+      el.innerHTML = '<span class="slide5-badge equal">⚪ On Target</span>';
     }
   }
 
@@ -1982,8 +2180,8 @@ function renderSlide5() {
       {
         label: "Volume",
         data: [currentVal, histVal],
-        backgroundColor: [color, "rgba(255,255,255,0.15)"],
-        borderColor: [color, "rgba(255,255,255,0.25)"],
+        backgroundColor: [color, hexToRgba(THEME.c1, 0.15)],
+        borderColor: [color, hexToRgba(THEME.c1, 0.3)],
         borderWidth: 1,
         borderRadius: 4,
         barPercentage: 0.5
@@ -1994,9 +2192,8 @@ function renderSlide5() {
         datalabels: {
           display: true,
           anchor: 'end', align: 'end', offset: 4,
-          color: '#fff',
+          color: THEME.slideText || '#1D1D1F',
           font: { size: 13, weight: '800' },
-          textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3,
           formatter: v => v.toLocaleString()
         }
       },
@@ -2004,11 +2201,11 @@ function renderSlide5() {
         y: {
           beginAtZero: true,
           max: yMax,
-          ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-          grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } },
+          grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
         },
         x: {
-          ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 11, weight: '700' } }
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 11, weight: '700' } }
         }
       }
     });
@@ -2195,19 +2392,15 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     }
     ctx.closePath();
   }
+  var mapFill = hexToRgba(THEME.c1, 0.15);
+  var mapStroke = hexToRgba(THEME.c1, 0.5);
   drawShape(INDIA_BORDER);
-  ctx.fillStyle = "rgba(30,50,80,0.3)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.fillStyle = mapFill; ctx.fill();
+  ctx.strokeStyle = mapStroke; ctx.lineWidth = 1; ctx.stroke();
   // Draw Andaman & Nicobar Islands
   drawShape(ANDAMAN_BORDER);
-  ctx.fillStyle = "rgba(30,50,80,0.3)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.fillStyle = mapFill; ctx.fill();
+  ctx.strokeStyle = mapStroke; ctx.lineWidth = 1; ctx.stroke();
 
   // If no data, stop here
   if (!locationData || locationData.length === 0) return;
@@ -2219,7 +2412,7 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     }
   }
 
-  var RADIUS_MIN = 4, RADIUS_MAX = 22;
+  var RADIUS_MIN = 8, RADIUS_MAX = 28;
 
   for (var k = 0; k < locationData.length; k++) {
     var entry = locationData[k];
@@ -2272,14 +2465,14 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     ctx.arc(pos[0], pos[1], r, 0, Math.PI * 2);
     ctx.fillStyle = dotColor;
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Count label
-    var countSize = Math.max(9, Math.min(14, 8 + r * 0.3));
-    if (k === 0) countSize = Math.min(countSize * 1.2, 17);
-    ctx.fillStyle = "#fff";
+    // Count label (white on colored dot)
+    var countSize = Math.max(10, Math.min(16, 9 + r * 0.4));
+    if (k === 0) countSize = Math.min(countSize * 1.2, 18);
+    ctx.fillStyle = "#ffffff";
     ctx.font = "bold " + countSize + "px Inter,sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -2288,16 +2481,13 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     ctx.fillText(count, pos[0], pos[1] + 0.5);
     ctx.shadowBlur = 0;
 
-    // City name below dot — top city gets larger font
-    var nameFontSize = k === 0 ? 10 : 8;
-    ctx.fillStyle = k === 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.65)";
+    // City name below dot — top city larger font; dark text on light panel
+    var nameFontSize = k === 0 ? 12 : 10;
+    ctx.fillStyle = k === 0 ? THEME.slideText || "#1D1D1F" : hexToRgba(THEME.slideText || "#1D1D1F", 0.8);
     ctx.font = (k === 0 ? "700" : "600") + " " + nameFontSize + "px Inter,sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.shadowColor = "rgba(0,0,0,0.95)";
-    ctx.shadowBlur = 5;
     ctx.fillText(cityName, pos[0], pos[1] + r + 3);
-    ctx.shadowBlur = 0;
   }
 }
 
@@ -2346,19 +2536,48 @@ function renderSlide6() {
   if (mapsContainer) mapsContainer.style.justifyContent = noCallData ? "center" : "";
   if (chatPanel) {
     chatPanel.style.flex = noCallData ? "0 0 auto" : "";
-    chatPanel.style.width = noCallData ? "52%" : "";
+    chatPanel.style.width = noCallData ? "55%" : "";
   }
 
-  // Find max for scaling
+  // Build ranked city list HTML
+  function buildRankList(locs) {
+    var top5 = locs.slice(0, 5);
+    if (!top5.length) return '';
+    return '<div class="slide6-rank-list">' +
+      top5.map(function(loc, i) {
+        return '<div class="slide6-rank-item">' +
+          '<span class="slide6-rank-num">' + (i+1) + '</span>' +
+          '<span class="slide6-rank-city">' + loc[0] + '</span>' +
+          '<span class="slide6-rank-count">' + Number(loc[1]).toLocaleString() + '</span>' +
+          '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  // Inject ranked list into slide6 panels (preserve canvas ID)
+  function injectRankList(panel, canvasId, locations) {
+    if (!panel) return;
+    var label = panel.querySelector('.slide6-map-label');
+    var labelHtml = label ? label.outerHTML : '';
+    panel.innerHTML = labelHtml +
+      '<div class="slide6-map-row">' +
+      '<canvas id="' + canvasId + '"></canvas>' +
+      buildRankList(locations) +
+      '</div>';
+  }
+
+  injectRankList(chatPanel, 'mapSlide6Chat', chatLocations);
+  if (!noCallData) injectRankList(callPanel, 'mapSlide6Calls', callLocations);
+
+  // Find max for scaling — use per-map max so dots are properly sized
   var chatMax = 1, callMax = 1;
   for (var i = 0; i < chatLocations.length; i++) if (chatLocations[i][1] > chatMax) chatMax = chatLocations[i][1];
   for (var j = 0; j < callLocations.length; j++) if (callLocations[j][1] > callMax) callMax = callLocations[j][1];
-  var globalMax = Math.max(chatMax, callMax);
 
   destroyChart("chartSlide6Chat");
   destroyChart("chartSlide6Calls");
-  drawIndiaMap("mapSlide6Chat", chatLocations, tc1(0.85), globalMax);
-  drawIndiaMap("mapSlide6Calls", callLocations, tc2(0.85), globalMax);
+  drawIndiaMap("mapSlide6Chat", chatLocations, tc1(0.85), chatMax);
+  drawIndiaMap("mapSlide6Calls", callLocations, tc2(0.85), callMax);
 }
 
 // =====================================================================
@@ -2384,36 +2603,41 @@ function renderSlide7() {
   const chatTop = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const callTop = exotel ? (exotel.topIssues || []).map(i => [i.code, i.count]) : [];
 
-  function buildVertBar(canvasId, labels, values, color) {
+  function buildHorizBar(canvasId, labels, values, baseColor) {
     destroyChart(canvasId);
+    var total = values.reduce(function(a,b){return a+b;},0) || 1;
     createChart(canvasId, "bar", labels, [{
       label: "Count",
       data: values,
-      backgroundColor: color,
-      borderColor: color,
-      borderWidth: 0.5,
+      backgroundColor: baseColor,
+      borderColor: baseColor,
+      borderWidth: 0,
       borderRadius: 3
     }], {
+      indexAxis: 'y',
       plugins: {
         legend: { display: false },
         datalabels: {
           display: true,
-          anchor: 'end', align: 'end', offset: 2,
-          color: '#fff',
-          font: { size: 9, weight: '700' },
-          textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3
+          anchor: 'end', align: 'end', offset: 5,
+          color: THEME.slideText || '#1e293b',
+          font: { size: 8, weight: '700' },
+          formatter: function(v) {
+            if (!v) return '';
+            return v + ' (' + Math.round(v/total*100) + '%)';
+          }
         }
       },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-          grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
-        },
         x: {
+          beginAtZero: true,
+          ticks: { color: THEME.chartTick, font: { size: 8 } },
+          grid: { color: THEME.chartGrid, lineWidth: 0.5 }
+        },
+        y: {
           ticks: {
-            color: 'rgba(255,255,255,0.6)', font: { size: 7, weight: '600' },
-            maxRotation: 35, minRotation: 35
+            color: THEME.chartTick, font: { size: 7.5, weight: '600' },
+            maxTicksLimit: 10
           },
           grid: { display: false }
         }
@@ -2426,8 +2650,8 @@ function renderSlide7() {
   const callLabels = callTop.map(e => e[0]);
   const callValues = callTop.map(e => e[1]);
 
-  buildVertBar("chartSlide7Chat", chatLabels, chatValues, tc1(0.7));
-  buildVertBar("chartSlide7Calls", callLabels, callValues, tc2(0.7));
+  buildHorizBar("chartSlide7Chat", chatLabels, chatValues, tc1(0.75));
+  buildHorizBar("chartSlide7Calls", callLabels, callValues, tc2(0.75));
 }
 
 // =====================================================================
@@ -2444,6 +2668,34 @@ function renderSlide8() {
     return [r.DispositionCodes, r["Count of Count of From"] || r.count];
   }) : [];
 
+  // Summary stats
+  var totalUnique = callTop.length;
+  var totalRepeat = callTop.reduce(function(s,e){return s+(e[1]||0);},0);
+  var topIssue = callTop.length > 0 ? callTop[0][0] : '—';
+  var repeatRate = (exotel && exotel.completed > 0)
+    ? (totalRepeat / exotel.completed * 100).toFixed(1) + '%' : '—';
+
+  // Inject split layout: chart (68%) + summary panel (32%)
+  var body = document.querySelector("#slide8 .slide8-body");
+  if (body) {
+    body.innerHTML =
+      '<div class="slide8-chart"><canvas id="chartSlide8Calls"></canvas></div>' +
+      '<div class="slide8-summary">' +
+        '<div class="slide8-sum-stat">' +
+          '<div class="slide8-sum-val" style="color:var(--primary)">' + totalRepeat.toLocaleString() + '</div>' +
+          '<div class="slide8-sum-key">Total Repeat Calls</div>' +
+        '</div>' +
+        '<div class="slide8-sum-stat">' +
+          '<div class="slide8-sum-val" style="font-size:14px;line-height:1.35;word-break:break-word">' + topIssue + '</div>' +
+          '<div class="slide8-sum-key">Top Repeat Issue</div>' +
+        '</div>' +
+        '<div class="slide8-sum-stat">' +
+          '<div class="slide8-sum-val" style="color:#e11d48">' + repeatRate + '</div>' +
+          '<div class="slide8-sum-key">Repeat Rate</div>' +
+        '</div>' +
+      '</div>';
+  }
+
   destroyChart("chartSlide8Calls");
   if (!callTop || callTop.length === 0) return;
 
@@ -2453,32 +2705,29 @@ function renderSlide8() {
   createChart("chartSlide8Calls", "bar", labels, [{
     label: "Repeat Customers",
     data: values,
-    backgroundColor: tc2(0.7),
+    backgroundColor: tc2(0.75),
     borderColor: THEME.c2,
-    borderWidth: 0.5,
-    borderRadius: 3
+    borderWidth: 0,
+    borderRadius: 4
   }], {
+    indexAxis: 'y',
     plugins: {
       legend: { display: false },
       datalabels: {
         display: true,
-        anchor: 'end', align: 'end', offset: 2,
-        color: '#fff',
-        font: { size: 9, weight: '700' },
-        textShadowColor: 'rgba(0,0,0,0.6)', textShadowBlur: 3
+        anchor: 'end', align: 'end', offset: 4,
+        color: THEME.slideText || '#1e293b',
+        font: { size: 9, weight: '700' }
       }
     },
     scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
-      },
       x: {
-        ticks: {
-          color: 'rgba(255,255,255,0.6)', font: { size: 7, weight: '600' },
-          maxRotation: 35, minRotation: 35
-        },
+        beginAtZero: true,
+        ticks: { color: THEME.chartTick, font: { size: 8 } },
+        grid: { color: THEME.chartGrid, lineWidth: 0.5 }
+      },
+      y: {
+        ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } },
         grid: { display: false }
       }
     }
@@ -2507,9 +2756,34 @@ function renderSlide9() {
   const callRate = callCompleted > 0 ? ((callDisposed / callCompleted) * 100).toFixed(1) : "—";
 
   document.getElementById("s9ChatRate").textContent = `${chatRate}%`;
-  document.getElementById("s9ChatRate").style.color = chatDisposed >= chatCompleted / 2 ? "#10b981" : "#f59e0b";
+  document.getElementById("s9ChatRate").style.color = chatDisposed >= chatCompleted / 2 ? "#059669" : "#f59e0b";
   document.getElementById("s9CallRate").textContent = `${callRate}%`;
-  document.getElementById("s9CallRate").style.color = callDisposed >= callCompleted / 2 ? "#10b981" : "#f59e0b";
+  document.getElementById("s9CallRate").style.color = callDisposed >= callCompleted / 2 ? "#059669" : "#f59e0b";
+
+  // Inject progress bars
+  function injectProgressBar(panelSel, disposed, completed) {
+    var panel = document.querySelector(panelSel);
+    if (!panel) return;
+    var existing = panel.querySelector('.s9-progress-wrap');
+    if (!existing) {
+      var wrap = document.createElement('div');
+      wrap.className = 's9-progress-wrap';
+      wrap.innerHTML = '<div class="s9-progress-fill"></div>';
+      var header = panel.querySelector('.slide9-header');
+      if (header && header.nextSibling) panel.insertBefore(wrap, header.nextSibling);
+      else if (header) panel.appendChild(wrap);
+    }
+    var fill = panel.querySelector('.s9-progress-fill');
+    if (fill) {
+      var pct = completed > 0 ? Math.min(100, disposed / completed * 100) : 0;
+      fill.style.width = pct.toFixed(1) + '%';
+      fill.style.background = disposed >= completed / 2
+        ? 'linear-gradient(90deg,#10b981,#059669)'
+        : 'linear-gradient(90deg,#f59e0b,#ea580c)';
+    }
+  }
+  injectProgressBar("#slide9 .slide9-chart.left", chatDisposed, chatCompleted);
+  injectProgressBar("#slide9 .slide9-chart.right", callDisposed, callCompleted);
 
   document.getElementById("s9ChatInsight").textContent =
     `${chatDisposed.toLocaleString()} out of ${chatCompleted.toLocaleString()} closed chats were tagged (${chatRate}%)`;
@@ -2541,21 +2815,20 @@ function renderSlide9() {
         datalabels: {
           display: true,
           anchor: 'end', align: 'end', offset: 4,
-          color: '#fff',
-          font: { size: 16, weight: '800' },
-          textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4
+          color: THEME.slideText || '#1D1D1F',
+          font: { size: 14, weight: '800' },
         }
       },
       scales: {
         x: {
-          ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 11, weight: '700' } },
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 11, weight: '700' } },
           grid: { display: false }
         },
         y: {
           beginAtZero: true,
           max: yMax,
-          ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-          grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } },
+          grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
         }
       }
     });
@@ -2596,10 +2869,34 @@ function renderSlide10() {
     pendingSum += pending;
   });
 
+  // ── KPI cards with red/orange coloring for escalation severity ──
   document.getElementById("s10Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${resolvedSum.toLocaleString()}</div><div class="kpi-lbl">Resolved</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${pendingSum.toLocaleString()}</div><div class="kpi-lbl">Pending</div></div>`;
+    `<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">${pendingSum.toLocaleString()}</div><div class="kpi-lbl">Pending</div></div>`;
+
+  // ── Inject severity heatmap row + top-issue callout ──
+  var body10 = document.querySelector("#slide10 .slide10-body");
+  if (body10) {
+    // Remove stale callout node
+    ['slide10-callout-row'].forEach(function(id){
+      var old = body10.querySelector('.'+id); if (old) old.remove();
+    });
+
+    // Top issue callout
+    var calloutDiv = document.createElement('div');
+    calloutDiv.className = 'slide10-callout slide10-callout-row';
+    var topIssue = labels.length > 0 ? labels[0] : '—';
+    var topTotal = sorted.length > 0 ? (parseInt(sorted[0][1],10)||0) : 0;
+    calloutDiv.innerHTML =
+      '<span class="slide10-callout-label">🔺 Top Issue:</span>' +
+      '<span class="slide10-callout-val">' + topIssue + ' — ' + topTotal.toLocaleString() + ' cases</span>';
+
+    var tableWrap = document.getElementById("s10TableWrap");
+    if (tableWrap) {
+      body10.insertBefore(calloutDiv, tableWrap);
+    }
+  }
 
   let tableHtml = `<table><thead><tr><th>Issue Type</th><th>Total</th><th>Resolved</th><th>Pending</th><th>Reason / Status</th></tr></thead><tbody>`;
   sorted.forEach(row => {
@@ -2634,8 +2931,8 @@ function renderSlide10() {
     {
       label: "Other",
       data: otherArr,
-      backgroundColor: "rgba(255,255,255,0.08)",
-      borderColor: "rgba(255,255,255,0.12)",
+      backgroundColor: hexToRgba(THEME.c1, 0.12),
+      borderColor: hexToRgba(THEME.c1, 0.25),
       borderWidth: 1,
       borderRadius: 2
     }
@@ -2645,7 +2942,7 @@ function renderSlide10() {
       legend: {
         display: true, position: 'bottom',
         labels: {
-          color: 'rgba(255,255,255,0.5)', font: { size: 8, weight: '600' },
+          color: THEME.slideMuted || '#64748b', font: { size: 8, weight: '600' },
           boxWidth: 10, padding: 8, usePointStyle: true
         }
       },
@@ -2655,12 +2952,12 @@ function renderSlide10() {
       x: {
         stacked: true,
         beginAtZero: true,
-        ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick, font: { size: 8 } },
+        grid: { color: THEME.chartGrid, lineWidth: 0.5 }
       },
       y: {
         stacked: true,
-        ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 8, weight: '600' } },
+        ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } },
         grid: { display: false }
       }
     }
@@ -2681,7 +2978,7 @@ function renderSlide11() {
   var callLabel = (isWC || isPK) ? "Ameyo" : (isJE ? "Frejun" : "Exotel");
 
   if (!payData || payData.length === 0) {
-    sideEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:20px">No rows found in Payment Details sheet. Open Editor → Payment Details tab, enter data, click Save All Sheets, then regenerate.</div>';
+    sideEl.innerHTML = '<div style="color:var(--sl-text-muted,#555770);font-size:9px;text-align:center;padding:20px">No rows found in Payment Details sheet. Open Editor → Payment Details tab, enter data, click Save All Sheets, then regenerate.</div>';
     bottomEl.innerHTML = '';
     destroyChart("chartSlide11");
     return;
@@ -2743,7 +3040,7 @@ function renderSlide11() {
       legend: {
         position: 'bottom',
         labels: {
-          color: 'rgba(255,255,255,0.6)', font: { size: 10, weight: '600' },
+          color: THEME.chartTick || '#555770', font: { size: 10, weight: '600' },
           padding: 12, usePointStyle: true, boxWidth: 12
         }
       },
@@ -2770,7 +3067,7 @@ function renderSlide12() {
   const sideEl = document.getElementById("s12Side");
 
   if (!prodData || prodData.length === 0) {
-    sideEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:20px">No data in Agent Productivity sheet. Open Editor → Agent Productivity tab, enter data, click Save All Sheets, then regenerate.</div>';
+    sideEl.innerHTML = '<div style="color:var(--sl-text-muted,#555770);font-size:9px;text-align:center;padding:20px">No data in Agent Productivity sheet. Open Editor → Agent Productivity tab, enter data, click Save All Sheets, then regenerate.</div>';
     destroyChart("chartSlide12");
     return;
   }
@@ -2838,7 +3135,7 @@ function renderSlide12() {
       legend: {
         display: true, position: 'bottom',
         labels: {
-          color: 'rgba(255,255,255,0.5)', font: { size: 8, weight: '600' },
+          color: THEME.chartTick || '#555770', font: { size: 8, weight: '600' },
           boxWidth: 10, padding: 8, usePointStyle: true
         }
       },
@@ -2849,7 +3146,7 @@ function renderSlide12() {
           return val > 3 ? 'center' : 'end';
         },
         offset: 0,
-        color: 'rgba(255,255,255,0.7)',
+        color: THEME.slideText || '#1D1D1F',
         font: { size: 6, weight: '700' },
         formatter: function(v) { return v > 0 ? v : ''; }
       }
@@ -2858,12 +3155,12 @@ function renderSlide12() {
       x: {
         stacked: true,
         beginAtZero: true,
-        ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 8 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } },
+        grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
       },
       y: {
         stacked: true,
-        ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 8, weight: '600' } },
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 8, weight: '600' } },
         grid: { display: false }
       }
     }
@@ -2878,7 +3175,7 @@ function renderSlide13() {
   var wrap = document.getElementById("s13TableWrap");
 
   if (!data || data.length === 0) {
-    wrap.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:20px">No data in Agent KPI sheet. Open Editor → Agent KPI tab, enter data, click Save All Sheets, then regenerate.</div>';
+    wrap.innerHTML = '<div style="color:var(--sl-text-muted,#555770);font-size:9px;text-align:center;padding:20px">No data in Agent KPI sheet. Open Editor → Agent KPI tab, enter data, click Save All Sheets, then regenerate.</div>';
     destroyChart("chartSlide13Top");
     destroyChart("chartSlide13Bottom");
     return;
@@ -2913,7 +3210,7 @@ function renderSlide13() {
         legend: { display: false },
         datalabels: {
           anchor: 'end', align: 'end', offset: 2,
-          color: 'rgba(255,255,255,0.6)',
+          color: THEME.slideText || '#1D1D1F',
           font: { size: 7, weight: '700' },
           formatter: function(v) { return v > 0 ? fmtNum(v) : ''; }
         }
@@ -2921,11 +3218,11 @@ function renderSlide13() {
       scales: {
         x: {
           beginAtZero: true,
-          ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 6.5 } },
-          grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5 } },
+          grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
         },
         y: {
-          ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 6.5, weight: '600' } },
+          ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5, weight: '600' } },
           grid: { display: false }
         }
       }
@@ -2946,17 +3243,29 @@ function renderSlide13() {
     }], chartOpts());
   };
 
-  buildChart("chartSlide13Top", topArr, "rgba(16,185,129,0.75)");
+  buildChart("chartSlide13Top", topArr, tc1(0.75));
   buildChart("chartSlide13Bottom", bottomArr, "rgba(244,63,94,0.75)");
 
-  var html = '<table><thead><tr><th>Rank</th><th>Agent Name</th><th>Attendance Score</th><th>Quality Score</th><th>Productivity</th><th>Achieved Points</th></tr></thead><tbody>';
+  var maxPts = agents.length > 0 ? agents[0].achieved : 1;
+  var medals = ['🥇','🥈','🥉'];
+
+  function scoreBadge(pts) {
+    var r = maxPts > 0 ? pts / maxPts : 0;
+    var cls = r >= 0.75 ? 'green' : r >= 0.5 ? 'yellow' : 'red';
+    var barPct = Math.round(r * 100);
+    return '<span class="score-badge ' + cls + '">' + fmtNum(pts) + '</span>' +
+      '<div class="kpi-bar-wrap" style="width:50px;margin:2px auto 0"><div class="kpi-bar-fill" style="width:' + barPct + '%;background:' + (cls==='green'?'#059669':cls==='yellow'?'#d97706':'#e11d48') + '"></div></div>';
+  }
+
+  var html = '<table><thead><tr><th>Rank</th><th>Agent Name</th><th>Attendance</th><th>Quality</th><th>Productivity</th><th>Achieved Points</th></tr></thead><tbody>';
   var rank = 1;
   topArr.forEach(function(a) {
-    html += '<tr class="top-row"><td>' + (rank++) + '</td><td>' + a.name + '</td><td>' + a.attendance + '</td><td>' + a.quality + '</td><td>' + a.productivity + '</td><td>' + fmtNum(a.achieved) + '</td></tr>';
+    var medal = rank <= 3 ? medals[rank-1] + ' ' : '';
+    html += '<tr class="top-row"><td>' + medal + rank++ + '</td><td>' + a.name + '</td><td>' + a.attendance + '</td><td>' + a.quality + '</td><td>' + a.productivity + '</td><td>' + scoreBadge(a.achieved) + '</td></tr>';
   });
   var bottomRev = bottomArr.slice().reverse();
   bottomRev.forEach(function(a) {
-    html += '<tr class="bottom-row"><td>' + (rank++) + '</td><td>' + a.name + '</td><td>' + a.attendance + '</td><td>' + a.quality + '</td><td>' + a.productivity + '</td><td>' + fmtNum(a.achieved) + '</td></tr>';
+    html += '<tr class="bottom-row"><td>' + rank++ + '</td><td>' + a.name + '</td><td>' + a.attendance + '</td><td>' + a.quality + '</td><td>' + a.productivity + '</td><td>' + scoreBadge(a.achieved) + '</td></tr>';
   });
   html += '</tbody></table>';
   wrap.innerHTML = html;
@@ -2970,7 +3279,7 @@ function renderSlide14() {
   var kpisEl = document.getElementById("s14Kpis");
 
   if (!data || data.length === 0) {
-    kpisEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:9px;text-align:center;padding:10px">No data in Agent KPI sheet.</div>';
+    kpisEl.innerHTML = '<div style="color:var(--sl-text-muted,#555770);font-size:9px;text-align:center;padding:10px">No data in Agent KPI sheet.</div>';
     destroyChart("chartSlide14Quality");
     destroyChart("chartSlide14Achieved");
     return;
@@ -3031,14 +3340,14 @@ function renderSlide14() {
     {
       label: "Quality Score",
       data: qVals,
-      borderColor: "rgba(255,255,255,0.4)",
+      borderColor: THEME.c1 || '#4B49AC',
       backgroundColor: "transparent",
       borderWidth: 1.5,
       pointBackgroundColor: qVals.map(function(v) {
         return v >= 80 ? "#10b981" : v >= 60 ? "#f59e0b" : "#f43f5e";
       }),
-      pointBorderColor: "rgba(255,255,255,0.3)",
-      pointBorderWidth: 1,
+      pointBorderColor: "#ffffff",
+      pointBorderWidth: 1.5,
       pointRadius: 5,
       pointHoverRadius: 6,
       fill: false,
@@ -3060,13 +3369,13 @@ function renderSlide14() {
       legend: {
         display: true, position: 'bottom',
         labels: {
-          color: 'rgba(255,255,255,0.5)', font: { size: 7, weight: '600' },
+          color: THEME.chartTick || '#555770', font: { size: 7, weight: '600' },
           boxWidth: 10, padding: 6, usePointStyle: true
         }
       },
       datalabels: {
         anchor: 'end', align: 'end', offset: 2,
-        color: 'rgba(255,255,255,0.6)',
+        color: THEME.slideText || '#1D1D1F',
         font: { size: 6.5, weight: '700' },
         formatter: function(v) { return v > 0 ? v : ''; }
       }
@@ -3074,11 +3383,11 @@ function renderSlide14() {
     scales: {
       y: {
         min: yMin,
-        ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 6.5 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5 } },
+        grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
       },
       x: {
-        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 6.5, weight: '600' }, maxRotation: 0 },
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5, weight: '600' }, maxRotation: 0 },
         grid: { display: false }
       }
     }
@@ -3103,7 +3412,7 @@ function renderSlide14() {
       legend: { display: false },
       datalabels: {
         anchor: 'end', align: 'end', offset: 2,
-        color: 'rgba(255,255,255,0.6)',
+        color: THEME.slideText || '#1D1D1F',
         font: { size: 7, weight: '700' },
         formatter: function(v) { return v > 0 ? fmt(v) : ''; }
       }
@@ -3111,11 +3420,11 @@ function renderSlide14() {
     scales: {
       x: {
         beginAtZero: true,
-        ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 6.5 } },
-        grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 }
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5 } },
+        grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
       },
       y: {
-        ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 6.5, weight: '600' } },
+        ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5, weight: '600' } },
         grid: { display: false }
       }
     }
@@ -3132,39 +3441,54 @@ function renderSlide15() {
   var fmt = function(v) { return Number(v).toLocaleString('en-IN'); };
   var isEmpty = function(d) { return !d || d.length === 0; };
 
+  // Show HTML titles since JS generates custom headers
+  document.querySelectorAll('#slide15 .slide15-table-title').forEach(function(el){ el.style.display = 'none'; });
+
+  // Score badge helper
+  function makeBadge(pts, maxPts) {
+    var r = maxPts > 0 ? pts / maxPts : 0;
+    var cls = r >= 0.75 ? 'green' : r >= 0.5 ? 'yellow' : 'red';
+    return '<span class="score-badge ' + cls + '">' + fmt(pts) + '</span>';
+  }
+
   // --- TL Stacked Horizontal Bar ---
   // TL cols: 0=TL Name, 1=Head Count, 2=Team Attendance, 3=Preshift Briefing, 4=Team Quality, 5=Shift Adherence, 6=Self Call/Chat, 7=Client Escalation, 8=TL Hygiene, 9=TL Audit, 10=Achieved Points
   var tlLabels = [], tlA = [], tlQ = [], tlB = [], tlS = [], tlAu = [];
+  var tlCount = 0, tlScoreSum = 0;
   if (!isEmpty(tlData)) {
     tlData.forEach(function(row) {
       var name = String(row[0] || "").trim();
       if (!name) return;
+      tlCount++;
       tlLabels.push(name);
       tlA.push(clean(row[2]));
       tlQ.push(clean(row[4]));
       tlB.push(clean(row[3]));
       tlS.push(clean(row[5]));
       tlAu.push(clean(row[9]));
+      tlScoreSum += clean(row[10]);
     });
   }
+  var tlAvgScore = tlCount > 0 ? Math.round(tlScoreSum / tlCount) : 0;
 
   destroyChart("chartSlide15Tl");
   if (tlLabels.length > 0) {
+    var tlBarThick = Math.max(30, Math.min(110, Math.floor(190 / tlLabels.length)));
     createChart("chartSlide15Tl", "bar", tlLabels, [
-      { label: "Team Attendance", data: tlA, backgroundColor: tc2(0.75), borderColor: THEME.c2, borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Team Quality", data: tlQ, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Preshift Briefing", data: tlB, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Shift Adherence", data: tlS, backgroundColor: tc1(0.75), borderColor: THEME.c1, borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "TL Audit", data: tlAu, backgroundColor: "rgba(244,63,94,0.75)", borderColor: "#f43f5e", borderWidth: 1, borderRadius: 2, barThickness: 30 }
+      { label: "Team Attendance", data: tlA, backgroundColor: hexToRgba(THEME.c2, 0.7), borderColor: THEME.c2, borderWidth: 1, borderRadius: 3, barThickness: tlBarThick },
+      { label: "Team Quality", data: tlQ, backgroundColor: "rgba(16,185,129,0.7)", borderColor: "#10b981", borderWidth: 1, borderRadius: 3, barThickness: tlBarThick },
+      { label: "Preshift Briefing", data: tlB, backgroundColor: "rgba(245,158,11,0.7)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 3, barThickness: tlBarThick },
+      { label: "Shift Adherence", data: tlS, backgroundColor: hexToRgba(THEME.c1, 0.7), borderColor: THEME.c1, borderWidth: 1, borderRadius: 3, barThickness: tlBarThick },
+      { label: "TL Audit", data: tlAu, backgroundColor: "rgba(244,63,94,0.7)", borderColor: "#f43f5e", borderWidth: 1, borderRadius: 3, barThickness: tlBarThick }
     ], {
       indexAxis: 'y',
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { color: 'rgba(255,255,255,0.5)', font: { size: 7, weight: '600' }, boxWidth: 8, padding: 6, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 0, color: 'rgba(255,255,255,0.7)', font: { size: 6, weight: '700' }, formatter: function(v) { return v > 0 ? v : ''; } }
+        legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v : ''; } }
       },
       scales: {
-        x: { stacked: true, beginAtZero: true, ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 7 } }, grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 } },
-        y: { stacked: true, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 7, weight: '600' } }, grid: { display: false } }
+        x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
+        y: { stacked: true, ticks: { color: THEME.chartTick, font: { size: 9, weight: '700' } }, grid: { display: false } }
       }
     });
   }
@@ -3172,6 +3496,7 @@ function renderSlide15() {
   // --- QA Stacked Horizontal Bar ---
   // QA cols: 0=QA Name, 1=Manager, 2=Head Count, 3=Audits Count, 4=Audit Score(%), 5=Hygiene Hours, 6=Asset Maintenance(Y/N), 7=Shift Huddles(Y/N), 8=Track Record(Y/N), 9=EOD Reports, 10=Refresher Training/LLR, 11=Total Point
   var qaLabels = [], qaAS = [], qaAM = [], qaSH = [], qaTR = [];
+  var qaCount = 0, qaScoreSum = 0;
   var ynVal = function(v) {
     var s = String(v).trim().toUpperCase().replace(/%/g, '');
     if (s === 'Y' || s === 'YES') return 100;
@@ -3184,53 +3509,71 @@ function renderSlide15() {
     qaData.forEach(function(row) {
       var name = String(row[0] || "").trim();
       if (!name) return;
+      qaCount++;
       qaLabels.push(name);
       qaAS.push(clean(row[4]));
       qaAM.push(ynVal(row[6]));
       qaSH.push(ynVal(row[7]));
       qaTR.push(ynVal(row[8]));
+      qaScoreSum += clean(row[11]);
     });
   }
+  var qaAvgScore = qaCount > 0 ? Math.round(qaScoreSum / qaCount) : 0;
 
   destroyChart("chartSlide15Qa");
   if (qaLabels.length > 0) {
+    var qaBarThick = Math.max(30, Math.min(110, Math.floor(190 / qaLabels.length)));
     createChart("chartSlide15Qa", "bar", qaLabels, [
-      { label: "Audit Score", data: qaAS, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Asset Maintenance", data: qaAM, backgroundColor: tc2(0.75), borderColor: THEME.c2, borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Shift Huddles", data: qaSH, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Track Record", data: qaTR, backgroundColor: tc1(0.75), borderColor: THEME.c1, borderWidth: 1, borderRadius: 2, barThickness: 30 }
+      { label: "Audit Score", data: qaAS, backgroundColor: "rgba(16,185,129,0.7)", borderColor: "#10b981", borderWidth: 1, borderRadius: 3, barThickness: qaBarThick },
+      { label: "Asset Maintenance", data: qaAM, backgroundColor: hexToRgba(THEME.c2, 0.7), borderColor: THEME.c2, borderWidth: 1, borderRadius: 3, barThickness: qaBarThick },
+      { label: "Shift Huddles", data: qaSH, backgroundColor: "rgba(245,158,11,0.7)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 3, barThickness: qaBarThick },
+      { label: "Track Record", data: qaTR, backgroundColor: hexToRgba(THEME.c1, 0.7), borderColor: THEME.c1, borderWidth: 1, borderRadius: 3, barThickness: qaBarThick }
     ], {
       indexAxis: 'y',
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { color: 'rgba(255,255,255,0.5)', font: { size: 7, weight: '600' }, boxWidth: 8, padding: 6, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 0, color: 'rgba(255,255,255,0.7)', font: { size: 6, weight: '700' }, formatter: function(v) { return v > 0 ? v : ''; } }
+        legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v : ''; } }
       },
       scales: {
-        x: { stacked: true, beginAtZero: true, ticks: { color: 'rgba(255,255,255,0.35)', font: { size: 7 } }, grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 0.5 } },
-        y: { stacked: true, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 7, weight: '600' } }, grid: { display: false } }
+        x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
+        y: { stacked: true, ticks: { color: THEME.chartTick, font: { size: 9, weight: '700' } }, grid: { display: false } }
       }
     });
   }
 
-  // --- TL Table ---
-  var tlHtml = '<table><thead><tr><th>Name</th><th>Head Count</th><th>Self Call/Chat</th><th>Client Escalation</th><th>TL Hygiene</th><th>Achieved Points</th></tr></thead><tbody>';
+  // --- TL Table with score badges and avg score header ---
+  var maxTlPts = 1;
+  if (!isEmpty(tlData)) tlData.forEach(function(r){ var p = clean(r[10]); if (p > maxTlPts) maxTlPts = p; });
+  var tlHtml = '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;flex-shrink:0;">' +
+    '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:' + THEME.slideMuted + '">TL Details</span>' +
+    '<span style="font-size:13px;font-weight:800;padding:2px 12px;border-radius:12px;background:' + hexToRgba(THEME.c1, 0.12) + ';border:1px solid ' + hexToRgba(THEME.c1, 0.25) + ';color:' + THEME.c1 + '">Avg: ' + fmt(tlAvgScore) + '</span>' +
+    '</div>';
+  tlHtml += '<table><thead><tr><th>Name</th><th>Head Count</th><th>Self Call/Chat</th><th>Client Escalation</th><th>TL Hygiene</th><th>Score</th></tr></thead><tbody>';
   if (!isEmpty(tlData)) {
     tlData.forEach(function(row) {
       var name = String(row[0] || "").trim();
       if (!name) return;
-      tlHtml += '<tr><td>' + name + '</td><td>' + clean(row[1]) + '</td><td>' + clean(row[6]) + '</td><td>' + String(row[7] || "").trim() + '</td><td>' + String(row[8] || "").trim() + '</td><td>' + fmt(clean(row[10])) + '</td></tr>';
+      var pts = clean(row[10]);
+      tlHtml += '<tr><td>' + name + '</td><td>' + clean(row[1]) + '</td><td>' + clean(row[6]) + '</td><td>' + String(row[7] || "").trim() + '</td><td>' + String(row[8] || "").trim() + '</td><td>' + makeBadge(pts, maxTlPts) + '</td></tr>';
     });
   }
   tlHtml += '</tbody></table>';
   document.getElementById("s15TlTable").innerHTML = tlHtml;
 
-  // --- QA Table ---
-  var qaHtml = '<table><thead><tr><th>Name</th><th>Head Count</th><th>Audits Count</th><th>Hygiene Hours</th><th>EOD Reports</th><th>Refresher Training/LLR</th><th>Achieved Point</th></tr></thead><tbody>';
+  // --- QA Table with score badges and avg score header ---
+  var maxQaPts = 1;
+  if (!isEmpty(qaData)) qaData.forEach(function(r){ var p = clean(r[11]); if (p > maxQaPts) maxQaPts = p; });
+  var qaHtml = '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;flex-shrink:0;">' +
+    '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:' + THEME.slideMuted + '">QA Details</span>' +
+    '<span style="font-size:13px;font-weight:800;padding:2px 12px;border-radius:12px;background:' + hexToRgba(THEME.c2, 0.12) + ';border:1px solid ' + hexToRgba(THEME.c2, 0.25) + ';color:' + THEME.c2 + '">Avg: ' + fmt(qaAvgScore) + '</span>' +
+    '</div>';
+  qaHtml += '<table><thead><tr><th>Name</th><th>Head Count</th><th>Audits</th><th>Hygiene Hrs</th><th>EOD Reports</th><th>Refresher</th><th>Score</th></tr></thead><tbody>';
   if (!isEmpty(qaData)) {
     qaData.forEach(function(row) {
       var name = String(row[0] || "").trim();
       if (!name) return;
-      qaHtml += '<tr><td>' + name + '</td><td>' + clean(row[2]) + '</td><td>' + clean(row[3]) + '</td><td>' + clean(row[5]) + '</td><td>' + String(row[9] || "").trim() + '</td><td>' + String(row[10] || "").trim() + '</td><td>' + fmt(clean(row[11])) + '</td></tr>';
+      var pts = clean(row[11]);
+      qaHtml += '<tr><td>' + name + '</td><td>' + clean(row[2]) + '</td><td>' + clean(row[3]) + '</td><td>' + clean(row[5]) + '</td><td>' + String(row[9] || "").trim() + '</td><td>' + String(row[10] || "").trim() + '</td><td>' + makeBadge(pts, maxQaPts) + '</td></tr>';
     });
   }
   qaHtml += '</tbody></table>';
@@ -3263,9 +3606,10 @@ function createChart(canvasId, type, labels, datasets, options) {
   const labelColor = '#475569';
   const gridColor = 'rgba(0,0,0,0.05)';
 
-  // Apply gradient fills to bar datasets
+  // Apply gradient fills to bar datasets — skip for stacked charts (causes blur/washout)
+  var isStacked = options && options.scales && options.scales.x && options.scales.x.stacked;
   const enhancedDatasets = datasets.map(ds => {
-    if ((type === 'bar' || type === 'line') && ds.backgroundColor && typeof ds.backgroundColor === 'string' && ds.backgroundColor.startsWith('rgba')) {
+    if (!isStacked && (type === 'bar' || type === 'line') && ds.backgroundColor && typeof ds.backgroundColor === 'string' && ds.backgroundColor.startsWith('rgba')) {
       const base = ds.backgroundColor;
       // Extract color components
       const match = base.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
@@ -3353,6 +3697,35 @@ function createChart(canvasId, type, labels, datasets, options) {
   if (options && options.scales) {
     mergedOpts.scales = {...defaults.scales, ...options.scales};
   }
+
+  // ── Patch any dark rgba(255,…) scale/legend colors → theme-aware ──
+  (function patchThemeColors(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    var tick = THEME.chartTick || '#64748b';
+    var grid = THEME.chartGrid || 'rgba(0,0,0,0.06)';
+    // Patch scales
+    if (obj.scales) {
+      Object.values(obj.scales).forEach(function(ax) {
+        if (ax && ax.ticks && typeof ax.ticks.color === 'string' && /rgba\(255/.test(ax.ticks.color)) ax.ticks.color = tick;
+        if (ax && ax.grid && typeof ax.grid.color === 'string' && /rgba\(255/.test(ax.grid.color)) ax.grid.color = grid;
+      });
+    }
+    // Patch legend label color
+    if (obj.plugins && obj.plugins.legend && obj.plugins.legend.labels) {
+      var ll = obj.plugins.legend.labels;
+      if (typeof ll.color === 'string' && /rgba\(255/.test(ll.color)) ll.color = THEME.slideMuted || '#64748b';
+    }
+    // Patch datalabels color if it's white/rgba-white (except for specific overrides)
+    if (obj.plugins && obj.plugins.datalabels) {
+      var dl = obj.plugins.datalabels;
+      if (typeof dl.color === 'string' && (dl.color === '#fff' || dl.color === '#ffffff')) {
+        dl.color = THEME.slideText || '#1e293b';
+      }
+      if (typeof dl.textShadowColor === 'string' && /rgba\(0,0,0/.test(dl.textShadowColor)) {
+        // keep shadow — it helps readability on coloured bars
+      }
+    }
+  })(mergedOpts);
 
   // Scale all font sizes 1.2x for readability
   (function scaleFonts(o) {
@@ -3509,7 +3882,7 @@ function scaleSlides() {
       const scaleX = w / 1280;
       const scaleY = h / 720;
       const scale = Math.min(scaleX, scaleY);
-      slide.style.transform = `scale(${scale})`;
+      slide.style.transform = `translate(-50%, -50%) scale(${scale})`;
     });
   });
 }
