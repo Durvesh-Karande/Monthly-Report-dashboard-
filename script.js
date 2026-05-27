@@ -1,4 +1,4 @@
-// ===== Constants =====
+﻿// ===== Constants =====
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -1625,6 +1625,10 @@ function renderSlide2() {
 // =====================================================================
 function renderSlide3() {
   const d = state.exotelKPIs;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var vp = document.getElementById("slide3")?.closest('.slide-viewport');
+  if (isFC) { if (vp) vp.style.display = "none"; return; }
+  if (vp) vp.style.display = "block";
   if (!d) { addLog("renderSlide3: exotelKPIs is null","warn"); return; }
   var isJE = document.getElementById("sidebarProjectName").textContent === "Client JE (C11)";
   addLog("renderSlide3: total=" + d.total + " completed=" + d.completed + " missed=" + d.missed + " avgAHT=" + d.avgAHT.toFixed(1), "info");
@@ -1760,6 +1764,11 @@ function formatIntervalLabel(h) {
 function renderSlide4() {
   const exotel = state.exotelKPIs;
   if (!state.processed || state.processed.length === 0) return;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var callChart = document.getElementById("s4CallChart");
+  var chatChart = document.getElementById("s4ChatChart");
+  if (callChart) callChart.style.display = isFC ? "none" : "block";
+  if (chatChart) chatChart.style.bottom = isFC ? "14px" : "";
 
   const chatInterval = computeChatIntervalData();
   const callInterval = exotel ? exotel.intervalAvg : {};
@@ -1844,6 +1853,11 @@ function renderSlide5() {
   const data = state.processed;
   const exotel = state.exotelKPIs;
   if (!data || data.length === 0) return;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var callPanel = document.querySelector("#slide5 .slide5-panel.right");
+  if (callPanel) callPanel.style.display = isFC ? "none" : "flex";
+  var chatPanel = document.querySelector("#slide5 .slide5-panel.left");
+  if (chatPanel) chatPanel.style.width = isFC ? "100%" : "";
 
   const weekLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
   const chatWeekly = [0, 0, 0, 0];
@@ -1943,24 +1957,71 @@ function renderSlide5() {
 // ===== India Map Drawing Utility =====
 // =====================================================================
 var INDIA_BORDER = [
-  [37.0,73.5],[36.5,74.5],[35.5,76.0],[34.5,77.5],[33.5,78.5],[32.5,79.0],
-  [31.5,79.5],[30.5,80.5],[29.5,81.0],[28.5,82.0],[27.5,83.5],[27.0,85.0],
-  [27.5,86.5],[27.5,88.0],[27.0,89.0],[26.5,90.0],[26.0,90.5],[25.5,89.5],
-  [24.5,89.0],[23.5,89.5],[22.5,88.5],[22.0,88.0],[21.5,87.5],[21.0,87.0],
-  [20.5,86.5],[20.0,86.0],[19.5,85.5],[19.0,85.0],[18.5,84.5],[18.0,84.0],
-  [17.5,83.5],[17.0,83.0],[16.5,82.0],[16.0,81.5],[15.5,81.0],[15.0,80.5],
-  [14.5,80.5],[14.0,80.5],[13.5,80.5],[13.0,80.5],[12.5,80.5],[12.0,80.0],
-  [11.5,80.0],[11.0,79.5],[10.5,79.5],[10.0,79.0],[9.5,78.5],[9.0,78.0],
-  [8.5,77.5],[8.0,77.5],[8.5,77.0],[9.0,76.5],[9.5,76.5],[10.0,76.5],
-  [10.5,76.5],[11.0,76.0],[11.5,76.0],[12.0,75.5],[12.5,75.5],[13.0,75.0],
-  [13.5,75.0],[14.0,74.5],[14.5,74.5],[15.0,74.5],[15.5,74.0],[16.0,74.0],
-  [16.5,74.0],[17.0,73.5],[17.5,73.5],[18.0,73.0],[18.5,73.0],[19.0,73.0],
-  [19.5,73.0],[20.0,72.5],[20.5,72.5],[21.0,72.5],[21.5,72.0],[22.0,71.5],
-  [22.5,71.0],[23.0,70.0],[23.5,69.5],[24.0,69.0],[24.5,68.5],[25.0,68.5],
-  [25.5,69.0],[26.0,69.5],[26.5,70.0],[27.0,70.5],[27.5,71.0],[28.0,71.0],
-  [28.5,71.5],[29.0,72.0],[29.5,72.0],[30.0,72.5],[30.5,73.0],[31.0,73.5],
-  [31.5,74.0],[32.0,74.0],[32.5,74.0],[33.0,74.0],[33.5,73.5],[34.0,73.5],
-  [34.5,73.5],[35.0,73.0],[35.5,73.0],[36.0,73.0],[36.5,73.0],[37.0,73.5]
+  // Rann of Kutch / Pakistan border start
+  [23.6,68.1],
+  // Pakistan border going north
+  [24.5,68.3],[25.5,68.5],[26.2,69.0],[26.8,69.7],[27.3,70.0],
+  [27.8,70.5],[28.3,71.0],[28.8,71.3],[29.3,71.6],[29.8,72.2],
+  [30.3,72.8],[30.8,73.3],[31.3,73.8],[31.8,74.1],[32.2,74.3],
+  [32.6,74.4],
+  // J&K / Himalayan border going northeast
+  [33.0,74.1],[33.4,73.8],[33.9,74.0],[34.4,74.5],[34.9,75.2],
+  [35.4,76.0],[35.9,76.8],[36.4,77.5],[36.9,77.9],
+  // LAC / China border going east (Ladakh)
+  [36.5,79.2],[35.8,79.8],[35.2,80.4],[34.7,81.0],[34.1,81.8],
+  [33.5,82.3],[32.9,82.9],[32.3,83.5],[31.8,84.1],
+  // Nepal border going east
+  [30.5,80.2],[30.1,80.5],[29.6,81.1],[29.1,81.8],[28.6,83.0],
+  [28.1,84.1],[27.9,85.5],[27.6,86.7],[27.5,87.5],[27.5,88.0],
+  // Sikkim
+  [27.8,88.5],
+  // Bhutan border
+  [27.5,89.2],[27.3,90.5],[27.0,91.5],[27.1,92.0],
+  // Arunachal Pradesh goes far northeast
+  [27.4,92.6],[27.8,93.5],[28.1,94.6],[28.4,95.8],[28.3,96.8],[27.8,97.4],
+  // Myanmar border going south
+  [26.7,97.4],[26.1,96.6],[25.6,96.0],[25.1,95.1],[24.6,94.4],
+  [24.1,93.8],[23.6,93.2],[23.0,93.0],[22.5,92.7],
+  // Mizoram / Tripura / Bangladesh border
+  [22.1,92.5],[22.6,91.9],[23.1,91.5],[23.6,91.5],
+  [24.1,91.7],[24.5,91.0],[24.5,90.4],[25.0,90.0],
+  [25.5,89.8],[26.0,89.2],
+  // Siliguri corridor / chicken neck
+  [26.7,88.5],[26.5,88.0],
+  // West Bengal coast going south
+  [22.5,88.5],[21.8,87.8],[21.1,87.0],[20.5,86.5],
+  // Odisha / AP / TN east coast
+  [19.5,85.5],[18.5,84.5],[17.5,83.5],[17.0,82.5],
+  [16.5,82.0],[16.0,81.5],[15.5,80.8],[15.0,80.5],
+  [14.5,80.5],[14.0,80.2],[13.5,80.0],[13.0,80.0],
+  [12.5,80.0],[12.0,80.2],[11.5,79.8],[11.0,79.5],
+  [10.5,79.5],[10.0,79.0],[9.5,78.5],[8.5,77.5],
+  // Kanyakumari - southernmost tip
+  [8.1,77.5],
+  // West coast going north
+  [8.5,77.0],[9.0,76.5],[9.5,76.5],[10.0,76.5],[10.5,76.5],
+  [11.0,76.0],[11.5,76.0],[12.0,75.5],[12.5,75.5],[13.0,75.0],
+  [13.5,75.0],[14.0,74.5],[14.5,74.5],[15.0,74.4],[15.5,74.0],
+  [16.0,73.8],[16.5,73.7],[17.0,73.5],[17.5,73.3],[18.0,73.0],
+  [18.5,73.0],[19.0,73.0],[19.5,73.0],[20.0,72.8],[20.5,72.5],
+  // Gujarat coast
+  [21.0,72.5],[21.5,72.2],
+  // Saurashtra peninsula tip going west then back
+  [22.0,72.6],[22.5,71.5],[22.8,71.0],[23.0,70.3],
+  [22.5,70.0],[22.0,69.7],[21.5,69.5],[21.5,70.0],[22.0,70.5],
+  [22.5,70.8],[22.5,71.5],[22.0,71.8],[21.5,71.5],[21.2,71.0],
+  [21.5,70.2],[22.0,70.0],[22.5,69.0],[22.8,69.5],[23.2,70.0],
+  [23.5,70.5],[23.5,71.5],[24.0,71.8],[24.5,72.0],
+  // Kutch / Rann of Kutch back to start
+  [24.7,71.0],[24.8,70.0],[24.3,69.0],[23.8,68.5],[23.6,68.1]
+];
+
+// Andaman & Nicobar Islands (separate polygon)
+var ANDAMAN_BORDER = [
+  [13.7,93.0],[13.2,93.1],[12.7,93.0],[12.2,92.9],[11.8,92.7],
+  [11.5,92.6],[11.2,92.7],[11.0,92.8],[10.7,92.7],[10.5,92.6],
+  [10.3,92.7],[10.5,92.9],[10.8,93.0],[11.2,92.9],[11.5,93.0],
+  [11.8,93.0],[12.2,93.1],[12.7,93.2],[13.2,93.2],[13.7,93.0]
 ];
 
 var STATE_COORDS = {
@@ -2058,15 +2119,25 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
     return [ox + (lng - MIN_LNG) * scaleX, H - oy - (lat - MIN_LAT) * scaleY];
   }
 
-  // Draw India outline
-  ctx.beginPath();
-  var start = toXY(INDIA_BORDER[0][0], INDIA_BORDER[0][1]);
-  ctx.moveTo(start[0], start[1]);
-  for (var i = 1; i < INDIA_BORDER.length; i++) {
-    var pt = toXY(INDIA_BORDER[i][0], INDIA_BORDER[i][1]);
-    ctx.lineTo(pt[0], pt[1]);
+  // Draw India mainland outline
+  function drawShape(border) {
+    ctx.beginPath();
+    var s = toXY(border[0][0], border[0][1]);
+    ctx.moveTo(s[0], s[1]);
+    for (var i = 1; i < border.length; i++) {
+      var pt = toXY(border[i][0], border[i][1]);
+      ctx.lineTo(pt[0], pt[1]);
+    }
+    ctx.closePath();
   }
-  ctx.closePath();
+  drawShape(INDIA_BORDER);
+  ctx.fillStyle = "rgba(30,50,80,0.3)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Draw Andaman & Nicobar Islands
+  drawShape(ANDAMAN_BORDER);
   ctx.fillStyle = "rgba(30,50,80,0.3)";
   ctx.fill();
   ctx.strokeStyle = "rgba(255,255,255,0.12)";
@@ -2175,6 +2246,7 @@ function renderSlide6() {
   var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
   var isJE = document.getElementById("sidebarProjectName").textContent === "Client JE (C11)";
   var isPK = document.getElementById("sidebarProjectName").textContent === "Client PK";
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
 
   // Chat locations
   var locTotals = {};
@@ -2200,11 +2272,17 @@ function renderSlide6() {
     callLocations = callLocations.sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
   }
 
-  // Hide/show call locations panel
+  // Hide/show call locations panel; center chat panel (no stretch) when no call data
+  var noCallData = (isWC || isJE || isPK || isFC);
+  var mapsContainer = document.querySelector("#slide6 .slide6-maps");
   var callPanel = document.querySelector("#slide6 .slide6-panel:nth-child(2)");
-  if (callPanel) callPanel.style.display = (isWC || isJE || isPK) ? "none" : "flex";
   var chatPanel = document.querySelector("#slide6 .slide6-panel:nth-child(1)");
-  if (chatPanel) chatPanel.style.width = (isWC || isJE || isPK) ? "100%" : "";
+  if (callPanel) callPanel.style.display = noCallData ? "none" : "";
+  if (mapsContainer) mapsContainer.style.justifyContent = noCallData ? "center" : "";
+  if (chatPanel) {
+    chatPanel.style.flex = noCallData ? "0 0 auto" : "";
+    chatPanel.style.width = noCallData ? "52%" : "";
+  }
 
   // Find max for scaling
   var chatMax = 1, callMax = 1;
@@ -2224,6 +2302,11 @@ function renderSlide6() {
 function renderSlide7() {
   const exotel = state.exotelKPIs;
   if (!state.processed || state.processed.length === 0) return;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var callChart = document.querySelector("#slide7 .slide7-chart.right");
+  if (callChart) callChart.style.display = isFC ? "none" : "block";
+  var chatPanel = document.querySelector("#slide7 .slide7-chart.left");
+  if (chatPanel) chatPanel.style.width = isFC ? "100%" : "";
 
   const tagCounts = {};
   for (const row of state.rawData) {
@@ -2287,6 +2370,10 @@ function renderSlide7() {
 // =====================================================================
 function renderSlide8() {
   var exotel = state.exotelKPIs;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var vp = document.getElementById("slide8")?.closest('.slide-viewport');
+  if (isFC) { if (vp) vp.style.display = "none"; return; }
+  if (vp) vp.style.display = "block";
 
   var callTop = exotel ? (exotel.repeatTable || []).map(function(r) {
     return [r.DispositionCodes, r["Count of Count of From"] || r.count];
@@ -2340,6 +2427,11 @@ function renderSlide9() {
   const data = state.processed;
   const exotel = state.exotelKPIs;
   if (!data || data.length === 0) return;
+  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var callChart = document.querySelector("#slide9 .slide9-chart.right");
+  if (callChart) callChart.style.display = isFC ? "none" : "block";
+  var chatPanel = document.querySelector("#slide9 .slide9-chart.left");
+  if (chatPanel) chatPanel.style.width = isFC ? "100%" : "";
 
   const chatCompleted = data.reduce((s, r) => s + r["Closed"], 0);
   const chatDisposed = data.reduce((s, r) => s + r["Tagged"], 0);
@@ -3232,7 +3324,12 @@ function filterPreview(inp){const t=inp.value.toLowerCase();document.querySelect
 // ===== EXPORT PDF =====
 // =====================================================================
 async function exportPDF() {
-  const slides = document.querySelectorAll('#dashboardSection .slide');
+  var allSlides = document.querySelectorAll('#dashboardSection .slide');
+  var slides = [];
+  allSlides.forEach(function(s) {
+    var vp = s.closest('.slide-viewport');
+    if (!vp || vp.style.display !== "none") slides.push(s);
+  });
   if (slides.length === 0) {
     addLog("No slides to export. Generate a report first.","error");
     return;
@@ -3438,10 +3535,11 @@ function switchClient(navId, name) {
   var isJE = name === "Client JE (C11)";
   var isWC = name === "Client WC (C10)";
   var isPK = name === "Client PK";
+  var isFC = name === "Client FC (C15)";
   var exo = document.getElementById("exotelUploadZone");
   var amy = document.getElementById("ameyoUploadZone");
   var fjz = document.getElementById("frejunUploadZone");
-  if (exo) exo.style.display = (isJE || isWC || isPK) ? "none" : "block";
+  if (exo) exo.style.display = (isJE || isWC || isPK || isFC) ? "none" : "block";
   if (amy) amy.style.display = (isWC || isPK) ? "block" : "none";
   if (fjz) fjz.style.display = isJE ? "block" : "none";
 
