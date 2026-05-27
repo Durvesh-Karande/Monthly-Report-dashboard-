@@ -71,6 +71,11 @@ function applyClientTheme(name){
     n.style.background = t.badgeBg;
     n.style.borderColor = t.badgeBorder;
   });
+  // Clear stale inline styles from ALL nav links first, then style only the active one
+  document.querySelectorAll(".nav-link").forEach(function(l){
+    l.style.background = "";
+    l.style.boxShadow = "";
+  });
   document.querySelectorAll(".nav-link.active").forEach(function(l){
     l.style.background = t.c1;
     l.style.boxShadow = "0 2px 8px " + hexToRgba(t.c1, 0.3);
