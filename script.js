@@ -3591,11 +3591,11 @@ function switchClient(navId, name) {
   });
 
   document.getElementById("sidebarProjectName").textContent = name;
-  applyClientTheme(name);
   var h = document.getElementById("headingClientName");
   if (h) h.textContent = "for " + name;
   document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
   document.getElementById(navId).classList.add("active");
+  applyClientTheme(name);
 
   // Show/hide call report upload zones based on client
   var isJE = name === "Client JE (C11)";
