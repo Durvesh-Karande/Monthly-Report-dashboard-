@@ -2364,9 +2364,9 @@ function renderSlide7() {
   if (!state.processed || state.processed.length === 0) return;
   var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
   var callChart = document.querySelector("#slide7 .slide7-chart.right");
-  if (callChart) callChart.style.display = isFC ? "none" : "block";
+  if (callChart) callChart.style.display = isFC ? "none" : "flex";
   var chatPanel = document.querySelector("#slide7 .slide7-chart.left");
-  if (chatPanel) chatPanel.style.width = isFC ? "100%" : "";
+  if (chatPanel) { chatPanel.style.right = isFC ? "20px" : ""; chatPanel.style.width = ""; }
 
   const tagCounts = {};
   for (const row of state.rawData) {
@@ -2489,9 +2489,9 @@ function renderSlide9() {
   if (!data || data.length === 0) return;
   var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
   var callChart = document.querySelector("#slide9 .slide9-chart.right");
-  if (callChart) callChart.style.display = isFC ? "none" : "block";
+  if (callChart) callChart.style.display = isFC ? "none" : "flex";
   var chatPanel = document.querySelector("#slide9 .slide9-chart.left");
-  if (chatPanel) chatPanel.style.width = isFC ? "100%" : "";
+  if (chatPanel) { chatPanel.style.right = isFC ? "20px" : ""; chatPanel.style.width = ""; }
 
   const chatCompleted = data.reduce((s, r) => s + r["Closed"], 0);
   const chatDisposed = data.reduce((s, r) => s + r["Tagged"], 0);
