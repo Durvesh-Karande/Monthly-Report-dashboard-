@@ -17,6 +17,66 @@ const CIRCLE_MAP = {
 
 const KPI_COLORS = ["#0d9488","#3b82f6","#10b981","#f59e0b","#f43f5e","#06b6d4","#8b5cf6","#fbbf24"];
 
+// =====================================================================
+// ===== Per-Client Theme System =======================================
+// =====================================================================
+function hexToRgba(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return"rgba("+r+","+g+","+b+","+a+")";}
+var CLIENT_THEMES = {
+  "Client SJ (C1)": {
+    c1:"#0d9488", c2:"#06b6d4",
+    sidebar:"#071813", slideHead:"#060e0c", headBorder:"rgba(13,148,136,0.35)",
+    badge:"#2dd4bf", badgeBg:"rgba(13,148,136,0.14)", badgeBorder:"rgba(13,148,136,0.28)"
+  },
+  "Client WC (C10)": {
+    c1:"#7c3aed", c2:"#a78bfa",
+    sidebar:"#0d0a1a", slideHead:"#09060f", headBorder:"rgba(124,58,237,0.35)",
+    badge:"#c4b5fd", badgeBg:"rgba(124,58,237,0.14)", badgeBorder:"rgba(124,58,237,0.28)"
+  },
+  "Client JE (C11)": {
+    c1:"#ea580c", c2:"#fbbf24",
+    sidebar:"#180a03", slideHead:"#110703", headBorder:"rgba(234,88,12,0.35)",
+    badge:"#fb923c", badgeBg:"rgba(234,88,12,0.14)", badgeBorder:"rgba(234,88,12,0.28)"
+  },
+  "Client PK": {
+    c1:"#2563eb", c2:"#38bdf8",
+    sidebar:"#060c22", slideHead:"#040918", headBorder:"rgba(37,99,235,0.35)",
+    badge:"#60a5fa", badgeBg:"rgba(37,99,235,0.14)", badgeBorder:"rgba(37,99,235,0.28)"
+  },
+  "Client FC (C15)": {
+    c1:"#e11d48", c2:"#f472b6",
+    sidebar:"#1a0509", slideHead:"#130407", headBorder:"rgba(225,29,72,0.35)",
+    badge:"#fb7185", badgeBg:"rgba(225,29,72,0.14)", badgeBorder:"rgba(225,29,72,0.28)"
+  }
+};
+var THEME = CLIENT_THEMES["Client SJ (C1)"];
+function getTheme(){var nm=(document.getElementById("sidebarProjectName")||{}).textContent||"";return CLIENT_THEMES[nm]||THEME;}
+function tc1(a){return hexToRgba(THEME.c1,a);}
+function tc2(a){return hexToRgba(THEME.c2,a);}
+function applyClientTheme(name){
+  var t = CLIENT_THEMES[name] || CLIENT_THEMES["Client SJ (C1)"];
+  THEME = t;
+  var root = document.documentElement;
+  root.style.setProperty("--primary", t.c1);
+  root.style.setProperty("--primary-light", hexToRgba(t.c1, 0.15));
+  root.style.setProperty("--ring", t.c1);
+  root.style.setProperty("--sidebar-bg", t.sidebar);
+  root.style.setProperty("--kpi-1", t.c1);
+  root.style.setProperty("--kpi-2", t.c2);
+  document.querySelectorAll(".slide-header").forEach(function(h){
+    h.style.background = t.slideHead;
+    h.style.borderBottomColor = t.headBorder;
+  });
+  document.querySelectorAll(".slide-num").forEach(function(n){
+    n.style.color = t.badge;
+    n.style.background = t.badgeBg;
+    n.style.borderColor = t.badgeBorder;
+  });
+  document.querySelectorAll(".nav-link.active").forEach(function(l){
+    l.style.background = t.c1;
+    l.style.boxShadow = "0 2px 8px " + hexToRgba(t.c1, 0.3);
+  });
+}
+
 // ===== State =====
 let state = {
   file: null, rawData: [], processed: [], logs: [],
