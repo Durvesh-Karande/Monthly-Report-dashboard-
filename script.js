@@ -1532,14 +1532,14 @@ function renderSlide2() {
   const avgFirstResp = document.getElementById("manualFirstResponse").value.trim() || "—";
   const fcr = closed > 0 ? Math.round(((closed - reopenedVal) / closed) * 100) + "%" : "N/A";
 
-  const colors = ["#0d9488", "#10b981", "#f43f5e", "#f59e0b"];
+  const colors = [THEME.c1, "#10b981", "#f43f5e", "#f59e0b"];
 
   document.getElementById("s2Kpis").innerHTML =
     `<div class="kpi-card" style="--kpi-color:${colors[0]}"><div class="kpi-val">${total.toLocaleString()}</div><div class="kpi-lbl">Chat Volume</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[1]}"><div class="kpi-val">${closed.toLocaleString()}</div><div class="kpi-lbl">Closed Chats</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[2]}"><div class="kpi-val">${noReplyVal.toLocaleString()}</div><div class="kpi-lbl">Closed With No Reply</div></div>` +
     `<div class="kpi-card" style="--kpi-color:${colors[3]}"><div class="kpi-val">${reopenedVal.toLocaleString()}</div><div class="kpi-lbl">Reopened Chats</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${avgFirstResp}</div><div class="kpi-lbl">Avg First Response</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${avgFirstResp}</div><div class="kpi-lbl">Avg First Response</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">${avgResp}</div><div class="kpi-lbl">Avg Response Time</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${medHandling}</div><div class="kpi-lbl">Median Handling</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${fcr}</div><div class="kpi-lbl">First Contact Rate</div></div>`;
@@ -1550,10 +1550,10 @@ function renderSlide2() {
       label: "Chat Volume",
       data: weekData,
       backgroundColor: weekData.map((v, i) =>
-        `rgba(13,148,136,${0.4 + i * 0.15})`
+        tc1(0.4 + i * 0.15)
       ),
       borderRadius: 4,
-      borderColor: "rgba(13,148,136,0.8)",
+      borderColor: tc1(0.8),
       borderWidth: 1,
       order: 2
     },
@@ -1641,10 +1641,10 @@ function renderSlide3() {
   const aht = secondsToHMS(Math.round(d.avgAHT));
   const ring = secondsToHMS(Math.round(d.avgRing));
 
-  var kpis = `<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
+  var kpis = `<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">${d.total.toLocaleString()}</div><div class="kpi-lbl">Inbound Calls Volume</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${d.completed.toLocaleString()}</div><div class="kpi-lbl">Completed Calls</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${d.missed.toLocaleString()}</div><div class="kpi-lbl">Missed Calls</div></div>` +
-    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>`;
+    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${aht}</div><div class="kpi-lbl">Avg Handling Time</div></div>`;
   if (!isJE) {
     kpis += `<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">${ring}</div><div class="kpi-lbl">Avg Ring + IVR Time</div></div>`;
   }
@@ -1659,10 +1659,10 @@ function renderSlide3() {
       label: "Calls Volume",
       data: weekTotal,
       backgroundColor: weekTotal.map((v, i) =>
-        `rgba(59,130,246,${0.4 + i * 0.15})`
+        tc2(0.4 + i * 0.15)
       ),
       borderRadius: 4,
-      borderColor: "rgba(59,130,246,0.8)",
+      borderColor: tc2(0.8),
       borderWidth: 1,
       order: 2
     },
@@ -1796,16 +1796,16 @@ function renderSlide4() {
     }
   };
 
-  const teal = "#0d9488";
-  const blue = "#3b82f6";
+  const teal = THEME.c1;
+  const blue = THEME.c2;
 
   destroyChart("chartSlide4Chat");
   createChart("chartSlide4Chat", "bar", hourLabels, [{
     label: "Avg Chat Volume",
     data: chatData,
-    backgroundColor: chatData.map((v, i) => `rgba(13,148,136,${0.35 + (i % 4) * 0.08})`),
+    backgroundColor: chatData.map((v, i) => tc1(0.35 + (i % 4) * 0.08)),
     borderRadius: 3,
-    borderColor: "rgba(13,148,136,0.5)",
+    borderColor: tc1(0.5),
     borderWidth: 0.5
   }], {
     plugins: {
@@ -1826,9 +1826,9 @@ function renderSlide4() {
   createChart("chartSlide4Calls", "bar", hourLabels, [{
     label: "Avg Call Volume",
     data: callData,
-    backgroundColor: callData.map((v, i) => `rgba(59,130,246,${0.35 + (i % 4) * 0.08})`),
+    backgroundColor: callData.map((v, i) => tc2(0.35 + (i % 4) * 0.08)),
     borderRadius: 3,
-    borderColor: "rgba(59,130,246,0.5)",
+    borderColor: tc2(0.5),
     borderWidth: 0.5
   }], {
     plugins: {
@@ -1903,9 +1903,9 @@ function renderSlide5() {
     }
   }
 
-  renderCards("s5ChatCards", histChatVal, chatTotal, chatDiff, chatDiffSign, "#0d9488");
+  renderCards("s5ChatCards", histChatVal, chatTotal, chatDiff, chatDiffSign, THEME.c1);
   renderStatus("s5ChatStatus", chatTotal, histChatVal, "chat");
-  renderCards("s5CallCards", histCallVal, callTotal, callDiff, callDiffSign, "#3b82f6");
+  renderCards("s5CallCards", histCallVal, callTotal, callDiff, callDiffSign, THEME.c2);
   renderStatus("s5CallStatus", callTotal, histCallVal, "call");
 
   const chatYMax = Math.ceil(Math.max(chatTotal, histChatVal, 1) * 1.25);
@@ -1949,8 +1949,8 @@ function renderSlide5() {
     });
   }
 
-  buildComparisonChart("chartSlide5Chat", chatTotal, histChatVal, "#0d9488", chatYMax);
-  buildComparisonChart("chartSlide5Calls", callTotal, histCallVal, "#3b82f6", callYMax);
+  buildComparisonChart("chartSlide5Chat", chatTotal, histChatVal, THEME.c1, chatYMax);
+  buildComparisonChart("chartSlide5Calls", callTotal, histCallVal, THEME.c2, callYMax);
 }
 
 // =====================================================================
@@ -2292,8 +2292,8 @@ function renderSlide6() {
 
   destroyChart("chartSlide6Chat");
   destroyChart("chartSlide6Calls");
-  drawIndiaMap("mapSlide6Chat", chatLocations, "rgba(13,148,136,0.85)", globalMax);
-  drawIndiaMap("mapSlide6Calls", callLocations, "rgba(59,130,246,0.85)", globalMax);
+  drawIndiaMap("mapSlide6Chat", chatLocations, tc1(0.85), globalMax);
+  drawIndiaMap("mapSlide6Calls", callLocations, tc2(0.85), globalMax);
 }
 
 // =====================================================================
@@ -2361,8 +2361,8 @@ function renderSlide7() {
   const callLabels = callTop.map(e => e[0]);
   const callValues = callTop.map(e => e[1]);
 
-  buildVertBar("chartSlide7Chat", chatLabels, chatValues, "rgba(13,148,136,0.7)");
-  buildVertBar("chartSlide7Calls", callLabels, callValues, "rgba(59,130,246,0.7)");
+  buildVertBar("chartSlide7Chat", chatLabels, chatValues, tc1(0.7));
+  buildVertBar("chartSlide7Calls", callLabels, callValues, tc2(0.7));
 }
 
 // =====================================================================
@@ -2388,8 +2388,8 @@ function renderSlide8() {
   createChart("chartSlide8Calls", "bar", labels, [{
     label: "Repeat Customers",
     data: values,
-    backgroundColor: "rgba(59,130,246,0.7)",
-    borderColor: "#3b82f6",
+    backgroundColor: tc2(0.7),
+    borderColor: THEME.c2,
     borderWidth: 0.5,
     borderRadius: 3
   }], {
@@ -2496,8 +2496,8 @@ function renderSlide9() {
     });
   }
 
-  buildComparisonBar("chartSlide9Chat", chatCompleted, chatDisposed, "Closed", "Tagged", "rgba(13,148,136,0.75)");
-  buildComparisonBar("chartSlide9Calls", callCompleted, callDisposed, "Completed", "Disposed", "rgba(59,130,246,0.75)");
+  buildComparisonBar("chartSlide9Chat", chatCompleted, chatDisposed, "Closed", "Tagged", tc1(0.75));
+  buildComparisonBar("chartSlide9Calls", callCompleted, callDisposed, "Completed", "Disposed", tc2(0.75));
 }
 
 // =====================================================================
@@ -2532,7 +2532,7 @@ function renderSlide10() {
   });
 
   document.getElementById("s10Kpis").innerHTML =
-    `<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
+    `<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">${totalSum.toLocaleString()}</div><div class="kpi-lbl">Total Escalations</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">${resolvedSum.toLocaleString()}</div><div class="kpi-lbl">Resolved</div></div>` +
     `<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">${pendingSum.toLocaleString()}</div><div class="kpi-lbl">Pending</div></div>`;
 
@@ -2655,11 +2655,11 @@ function renderSlide11() {
   var fmt = function(v) { return '₹' + Number(v).toLocaleString('en-IN'); };
 
   sideEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + fmt(totalSubs) + '</div><div class="kpi-lbl">Amount Spent (Incl. GST)</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">' + fmt(totalSubs) + '</div><div class="kpi-lbl">Amount Spent (Incl. GST)</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + fmt(gst) + '</div><div class="kpi-lbl">GST</div></div>';
 
   bottomEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Intercom Seats</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Intercom Seats</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">' + callSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">' + callLabel + ' Seats</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + doubletickSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Doubletick Seats</div></div>';
 
@@ -2669,8 +2669,8 @@ function renderSlide11() {
   createChart("chartSlide11", "pie", ["Intercom", callLabel], [
     {
       data: [intercomAmt, callAmt],
-      backgroundColor: ["rgba(13,148,136,0.75)", "rgba(59,130,246,0.75)"],
-      borderColor: ["#0d9488", "#3b82f6"],
+      backgroundColor: [tc1(0.75), tc2(0.75)],
+      borderColor: [THEME.c1, THEME.c2],
       borderWidth: 2
     }
   ], {
@@ -2736,8 +2736,8 @@ function renderSlide12() {
   const whatsappArr = rows.map(function(r) { return r.whatsapp; });
 
   sideEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + totalAgents + '</div><div class="kpi-lbl">Total Agents</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + nonVoiceAgents + '</div><div class="kpi-lbl">Non-Voice Agents (Chats)</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">' + totalAgents + '</div><div class="kpi-lbl">Total Agents</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">' + nonVoiceAgents + '</div><div class="kpi-lbl">Non-Voice Agents (Chats)</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">' + inboundAgents + '</div><div class="kpi-lbl">Inbound Agents (Calls)</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + whatsappAgents + '</div><div class="kpi-lbl">WhatsApp Agents</div></div>';
 
@@ -2746,16 +2746,16 @@ function renderSlide12() {
     {
       label: "Chats",
       data: chatsArr,
-      backgroundColor: "rgba(13,148,136,0.75)",
-      borderColor: "#0d9488",
+      backgroundColor: tc1(0.75),
+      borderColor: THEME.c1,
       borderWidth: 1,
       borderRadius: 2
     },
     {
       label: "Calls",
       data: callsArr,
-      backgroundColor: "rgba(59,130,246,0.75)",
-      borderColor: "#3b82f6",
+      backgroundColor: tc2(0.75),
+      borderColor: THEME.c2,
       borderWidth: 1,
       borderRadius: 2
     },
@@ -2947,11 +2947,11 @@ function renderSlide14() {
   var avgCompliance = Math.round(totCompliance / count);
 
   kpisEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:#3b82f6"><div class="kpi-val">' + avgAttendance + '%</div><div class="kpi-lbl">Avg Attendance Score</div></div>' +
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">' + avgAttendance + '%</div><div class="kpi-lbl">Avg Attendance Score</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#10b981"><div class="kpi-val">' + avgQuality + '%</div><div class="kpi-lbl">Avg Quality Score</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + avgCompliance + '%</div><div class="kpi-lbl">Avg Compliance Score</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f43f5e"><div class="kpi-val">' + fmt(totEscalation) + '</div><div class="kpi-lbl">Audit Escalation</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#0d9488"><div class="kpi-val">' + fmt(totAchieved) + ' / ' + fmt(totalPossible) + '</div><div class="kpi-lbl">Achieved Points vs Total</div></div>';
+    '<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">' + fmt(totAchieved) + ' / ' + fmt(totalPossible) + '</div><div class="kpi-lbl">Achieved Points vs Total</div></div>';
 
   // Quality Score — bar chart with average target line
   var agentsSorted = agents.slice().sort(function(a, b) { return b.quality - a.quality; });
@@ -3028,8 +3028,8 @@ function renderSlide14() {
   createChart("chartSlide14Achieved", "bar", aLabels, [{
     label: "Achieved Points",
     data: aVals,
-    backgroundColor: "rgba(13,148,136,0.75)",
-    borderColor: "#0d9488",
+    backgroundColor: tc1(0.75),
+    borderColor: THEME.c1,
     borderWidth: 0,
     borderRadius: 3
   }], {
@@ -3086,10 +3086,10 @@ function renderSlide15() {
   destroyChart("chartSlide15Tl");
   if (tlLabels.length > 0) {
     createChart("chartSlide15Tl", "bar", tlLabels, [
-      { label: "Team Attendance", data: tlA, backgroundColor: "rgba(59,130,246,0.75)", borderColor: "#3b82f6", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Team Attendance", data: tlA, backgroundColor: tc2(0.75), borderColor: THEME.c2, borderWidth: 1, borderRadius: 2, barThickness: 30 },
       { label: "Team Quality", data: tlQ, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
       { label: "Preshift Briefing", data: tlB, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Shift Adherence", data: tlS, backgroundColor: "rgba(13,148,136,0.75)", borderColor: "#0d9488", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Shift Adherence", data: tlS, backgroundColor: tc1(0.75), borderColor: THEME.c1, borderWidth: 1, borderRadius: 2, barThickness: 30 },
       { label: "TL Audit", data: tlAu, backgroundColor: "rgba(244,63,94,0.75)", borderColor: "#f43f5e", borderWidth: 1, borderRadius: 2, barThickness: 30 }
     ], {
       indexAxis: 'y',
@@ -3131,9 +3131,9 @@ function renderSlide15() {
   if (qaLabels.length > 0) {
     createChart("chartSlide15Qa", "bar", qaLabels, [
       { label: "Audit Score", data: qaAS, backgroundColor: "rgba(16,185,129,0.75)", borderColor: "#10b981", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Asset Maintenance", data: qaAM, backgroundColor: "rgba(59,130,246,0.75)", borderColor: "#3b82f6", borderWidth: 1, borderRadius: 2, barThickness: 30 },
+      { label: "Asset Maintenance", data: qaAM, backgroundColor: tc2(0.75), borderColor: THEME.c2, borderWidth: 1, borderRadius: 2, barThickness: 30 },
       { label: "Shift Huddles", data: qaSH, backgroundColor: "rgba(245,158,11,0.75)", borderColor: "#f59e0b", borderWidth: 1, borderRadius: 2, barThickness: 30 },
-      { label: "Track Record", data: qaTR, backgroundColor: "rgba(13,148,136,0.75)", borderColor: "#0d9488", borderWidth: 1, borderRadius: 2, barThickness: 30 }
+      { label: "Track Record", data: qaTR, backgroundColor: tc1(0.75), borderColor: THEME.c1, borderWidth: 1, borderRadius: 2, barThickness: 30 }
     ], {
       indexAxis: 'y',
       plugins: {
@@ -3253,7 +3253,7 @@ function createChart(canvasId, type, labels, datasets, options) {
         padding: {top:10,bottom:10,left:14,right:14},
         cornerRadius: 8,
         boxPadding: 6,
-        borderColor: 'rgba(59,130,246,0.25)',
+        borderColor: 'tc2(0.25)',
         borderWidth: 1,
         displayColors: true,
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
@@ -3526,6 +3526,7 @@ function switchClient(navId, name) {
   });
 
   document.getElementById("sidebarProjectName").textContent = name;
+  applyClientTheme(name);
   var h = document.getElementById("headingClientName");
   if (h) h.textContent = "for " + name;
   document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
