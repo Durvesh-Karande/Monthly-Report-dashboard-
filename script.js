@@ -1,4 +1,4 @@
-﻿// ===== Constants =====
+// ===== Constants =====
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -37,67 +37,67 @@ var CLIENT_THEMES = {
     chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
     headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
-  /* ── Client WC (C10): Sky Blue ── */
+  /* ── Client WC (C10): Ocean Teal ── */
   "Client WC (C10)": {
-    c1:"#4B49AC", c2:"#98BDFF",
+    c1:"#0F766E", c2:"#2DD4BF",
     sidebar:"#EEF0F6",
-    slideHead:"linear-gradient(135deg, #4B49AC 0%, #3A56B8 100%)", headBorder:"none",
-    badge:"#7DA0FA", badgeBg:"rgba(125,160,250,0.12)", badgeBorder:"transparent",
-    coverBg:"#3A56B8",
-    slideBg:"linear-gradient(135deg, #4B49AC 0%, #3A56B8 80%, #1E3A7A 100%)",
+    slideHead:"linear-gradient(135deg, #0F766E 0%, #115E59 100%)", headBorder:"none",
+    badge:"#2DD4BF", badgeBg:"rgba(45,212,191,0.12)", badgeBorder:"transparent",
+    coverBg:"#115E59",
+    slideBg:"linear-gradient(135deg, #0F766E 0%, #115E59 80%, #042F2E 100%)",
     panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
-    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
-    tableThBg:"rgba(125,160,250,0.1)", tableTh:"#7DA0FA", tableTd:"#1D1D1F",
-    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(125,160,250,0.04)", tableHover:"rgba(125,160,250,0.08)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(15,118,110,0.06)",
+    tableThBg:"rgba(45,212,191,0.1)", tableTh:"#2DD4BF", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(45,212,191,0.04)", tableHover:"rgba(45,212,191,0.08)",
     chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
     headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
   /* ── Client JE (C11): Royal Blue ── */
   "Client JE (C11)": {
-    c1:"#4B49AC", c2:"#7DA0FA",
+    c1:"#1E40AF", c2:"#60A5FA",
     sidebar:"#EEF0F6",
-    slideHead:"linear-gradient(135deg, #4B49AC 0%, #4545B8 100%)", headBorder:"none",
-    badge:"#7DA0FA", badgeBg:"rgba(125,160,250,0.12)", badgeBorder:"transparent",
-    coverBg:"#4545B8",
-    slideBg:"linear-gradient(135deg, #4B49AC 0%, #4545B8 80%, #22227A 100%)",
+    slideHead:"linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)", headBorder:"none",
+    badge:"#60A5FA", badgeBg:"rgba(96,165,250,0.12)", badgeBorder:"transparent",
+    coverBg:"#1E3A8A",
+    slideBg:"linear-gradient(135deg, #1E40AF 0%, #1E3A8A 80%, #172554 100%)",
     panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
-    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
-    tableThBg:"rgba(125,160,250,0.1)", tableTh:"#7DA0FA", tableTd:"#1D1D1F",
-    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(125,160,250,0.04)", tableHover:"rgba(125,160,250,0.08)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(30,64,175,0.06)",
+    tableThBg:"rgba(96,165,250,0.1)", tableTh:"#60A5FA", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(96,165,250,0.04)", tableHover:"rgba(96,165,250,0.08)",
     chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
     headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
   /* ── Client PK: Vibrant Purple ── */
   "Client PK": {
-    c1:"#4B49AC", c2:"#7978E9",
+    c1:"#6D28D9", c2:"#A78BFA",
     sidebar:"#EEF0F6",
-    slideHead:"linear-gradient(135deg, #4B49AC 0%, #5C3BB8 100%)", headBorder:"none",
-    badge:"#7978E9", badgeBg:"rgba(121,120,233,0.12)", badgeBorder:"transparent",
-    coverBg:"#5C3BB8",
-    slideBg:"linear-gradient(135deg, #4B49AC 0%, #5C3BB8 80%, #2A1A6E 100%)",
+    slideHead:"linear-gradient(135deg, #6D28D9 0%, #5B21B6 100%)", headBorder:"none",
+    badge:"#A78BFA", badgeBg:"rgba(167,139,250,0.12)", badgeBorder:"transparent",
+    coverBg:"#5B21B6",
+    slideBg:"linear-gradient(135deg, #6D28D9 0%, #5B21B6 80%, #2E1065 100%)",
     panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
-    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
-    tableThBg:"rgba(121,120,233,0.1)", tableTh:"#7978E9", tableTd:"#1D1D1F",
-    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(121,120,233,0.04)", tableHover:"rgba(121,120,233,0.08)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(109,40,217,0.06)",
+    tableThBg:"rgba(167,139,250,0.1)", tableTh:"#A78BFA", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(167,139,250,0.04)", tableHover:"rgba(167,139,250,0.08)",
     chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
     headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   },
   /* ── Client FC (C15): Coral Fusion ── */
   "Client FC (C15)": {
-    c1:"#4B49AC", c2:"#F3797E",
+    c1:"#BE123C", c2:"#FB7185",
     sidebar:"#EEF0F6",
-    slideHead:"linear-gradient(135deg, #4B49AC 0%, #7B2D4E 100%)", headBorder:"none",
-    badge:"#F3797E", badgeBg:"rgba(243,121,126,0.12)", badgeBorder:"transparent",
-    coverBg:"#7B2D4E",
-    slideBg:"linear-gradient(135deg, #4B49AC 0%, #6C2D6E 60%, #3A1A3E 100%)",
+    slideHead:"linear-gradient(135deg, #BE123C 0%, #9F1239 100%)", headBorder:"none",
+    badge:"#FB7185", badgeBg:"rgba(251,113,133,0.12)", badgeBorder:"transparent",
+    coverBg:"#9F1239",
+    slideBg:"linear-gradient(135deg, #BE123C 0%, #9F1239 80%, #4C0519 100%)",
     panelBg:"rgba(255,255,255,0.92)", panelBorder:"rgba(255,255,255,0.2)", panelAlt:"rgba(255,255,255,0.12)",
-    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(75,73,172,0.06)",
-    tableThBg:"rgba(243,121,126,0.1)", tableTh:"#F3797E", tableTd:"#1D1D1F",
-    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(243,121,126,0.04)", tableHover:"rgba(243,121,126,0.08)",
+    slideText:"#1D1D1F", slideMuted:"#555770", slideFaint:"rgba(190,18,60,0.06)",
+    tableThBg:"rgba(251,113,133,0.1)", tableTh:"#FB7185", tableTd:"#1D1D1F",
+    tableBorder:"rgba(0,0,0,0.06)", tableAlt:"rgba(251,113,133,0.04)", tableHover:"rgba(251,113,133,0.08)",
     chartTick:"#555770", chartGrid:"rgba(85,87,112,0.1)",
     headTitle:"#FFFFFF", headSubtitle:"rgba(255,255,255,0.6)"
   }
-};
+};;
 var THEME = CLIENT_THEMES["Client SJ (C1)"];
 function getTheme(){var nm=(document.getElementById("sidebarProjectName")||{}).textContent||"";return CLIENT_THEMES[nm]||THEME;}
 function tc1(a){return hexToRgba(THEME.c1,a);}
@@ -110,7 +110,8 @@ function applyClientTheme(name){
   root.style.setProperty("--primary", t.c1);
   root.style.setProperty("--primary-light", hexToRgba(t.c1, 0.15));
   root.style.setProperty("--ring", t.c1);
-  root.style.setProperty("--sidebar-bg", t.sidebar);
+  // Keep sidebar background styled via CSS theme (so it stays dark)
+  // root.style.setProperty("--sidebar-bg", t.sidebar);
   root.style.setProperty("--kpi-1", t.c1);
   root.style.setProperty("--kpi-2", t.c2);
   // Slide CSS variables
@@ -3891,32 +3892,45 @@ window.addEventListener('resize', scaleSlides);
 
 // ===== Global Settings / Nav Switching =====
 function showGlobalSettings() {
-  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection"];
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
   sections.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = id === "globalSettings" ? "block" : "none";
   });
   document.getElementById("navGlobalSettings").classList.add("active");
   document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
+  var compNav = document.getElementById("navComparison");
+  if (compNav) compNav.classList.remove("active");
 }
 
 function showClientProject() {
   syncGlobalToClient();
-  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection"];
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
   sections.forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) el.style.display = id === "globalSettings" ? "none" : "block";
+    if (el) el.style.display = (id === "globalSettings" || id === "comparisonSection") ? "none" : "block";
   });
   document.getElementById("navGlobalSettings").classList.remove("active");
+  var compNav = document.getElementById("navComparison");
+  if (compNav) compNav.classList.remove("active");
 }
 
 function saveClientState(clientName) {
+  var manual = {};
+  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualAvgChats","manualAvgCalls","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id) {
+    var el = document.getElementById(id);
+    manual[id] = el ? el.value : "";
+  });
+  var sheetData = {};
+  SHEETS.forEach(function(s) { sheetData[s.id] = getTableData(s.id); });
   clientStore[clientName] = {
     processed: state.processed,
     exotelKPIs: state.exotelKPIs,
     ameyoKPIs: state.ameyoKPIs,
     frejunKPIs: state.frejunKPIs,
     medianCloseTime: state.medianCloseTime,
+    manualData: manual,
+    sheetData: sheetData,
   };
 }
 
@@ -3925,6 +3939,8 @@ function loadClientState(clientName) {
   if (!data) {
     state.processed = [];
     state.exotelKPIs = null;
+    state.ameyoKPIs = null;
+    state.frejunKPIs = null;
     state.medianCloseTime = null;
     return false;
   }
@@ -3933,6 +3949,12 @@ function loadClientState(clientName) {
   state.ameyoKPIs = data.ameyoKPIs;
   state.frejunKPIs = data.frejunKPIs;
   state.medianCloseTime = data.medianCloseTime;
+  if (data.manualData) {
+    Object.keys(data.manualData).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = data.manualData[id] || "";
+    });
+  }
   return true;
 }
 
@@ -3967,6 +3989,8 @@ function switchClient(navId, name) {
   var h = document.getElementById("headingClientName");
   if (h) h.textContent = "for " + name;
   document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
+  var compNav = document.getElementById("navComparison");
+  if (compNav) compNav.classList.remove("active");
   document.getElementById(navId).classList.add("active");
   applyClientTheme(name);
 
@@ -4004,6 +4028,487 @@ function switchClient(navId, name) {
 }
 
 // Client nav links use inline switchClient() onclick
+
+// =====================================================================
+// ===== COMPARISON DASHBOARD =====
+// =====================================================================
+var COMP_CLIENT_NAMES = ["Client SJ (C1)", "Client WC (C10)", "Client JE (C11)", "Client PK", "Client FC (C15)"];
+var COMP_CLIENT_COLORS = { "Client SJ (C1)":"#4B49AC", "Client WC (C10)":"#0F766E", "Client JE (C11)":"#1E40AF", "Client PK":"#6D28D9", "Client FC (C15)":"#BE123C" };
+var COMP_CLIENT_SHORT = { "Client SJ (C1)":"SJ", "Client WC (C10)":"WC", "Client JE (C11)":"JE", "Client PK":"PK", "Client FC (C15)":"FC" };
+var COMP_CLIENT_LABELS = ["SJ","WC","JE","PK","FC"];
+
+var compCharts = {};
+
+function destroyCompCharts() {
+  Object.keys(compCharts).forEach(function(k) {
+    if (compCharts[k]) { compCharts[k].destroy(); delete compCharts[k]; }
+  });
+}
+
+function showComparisonDashboard() {
+  // Save current client state before switching
+  var oldName = document.getElementById("sidebarProjectName").textContent;
+  if (oldName && oldName !== "Comparison Dashboard") saveClientState(oldName);
+
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
+  sections.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = id === "comparisonSection" ? "block" : "none";
+  });
+  document.getElementById("navGlobalSettings").classList.remove("active");
+  document.querySelectorAll("[id^=navClient]").forEach(function(n) { n.classList.remove("active"); });
+  var compNav = document.getElementById("navComparison");
+  if (compNav) compNav.classList.add("active");
+  var headingEl = document.getElementById("headingClientName");
+  if (headingEl) headingEl.textContent = " — Comparison Dashboard";
+  renderComparisonDashboard();
+}
+
+function renderComparisonDashboard() {
+  if (typeof Chart === 'undefined') {
+    var content = document.getElementById("comparisonContent");
+    if (content) content.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted-fg)"><p style="font-size:1.2rem;font-weight:700">Chart.js not loaded</p><p>Please wait for the page to fully load and try again.</p></div>';
+    return;
+  }
+  if (typeof ChartDataLabels !== 'undefined' && Chart.registry && !Chart.registry.plugins.get('datalabels')) {
+    Chart.register(ChartDataLabels);
+  }
+  destroyCompCharts();
+  var content = document.getElementById("comparisonContent");
+  if (!content) return;
+  var clients = COMP_CLIENT_NAMES;
+  var hasAny = false;
+  var dataRows = [];
+  clients.forEach(function(name) {
+    var d = clientStore[name];
+    var loaded = d && d.processed && d.processed.length > 0;
+    if (loaded) hasAny = true;
+    dataRows.push(buildClientData(name, d));
+  });
+
+  var hint = document.getElementById("compHint");
+  if (hint) hint.classList.toggle("visible", !hasAny);
+  var pdfBtn = document.getElementById("exportCompPdfBtn");
+  if (pdfBtn) pdfBtn.style.display = hasAny ? "inline-flex" : "none";
+  if (!hasAny) {
+    content.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted-fg)"><p style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem">No client data loaded</p><p>Switch to each client, upload files, and generate reports before viewing this page.</p></div>';
+    return;
+  }
+
+  var html = '';
+  // Client summary bar
+  html += '<div class="comp-client-bar">';
+  dataRows.forEach(function(r) {
+    html += '<div class="comp-client-card" style="--comp-color:' + COMP_CLIENT_COLORS[r.name] + '">';
+    html += '<div class="name" style="color:' + COMP_CLIENT_COLORS[r.name] + '">' + r.short + '</div>';
+    if (r.hasData) {
+      html += '<div class="stat"><span class="label">Chats</span><span class="value">' + r.chatVolume + '</span></div>';
+      html += '<div class="stat"><span class="label">FCR</span><span class="value">' + r.fcr + '</span></div>';
+      if (r.callVolume > 0) html += '<div class="stat"><span class="label">Calls</span><span class="value">' + r.callVolume + '</span></div>';
+      html += '<div class="stat"><span class="label">Reopen</span><span class="value">' + r.reopenPct + '</span></div>';
+    } else {
+      html += '<div class="no-data">No data loaded</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Category leaders
+  html += '<div class="comp-section-title">Category Leaders</div>';
+  html += '<div class="comp-leader-grid">';
+  var leaders = getCategoryLeaders(dataRows);
+  leaders.forEach(function(l) {
+    html += '<div class="comp-leader-card">';
+    html += '<div class="leader-label">' + l.label + '</div>';
+    html += '<div class="leader-value" style="color:' + l.color + '">' + l.value + '</div>';
+    html += '<div class="leader-client">🏆 ' + l.client + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Charts grid
+  html += '<div class="comp-section-title">Volume Comparison</div>';
+  html += '<div class="comp-chart-grid">';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">Chat Volume</div><div class="comp-chart-container"><canvas id="cmp-chatVol"></canvas></div></div>';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">Inbound Call Volume</div><div class="comp-chart-container"><canvas id="cmp-callVol"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="comp-section-title">Quality Metrics</div>';
+  html += '<div class="comp-chart-grid">';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">First Contact Rate (%)</div><div class="comp-chart-container"><canvas id="cmp-fcrRate"></canvas></div></div>';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">Reopen Rate (%)</div><div class="comp-chart-container"><canvas id="cmp-reopenRate"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="comp-section-title">Call Performance</div>';
+  html += '<div class="comp-chart-grid">';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">Answer Rate (%)</div><div class="comp-chart-container"><canvas id="cmp-answerRate"></canvas></div></div>';
+  html += '<div class="comp-chart-card"><div class="comp-chart-title">Avg Handling Time (min)</div><div class="comp-chart-container"><canvas id="cmp-aht"></canvas></div></div>';
+  html += '</div>';
+
+  // Full comparison table
+  html += '<div class="comp-section-title">Master Comparison Table</div>';
+  html += '<div class="comp-table-wrap"><table class="comp-table">';
+  html += '<thead><tr><th>Metric</th>';
+  dataRows.forEach(function(r) {
+    html += '<th><span class="client-label" style="background:' + COMP_CLIENT_COLORS[r.name] + '">' + r.short + '</span></th>';
+  });
+  html += '</tr></thead><tbody>';
+  var metrics = buildComparisonTable(dataRows);
+  metrics.forEach(function(row) {
+    html += '<tr><td><strong>' + row.label + '</strong></td>';
+    row.values.forEach(function(v) {
+      var cls = v.best ? 'best' : (v.worst ? 'worst' : '');
+      html += '<td class="' + cls + '">' + v.text + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // Insights
+  html += '<div class="comp-insights">';
+  html += '<div class="comp-section-title">Key Insights</div>';
+  var insights = generateInsights(dataRows);
+  insights.forEach(function(i) {
+    html += '<div class="comp-insight-card ' + i.type + '">';
+    html += '<div class="comp-insight-icon">' + i.icon + '</div>';
+    html += '<div><strong>' + i.title + '</strong><br><span style="color:var(--muted-fg);font-size:0.8rem">' + i.desc + '</span></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  content.innerHTML = html;
+  renderCompCharts(dataRows);
+}
+
+function buildClientData(name, d) {
+  var r = { name: name, short: COMP_CLIENT_SHORT[name] || name, hasData: false, processed: null, exotel: null, chatVolume: 0, closedChats: 0, reopenedChats: 0, fcr: "—", fcrVal: 0, reopenPct: "—", reopenVal: 0, callVolume: 0, completedCalls: 0, missedCalls: 0, answerRate: "—", answerVal: 0, aht: "—", ahtVal: 0 };
+  if (!d || !d.processed || d.processed.length === 0) return r;
+  r.hasData = true;
+  r.processed = d.processed;
+  r.exotel = d.exotelKPIs;
+  r.medianClose = d.medianCloseTime || "—";
+  // Chat stats
+  r.chatVolume = d.processed.reduce(function(s, row) { return s + (row["Conversations"] || 0); }, 0);
+  r.closedChats = d.processed.reduce(function(s, row) { return s + (row["Closed"] || 0); }, 0);
+  r.reopenedChats = d.processed.reduce(function(s, row) { return s + (row["Reopened"] || 0); }, 0);
+  // FCR
+  if (r.closedChats > 0) {
+    var fcClosed = Math.max(0, r.closedChats - r.reopenedChats);
+    r.fcrVal = Math.round((fcClosed / r.closedChats) * 100);
+    r.fcr = r.fcrVal + "%";
+  }
+  // Reopen rate
+  if (r.chatVolume > 0) {
+    r.reopenVal = Math.round((r.reopenedChats / r.chatVolume) * 100);
+    r.reopenPct = r.reopenVal + "%";
+  }
+  // Call stats
+  if (r.exotel) {
+    r.callVolume = r.exotel.total || 0;
+    r.completedCalls = r.exotel.completed || 0;
+    r.missedCalls = r.exotel.missed || 0;
+    if (r.callVolume > 0) {
+      r.answerVal = Math.round((r.completedCalls / r.callVolume) * 100);
+      r.answerRate = r.answerVal + "%";
+    }
+    r.ahtVal = Math.round((r.exotel.avgAHT || 0) / 60);
+    r.aht = r.ahtVal + "m";
+    // Also get AHT from manual if available
+    if (d.manualData && d.manualData.manualHandlingTime) {
+      var manualAHT = parseFloat(d.manualData.manualHandlingTime);
+      if (!isNaN(manualAHT)) { r.ahtVal = manualAHT; r.aht = manualAHT + "m"; }
+    }
+  }
+  return r;
+}
+
+function getCategoryLeaders(rows) {
+  var leaders = [];
+  // Highest chat volume
+  var best = rows.filter(function(r) { return r.hasData; }).sort(function(a,b) { return b.chatVolume - a.chatVolume; });
+  if (best.length) leaders.push({ label: "Highest Volume", value: best[0].chatVolume.toLocaleString(), client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  // Best FCR
+  best = rows.filter(function(r) { return r.hasData && r.fcrVal > 0; }).sort(function(a,b) { return b.fcrVal - a.fcrVal; });
+  if (best.length) leaders.push({ label: "Best FCR", value: best[0].fcr, client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  // Lowest reopen rate
+  best = rows.filter(function(r) { return r.hasData; }).sort(function(a,b) { return a.reopenVal - b.reopenVal; });
+  if (best.length) leaders.push({ label: "Lowest Reopen", value: best[0].reopenPct, client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  // Best answer rate
+  best = rows.filter(function(r) { return r.hasData && r.answerVal > 0; }).sort(function(a,b) { return b.answerVal - a.answerVal; });
+  if (best.length) leaders.push({ label: "Best Answer Rate", value: best[0].answerRate, client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  // Lowest AHT
+  best = rows.filter(function(r) { return r.hasData && r.ahtVal > 0; }).sort(function(a,b) { return a.ahtVal - b.ahtVal; });
+  if (best.length) leaders.push({ label: "Fastest Handling", value: best[0].aht, client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  // Most closed chats
+  best = rows.filter(function(r) { return r.hasData; }).sort(function(a,b) { return b.closedChats - a.closedChats; });
+  if (best.length) leaders.push({ label: "Most Closed Chats", value: best[0].closedChats.toLocaleString(), client: best[0].short, color: COMP_CLIENT_COLORS[best[0].name] });
+  return leaders;
+}
+
+function buildComparisonTable(rows) {
+  var table = [];
+  function addRow(label, extractor, higherBetter) {
+    var vals = [];
+    var nums = [];
+    rows.forEach(function(r, i) {
+      var result = extractor(r);
+      vals.push(result);
+      if (result.num !== null) nums.push({ idx: i, num: result.num });
+    });
+    if (nums.length > 1) {
+      nums.sort(function(a,b) { return higherBetter ? b.num - a.num : a.num - b.num; });
+      var bestIdx = nums[0].idx;
+      var worstIdx = nums[nums.length - 1].idx;
+      vals[bestIdx].best = true;
+      vals[worstIdx].worst = true;
+    }
+    table.push({ label: label, values: vals });
+  }
+  addRow("Chat Volume", function(r) { return { text: r.hasData ? r.chatVolume.toLocaleString() : "—", num: r.hasData ? r.chatVolume : null }; }, true);
+  addRow("Closed Chats", function(r) { return { text: r.hasData ? r.closedChats.toLocaleString() : "—", num: r.hasData ? r.closedChats : null }; }, true);
+  addRow("Reopened Chats", function(r) { return { text: r.hasData ? r.reopenedChats.toLocaleString() : "—", num: r.hasData ? r.reopenedChats : null }; }, false);
+  addRow("FCR", function(r) { return { text: r.fcr, num: r.hasData ? r.fcrVal : null }; }, true);
+  addRow("Reopen Rate", function(r) { return { text: r.reopenPct, num: r.hasData ? r.reopenVal : null }; }, false);
+  addRow("Inbound Calls", function(r) { return { text: r.hasData ? r.callVolume.toLocaleString() : "—", num: r.hasData && r.callVolume > 0 ? r.callVolume : null }; }, true);
+  addRow("Completed Calls", function(r) { return { text: r.hasData ? r.completedCalls.toLocaleString() : "—", num: r.hasData && r.completedCalls > 0 ? r.completedCalls : null }; }, true);
+  addRow("Missed Calls", function(r) { return { text: r.hasData ? r.missedCalls.toLocaleString() : "—", num: r.hasData && r.missedCalls > 0 ? r.missedCalls : null }; }, false);
+  addRow("Answer Rate", function(r) { return { text: r.answerRate, num: r.hasData && r.answerVal > 0 ? r.answerVal : null }; }, true);
+  addRow("Avg Handling Time", function(r) { return { text: r.aht, num: r.hasData && r.ahtVal > 0 ? r.ahtVal : null }; }, false);
+  return table;
+}
+
+function generateInsights(rows) {
+  var insights = [];
+  var loaded = rows.filter(function(r) { return r.hasData; });
+  if (loaded.length < 2) return [{ type:"info", icon:"ℹ️", title:"Not enough data", desc:"Load data for at least 2 clients to see comparison insights." }];
+  // Top volume
+  var byVol = loaded.slice().sort(function(a,b) { return b.chatVolume - a.chatVolume; });
+  insights.push({ type:"info", icon:"📊", title:"Volume leader: " + byVol[0].short, desc: byVol[0].short + " handles " + byVol[0].chatVolume.toLocaleString() + " chats — " + (byVol.length > 1 ? Math.round(byVol[0].chatVolume / byVol[1].chatVolume * 100) + "% of " + byVol[1].short + "'s volume" : "the most among all clients") + "." });
+  // Best FCR
+  var byFcr = loaded.filter(function(r) { return r.fcrVal > 0; }).sort(function(a,b) { return b.fcrVal - a.fcrVal; });
+  if (byFcr.length > 1) {
+    insights.push({ type:"win", icon:"🏆", title:"Best FCR: " + byFcr[0].short + " (" + byFcr[0].fcr + ")", desc: "Highest first-contact resolution rate. Gap to lowest (" + byFcr[byFcr.length-1].short + "): " + (byFcr[0].fcrVal - byFcr[byFcr.length-1].fcrVal) + " percentage points." });
+  }
+  // Worst reopen
+  var byReopen = loaded.filter(function(r) { return r.reopenVal > 0; }).sort(function(a,b) { return b.reopenVal - a.reopenVal; });
+  if (byReopen.length > 1) {
+    insights.push({ type: byReopen[0].reopenVal > 50 ? "critical" : "alert", icon: byReopen[0].reopenVal > 50 ? "🚨" : "⚠️", title: "High reopen rate: " + byReopen[0].short + " (" + byReopen[0].reopenPct + ")", desc: byReopen[0].reopenVal + "% of chats were reopened — " + (byReopen[0].reopenVal > 50 ? "critical issue requiring root cause analysis." : "worth investigating compared to the best (" + byReopen[byReopen.length-1].reopenPct + ").") });
+  }
+  // Best answer rate
+  var byAns = loaded.filter(function(r) { return r.answerVal > 0; }).sort(function(a,b) { return b.answerVal - a.answerVal; });
+  if (byAns.length > 1) {
+    insights.push({ type: byAns[byAns.length-1].answerVal < 50 ? "critical" : "info", icon: byAns[byAns.length-1].answerVal < 50 ? "🚨" : "📞", title: byAns[0].short + " leads in answer rate (" + byAns[0].answerRate + ")", desc: "Gap to lowest (" + byAns[byAns.length-1].short + "): " + (byAns[0].answerVal - byAns[byAns.length-1].answerVal) + " points." });
+  }
+  return insights;
+}
+
+function renderCompCharts(rows) {
+  var labels = [];
+  var chatData = [], callData = [], fcrData = [], reopenData = [], ansData = [], ahtData = [];
+  var colors = [];
+  rows.forEach(function(r) {
+    labels.push(r.short);
+    colors.push(COMP_CLIENT_COLORS[r.name]);
+    chatData.push(r.hasData ? r.chatVolume : 0);
+    callData.push(r.hasData ? r.callVolume : 0);
+    fcrData.push(r.hasData ? r.fcrVal : 0);
+    reopenData.push(r.hasData ? r.reopenVal : 0);
+    ansData.push(r.hasData && r.answerVal > 0 ? r.answerVal : null);
+    ahtData.push(r.hasData && r.ahtVal > 0 ? r.ahtVal : null);
+  });
+
+  function compBar(id, data, label, suffix) {
+    if (!data.some(function(v) { return v > 0; })) return;
+    var el = document.getElementById(id);
+    if (!el) return;
+    compCharts[id] = new Chart(el, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: colors, borderRadius: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            display: true, anchor: 'end', align: 'end',
+            color: '#1e293b', font: { weight: 'bold', size: 11 },
+            formatter: function(v) { return v > 0 ? (suffix ? v + suffix : v.toLocaleString()) : ''; },
+            offset: 2
+          }
+        },
+        scales: { y: { beginAtZero: true, ticks: { callback: function(v) { return suffix ? v + suffix : v; } } } }
+      }
+    });
+  }
+
+  function compBarPct(id, data, label) {
+    compBar(id, data, label, "%");
+  }
+
+  compBar("cmp-chatVol", chatData, "Chat Volume");
+  compBar("cmp-callVol", callData, "Call Volume");
+  compBarPct("cmp-fcrRate", fcrData, "FCR %");
+  compBarPct("cmp-reopenRate", reopenData, "Reopen %");
+
+  // Answer rate — only show for clients with call data
+  var ansEl = document.getElementById("cmp-answerRate");
+  if (ansEl) {
+    var hasCalls = ansData.some(function(v) { return v !== null && v > 0; });
+    if (hasCalls) {
+      compCharts["cmp-answerRate"] = new Chart(ansEl, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: "Answer Rate", data: ansData.map(function(v) { return v || 0; }), backgroundColor: colors, borderRadius: 6 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: true, anchor: 'end', align: 'end', color: '#1e293b', font: { weight: 'bold', size: 11 }, formatter: function(v) { return v > 0 ? v + '%' : '—'; }, offset: 2 }
+          },
+          scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } }
+        }
+      });
+    }
+  }
+
+  var ahtEl = document.getElementById("cmp-aht");
+  if (ahtEl) {
+    var hasAHT = ahtData.some(function(v) { return v !== null && v > 0; });
+    if (hasAHT) {
+      compCharts["cmp-aht"] = new Chart(ahtEl, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: "Avg Handling Time", data: ahtData.map(function(v) { return v || 0; }), backgroundColor: colors, borderRadius: 6 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: true, anchor: 'end', align: 'end', color: '#1e293b', font: { weight: 'bold', size: 11 }, formatter: function(v) { return v > 0 ? v + 'm' : '—'; }, offset: 2 }
+          },
+          scales: { y: { beginAtZero: true, ticks: { callback: function(v) { return v + 'm'; } } } }
+        }
+      });
+    }
+  }
+}
+
+// =====================================================================
+// ===== COMPARISON DASHBOARD PDF EXPORT =====
+// =====================================================================
+async function exportComparisonPDF() {
+  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+    alert("PDF export libraries not loaded yet. Please wait and try again.");
+    return;
+  }
+
+  var content = document.getElementById("comparisonContent");
+  if (!content || content.children.length === 0) {
+    alert("No comparison data to export.");
+    return;
+  }
+
+  var pdfBtn = document.getElementById("exportCompPdfBtn");
+  if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.textContent = "Generating PDF..."; }
+
+  const { jsPDF } = window.jspdf;
+  var pageW = 210, pageH = 297, margin = 14;
+  var usableW = pageW - margin * 2;
+  var pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+  // Capture sections one by one
+  var sections = [
+    { id: "comp-header-area", label: "Header" },
+    { id: "comp-client-bar-area", label: "Client Summary" },
+    { id: "comp-leaders-area", label: "Category Leaders" },
+    { id: "comp-charts-area", label: "Charts" },
+    { id: "comp-table-area", label: "Table" },
+    { id: "comp-insights-area", label: "Insights" },
+  ];
+
+  // Wrap existing sections with wrapper divs for clean capture
+  var wrapIds = {};
+  var children = Array.from(content.children);
+  children.forEach(function(child) {
+    if (child.classList.contains("comp-client-bar")) {
+      child.id = "comp-client-bar-area";
+      wrapIds["comp-client-bar-area"] = true;
+    } else if (child.classList.contains("comp-leader-grid")) {
+      child.id = "comp-leaders-area";
+      wrapIds["comp-leaders-area"] = true;
+    } else if (child.classList.contains("comp-chart-grid")) {
+      child.id = "comp-charts-area";
+      wrapIds["comp-charts-area"] = true;
+    } else if (child.tagName === "DIV" && child.classList.contains("comp-table-wrap")) {
+      child.id = "comp-table-area";
+      wrapIds["comp-table-area"] = true;
+    } else if (child.classList.contains("comp-insights")) {
+      child.id = "comp-insights-area";
+      wrapIds["comp-insights-area"] = true;
+    }
+  });
+
+  // Create a header wrapper for the title + subtitle + PDF button area
+  var headerEl = content.parentElement.querySelector(".comp-header");
+  if (headerEl && !document.getElementById("comp-header-area")) {
+    var hdrClone = headerEl.cloneNode(true);
+    // Remove the hint from header capture
+    var hintClone = hdrClone.querySelector(".comp-hint");
+    if (hintClone) hintClone.remove();
+    // Remove the PDF button from header capture
+    var btnClone = hdrClone.querySelector("#exportCompPdfBtn");
+    if (btnClone) btnClone.remove();
+    hdrClone.id = "comp-header-area";
+    hdrClone.style.padding = "0 0 12px 0";
+    hdrClone.style.margin = "0";
+    hdrClone.style.background = "transparent";
+    content.insertBefore(hdrClone, content.firstChild);
+  }
+
+  // Hide elements that shouldn't be in PDF (like the empty-state message)
+  var compHint = document.getElementById("compHint");
+  if (compHint) compHint.style.display = "none";
+
+  var pageNum = 0;
+  for (var si = 0; si < sections.length; si++) {
+    var sec = document.getElementById(sections[si].id);
+    if (!sec || sec.offsetHeight === 0) continue;
+
+    try {
+      var canvas = await html2canvas(sec, {
+        scale: 2, useCORS: true, backgroundColor: "#ffffff",
+        logging: false, allowTaint: false,
+      });
+      var imgData = canvas.toDataURL("image/png");
+      var imgW = canvas.width, imgH = canvas.height;
+      var ratio = imgW / imgH;
+      var renderW = usableW;
+      var renderH = renderW / ratio;
+
+      // Position: gap after previous section, or new page if doesn't fit
+      var gap = si === 0 ? 0 : 8;
+      var yPos = pdf.lastAutoY !== undefined ? pdf.lastAutoY + gap : margin;
+      if (yPos + renderH > pageH - margin) {
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.addImage(imgData, "PNG", margin, yPos, renderW, renderH);
+      pdf.lastAutoY = yPos + renderH;
+      pageNum++;
+    } catch (err) {
+      console.warn("Failed to capture section:", sections[si].label, err);
+    }
+  }
+
+  // Restore hint visibility
+  if (compHint) compHint.style.display = "";
+
+  // Remove the cloned header if we added one
+  var hdrClone = document.getElementById("comp-header-area");
+  if (hdrClone && hdrClone !== headerEl) hdrClone.remove();
+
+  var filename = "Comparison Dashboard - All Clients.pdf";
+  pdf.save(filename);
+
+  if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg> Download PDF'; }
+}
 
 // ===== Chart.js Data Labels Registration =====
 function initChartDataLabels() {
