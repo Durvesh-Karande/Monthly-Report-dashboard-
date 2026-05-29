@@ -311,24 +311,16 @@
       <p class="section-desc">Enter chat/call volume manually if not provided by upload.</p>
       <div class="manual-grid">
         <div class="form-group">
-          <label>Avg First Response Time (min)</label>
-          <input type="text" class="manual-input" id="manualFirstResponse" placeholder="e.g. 2.5">
+          <label>Avg First Response Time (sec)</label>
+          <input type="text" class="manual-input" id="manualFirstResponse" placeholder="e.g. 120">
         </div>
         <div class="form-group">
-          <label>Avg Response Time (min)</label>
-          <input type="text" class="manual-input" id="manualAvgResponse" placeholder="e.g. 3.1">
+          <label>Avg Response Time (sec)</label>
+          <input type="text" class="manual-input" id="manualAvgResponse" placeholder="e.g. 180">
         </div>
         <div class="form-group">
-          <label>Avg Handling Time (min)</label>
-          <input type="text" class="manual-input" id="manualHandlingTime" placeholder="e.g. 8.2">
-        </div>
-        <div class="form-group">
-          <label>Total Chats</label>
-          <input type="text" class="manual-input" id="manualAvgChats" placeholder="e.g. 1420">
-        </div>
-        <div class="form-group">
-          <label>Total Calls</label>
-          <input type="text" class="manual-input" id="manualAvgCalls" placeholder="e.g. 680">
+          <label>Avg Handling Time (sec)</label>
+          <input type="text" class="manual-input" id="manualHandlingTime" placeholder="e.g. 480">
         </div>
         <div class="form-group">
           <label>Historical Avg Chats</label>
@@ -364,23 +356,6 @@
     </section>
 
     <!-- ===== SECTION: Preview ===== -->
-    <section class="preview-section" id="previewSection" style="display:none">
-      <div class="preview-card">
-        <div class="preview-header">
-          <div class="preview-title">Processed Data Preview</div>
-          <div class="preview-search-wrap">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input class="preview-search" type="text" placeholder="Search..." oninput="filterPreview(this)">
-          </div>
-        </div>
-        <div class="preview-table-wrap">
-          <table class="preview-table" id="previewTable">
-            <thead><tr id="previewHead"></tr></thead>
-            <tbody id="previewBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
     <!-- ===== SECTION: Dashboard (Design slides one by one) ===== -->
     <section class="dashboard-section" id="dashboardSection" style="display:none">
 

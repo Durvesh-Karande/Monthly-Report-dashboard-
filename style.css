@@ -708,7 +708,7 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 }
 
 #slide2 .slide-kpis { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
-#slide3 .slide-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+#slide3 .slide-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; }
 #slide3 .slide-kpis .kpi-card { padding: 10px 12px; }
 #slide3 .slide-kpis .kpi-card .kpi-val { font-size: 18px; }
 #slide2 .slide-kpis .kpi-card { padding: 10px 12px; }
@@ -830,34 +830,38 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 #slide6 .slide6-panel {
   flex: 1;
   border-radius: 16px;
-  padding: 12px;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 #slide6 .slide6-map-label {
+  position: absolute;
+  top: 8px; left: 10px;
+  z-index: 3;
   font-size: 9px; font-weight: 700;
   color: var(--sl-label);
   letter-spacing: 0.08em; text-transform: uppercase;
-  text-align: center; margin-bottom: 4px;
+  text-shadow: 0 0 6px var(--sl-bg, #fff), 0 0 3px var(--sl-bg, #fff);
 }
 
 #slide6 .slide6-map-row {
-  flex: 1; display: flex; gap: 6px; min-height: 0;
+  flex: 1; display: flex; min-height: 0;
 }
 
 #slide6 .slide6-map-row canvas {
   flex: 1; min-width: 0; height: 100%;
 }
 
-#slide6 .slide6-panel canvas {
-  flex: 1; width: 100% !important; height: 100% !important; min-height: 0;
-}
-
-/* Ranked city list */
+/* Ranked city list — overlay on map */
 .slide6-rank-list {
+  position: absolute;
+  top: 8px; right: 8px;
+  z-index: 2;
+  width: 108px;
   display: flex; flex-direction: column; gap: 3px;
-  padding: 2px; width: 108px; flex-shrink: 0;
+  padding: 2px;
 }
 
 .slide6-rank-item {
@@ -1017,7 +1021,7 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 
 #slide10 .slide10-chart {
   flex: 1;
-  padding: 12px; min-height: 0;
+  padding: 12px; min-height: 180px;
 }
 
 #slide10 .slide10-chart canvas {
@@ -1029,6 +1033,7 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 
 #slide10 .slide10-table-wrap {
   flex-shrink: 0; overflow: hidden;
+  max-height: 220px; overflow-y: auto;
 }
 
 #slide10 .slide10-table-wrap table {
@@ -1050,6 +1055,10 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 }
 
 #slide10 .slide10-table-wrap td:last-child { color: var(--sl-text-muted); }
+
+#slide10 .slide10-table-wrap::-webkit-scrollbar { width: 4px; }
+#slide10 .slide10-table-wrap::-webkit-scrollbar-thumb { background: var(--sl-text-muted); border-radius: 4px; }
+#slide10 .slide10-table-wrap::-webkit-scrollbar-track { background: transparent; }
 
 /* Severity heatmap row */
 .slide10-severity { display: flex; gap: 6px; flex-shrink: 0; }
@@ -1138,13 +1147,54 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 }
 
 #slide11 .slide11-chart canvas { width: 100% !important; height: 100% !important; }
-#slide11 .slide11-side { flex: 0 0 32%; display: flex; flex-direction: column; gap: 8px; }
+#slide11 .slide11-side { flex: 0 0 32%; display: flex; flex-direction: column; gap: 6px; }
 #slide11 .slide11-bottom { flex-shrink: 0; display: flex; gap: 8px; }
 
 #slide11 .slide11-bottom .kpi-card,
 #slide11 .slide11-side .kpi-card { padding: 10px 12px; flex: 1; }
 
 #slide11 .slide11-bottom .kpi-card { min-width: 0; flex: 1 1 0; }
+
+/* Side panel: seats row (for clients with cost data) */
+.s11-seats-row {
+  display: flex; gap: 5px; flex-shrink: 0;
+}
+.s11-seat-card {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 6px 4px; border-radius: 12px;
+  background: var(--sl-panel); border: 1px solid var(--sl-panel-border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.s11-seat-card .s11-seat-val {
+  font-size: 15px; font-weight: 800; color: var(--sl-text);
+}
+.s11-seat-card .s11-seat-lbl {
+  font-size: 7px; font-weight: 600; color: var(--sl-text-muted); text-transform: uppercase;
+  letter-spacing: 0.04em; margin-top: 1px;
+}
+/* Side panel: seats column (for clients without cost data — fill vertical space) */
+.s11-seats-col {
+  display: flex; flex-direction: column; gap: 6px; flex: 1;
+}
+.s11-seats-col .s11-seat-card {
+  flex: 1; justify-content: center;
+}
+.s11-seats-col .s11-seat-val {
+  font-size: 20px;
+}
+.s11-seats-col .s11-seat-lbl {
+  font-size: 10px;
+}
+/* Side panel: donut chart */
+.s11-donut-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;
+  background: var(--sl-panel); border: 1px solid var(--sl-panel-border);
+  border-radius: 16px; padding: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+}
+.s11-donut-wrap canvas {
+  width: 100% !important; height: 100% !important;
+}
 
 /* ===== Slide 12: Product Management / Agent Productivity ===== */
 #slide12 { background: var(--sl-bg); }

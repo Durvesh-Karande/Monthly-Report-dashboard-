@@ -611,19 +611,12 @@ function parseFile(file) {
 // ===== Helpers =====
 function safeNum(v){if(v===null||v===undefined||v==="")return 0;const n=Number(String(v).replace(/[,%$]/g,""));return isNaN(n)?0:n;}
 function secondsToHMS(sec){if(!sec||sec<=0)return"";const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
+function formatSecToMinSec(val){const n=Number(val);if(isNaN(n)||n<=0)return"0s";const m=Math.floor(n/60),s=Math.floor(n%60);return(m>0?m+"m ":"")+s+"s";}
 function median(arr){if(arr.length===0)return 0;const s=[...arr].sort((a,b)=>a-b),mid=Math.floor(s.length/2);return s.length%2?s[mid]:(s[mid-1]+s[mid])/2;}
 function extractDay(dateStr){
   if(!dateStr)return 1;
   const s=String(dateStr).trim();
-  
-  // Try native parser first
-  const dt=new Date(s);
-  if(!isNaN(dt.getTime())) {
-    // Check if it's a very small year (e.g. new Date("27/05/26") might be year 26)
-    if (dt.getFullYear() > 100) return dt.getDate();
-  }
 
-  // Manual parsing for non-standard formats (DD/MM/YYYY, DD-MM-YY, etc.)
   const parts = s.split(/[\/\-\s,:.]+/).map(p => parseInt(p, 10)).filter(p => !isNaN(p));
   if (parts.length >= 3) {
     const p1 = parts[0];
@@ -635,21 +628,23 @@ function extractDay(dateStr){
       if (p3 >= 1 && p3 <= 31) return p3;
       if (p2 >= 1 && p2 <= 31) return p2;
     }
-    
-    // Case 2: DD-MM-YYYY or MM-DD-YYYY or DD-MM-YY
-    // Check which one is clearly a day (>12)
+
+    // Case 2: One part is clearly a day (>12)
     if (p1 > 12 && p1 <= 31) return p1;
     if (p2 > 12 && p2 <= 31) return p2;
-    
-    // Still ambiguous (both <= 12). 
-    // Most Ameyo reports use DD/MM/YYYY or MM/DD/YYYY.
-    // If we have no other hint, we'll return p1, but let's check if it's likely a day.
+
+    // Ambiguous (both <= 12) — assume DD/MM/YYYY (Indian format)
     if (p1 >= 1 && p1 <= 31) return p1;
   }
+
+  // Fallback: native Date parser for ISO or unambiguous formats
+  const dt=new Date(s);
+  if(!isNaN(dt.getTime()) && dt.getFullYear() > 100) return dt.getDate();
 
   return 1;
 }
 function getWeekNum(day){if(day<=7)return"Week 1";if(day<=14)return"Week 2";if(day<=21)return"Week 3";return"Week 4";}
+function to12h(h){if(h===0||h===24)return"12 AM";if(h===12)return"12 PM";return h<12?h+" AM":(h-12)+" PM";}
 function findCol(row,...names){const keys=Object.keys(row);for(const n of names){const k=keys.find(kk=>kk.toLowerCase().trim()===n.toLowerCase().trim());if(k!==undefined)return row[k]}return null;}
 
 function validateColumns(rows, expectedGroups, label) {
@@ -794,6 +789,11 @@ async function processFile() {
   const month = document.getElementById("monthSelect").value || "January";
   const projectName = document.getElementById("sidebarProjectName").textContent || "Client";
   const weekFilter = document.getElementById("weekSelect").value;
+  var isWC = projectName === "Client WC (C10)";
+  function filterWCTags(tags) {
+    if (!isWC || tags.length <= 1) return tags;
+    return tags.filter(function(t) { return t !== "General Query"; });
+  }
 
   const dayGroups = {};
   for (const row of state.rawData) {
@@ -807,6 +807,8 @@ async function processFile() {
   addLog(`Grouped into ${Object.keys(dayGroups).length} days`,"info");
 
   const allCloseTimes = [];
+  var chatTagCounts = {};
+  var userConvCounts = {};
 
   for (const day of Object.keys(dayGroups).map(Number).sort((a,b)=>a-b)) {
     const rows = dayGroups[day];
@@ -815,9 +817,11 @@ async function processFile() {
     const closeTimes = [];
     for (const row of rows) {
       convCount++;
+      const userId = String(findCol(row,"User","user","User ID","user id","Email","email")||"").trim();
+      if (userId) userConvCounts[userId] = (userConvCounts[userId] || 0) + 1;
       const tag = findCol(row,"Conversation tags","conversation tags","Conversation Tags");
-      const rowTags = tag && String(tag).trim() ? String(tag).split(",").map(t=>t.trim()).filter(Boolean) : [];
-      rowTags.forEach(t => tags.add(t));
+      const rowTags = filterWCTags(tag && String(tag).trim() ? String(tag).split(",").map(t=>t.trim()).filter(Boolean) : []);
+      rowTags.forEach(t => { tags.add(t); chatTagCounts[t] = (chatTagCounts[t]||0)+1; });
       const loc = findCol(row,"Location","location");
       if (loc && String(loc).trim()) { const ll = String(loc).trim(); locations[ll] = (locations[ll]||0)+1; }
       const reopened = safeNum(findCol(row,"Reopened","reopened"));
@@ -852,6 +856,36 @@ async function processFile() {
   }
 
   state.medianCloseTime = secondsToHMS(Math.round(median(allCloseTimes)));
+  state.chatTagCounts = chatTagCounts;
+
+  // Chat repeat users: users with >1 conversation per tag
+  const perTagUserCounts = {};
+  for (const row of state.rawData) {
+    const userId = String(findCol(row,"User","user","User ID","user id","Email","email")||"").trim();
+    if (!userId) continue;
+    const tag = findCol(row,"Conversation tags","conversation tags","Conversation Tags");
+    if (!tag || !String(tag).trim()) continue;
+    filterWCTags(String(tag).split(",").map(t => t.trim()).filter(Boolean)).forEach(t => {
+      if (!perTagUserCounts[t]) perTagUserCounts[t] = {};
+      perTagUserCounts[t][userId] = (perTagUserCounts[t][userId] || 0) + 1;
+    });
+  }
+  const chatRepeatRaw = {};
+  Object.entries(perTagUserCounts).forEach(([tag, users]) => {
+    Object.entries(users).forEach(([uid, cnt]) => {
+      if (cnt > 1) {
+        if (!chatRepeatRaw[tag]) chatRepeatRaw[tag] = new Set();
+        chatRepeatRaw[tag].add(uid);
+      }
+    });
+  });
+  state.chatRepeatTable = Object.entries(chatRepeatRaw)
+    .map(([code, userSet]) => ({ DispositionCodes: code, "Count of Count of From": userSet.size }))
+    .sort((a,b) => b["Count of Count of From"] - a["Count of Count of From"])
+    .slice(0, 10);
+  const allChatRepeatUsers = new Set();
+  Object.values(chatRepeatRaw).forEach(s => s.forEach(u => allChatRepeatUsers.add(u)));
+  state.totalChatRepeatUsers = allChatRepeatUsers.size;
 
   // Save to per-client store
   var curName = document.getElementById("sidebarProjectName").textContent;
@@ -859,7 +893,6 @@ async function processFile() {
 
   addLog(`Generated ${state.processed.length} daywise rows`,"success");
   document.getElementById("exportPdfBtn").disabled = false;
-  renderPreview();
   renderSlide1();
   renderSlide2();
   renderSlide3();
@@ -1002,45 +1035,67 @@ function processExotelData(rows) {
   // --- Difference Table ---
   const totalVolume = completed.length + missed.length + attempts.length;
   const taggedCount = completed.filter(r => { const c = String(get(r,"DispositionCodes","dispositioncodes","Disposition Codes")||"").trim(); return c.length > 0; }).length;
+  const allIssueCount = Object.values(issueCounts).reduce((a,b)=>a+b,0);
   const differenceTable = {
     "Total Volume": totalVolume,
     "Tagged": taggedCount,
     "Not Autotagged": totalVolume - taggedCount,
-    "Query Count": topIssues.reduce((s,i)=>s+i.count,0),
+    "Query Count": allIssueCount,
   };
 
   // --- Interval-Wise Table ---
   const intervalCounts={};for(let i=0;i<24;i++)intervalCounts[i]=0;
-  rows.forEach(r=>{const st=String(get(r,"StartTime","starttime","Start Time")||"").trim();if(!st)return;const timePart=st.split(/\s+/)[1]||'';let h=parseInt(timePart.split(":")[0],10);if(isNaN(h))h=parseInt(st.split(/[\s:]/)[2],10);if(isNaN(h))return;if(h>=0&&h<24)intervalCounts[h]++;});
-
-  // Use actual days in the month (prompt: "total days in month")
-  const monthIndex = MONTHS.indexOf(month);
-  const year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const intervalAvg={};for(let i=0;i<24;i++)intervalAvg[i]=daysInMonth > 0 ? Math.round(intervalCounts[i]/daysInMonth) : 0;
+  const intervalDays=new Set();
+  rows.forEach(r=>{
+    const st=String(get(r,"StartTime","starttime","Start Time")||"").trim();
+    if(!st)return;
+    const wk=getWeekNum(extractDay(st));
+    if(weekFilter!=="All"&&weekFilter!==wk)return;
+    const parts=st.split(/\s+/);
+    let timePart=parts[1]||'';
+    let h=parseInt(timePart.split(":")[0],10);
+    if(isNaN(h))h=parseInt(st.split(/[\s:]/)[2],10);
+    if(isNaN(h))return;
+    const ampm=parts.find(t=>t.toLowerCase()==="am"||t.toLowerCase()==="pm");
+    if(ampm&&ampm.toLowerCase()==="pm"&&h<12)h+=12;
+    if(ampm&&ampm.toLowerCase()==="am"&&h===12)h=0;
+    if(h>=0&&h<24){intervalCounts[h]++;intervalDays.add(parts.filter(p=>!p.includes(':')).join(' '));}
+  });
+  const intervalDivisor=intervalDays.size||1;
+  const intervalAvg={};for(let i=0;i<24;i++)intervalAvg[i]=Math.round(intervalCounts[i]/intervalDivisor);
 
   const intervalTable = Array.from({length:24},(_,i)=>({
     Month: month, Week: weekFilter, Date: "", Client: projectName,
-    Intervals: i, Time: `(${i}-${i+1===24?"0":i+1} ${i<12?"AM":"PM"})`,
+    Intervals: i, Time: `(${to12h(i)}-${to12h(i+1===24?0:i+1)})`,
     Shifts: i<8?"Night":i<17?"Morning":"Evening",
     MOC: "Inbound", Count: intervalAvg[i],
   }));
 
-  // --- Repeat Count Table (top 10) ---
-  const repeatRaw = {};
+  // --- Repeat Count Table (top 10) — per-issue: caller must call same issue >1x ---
+  const perCodeCallerCounts = {};
   completed.forEach(r => {
     const c = String(get(r,"DispositionCodes","dispositioncodes","Disposition Codes")||"").trim();
     const from = String(get(r,"From","from")||"").trim();
     if (!c || !from) return;
-    if (!repeatRaw[c]) repeatRaw[c] = new Set();
-    repeatRaw[c].add(from);
+    if (!perCodeCallerCounts[c]) perCodeCallerCounts[c] = {};
+    perCodeCallerCounts[c][from] = (perCodeCallerCounts[c][from] || 0) + 1;
+  });
+  const repeatRaw = {};
+  Object.entries(perCodeCallerCounts).forEach(([code, callers]) => {
+    Object.entries(callers).forEach(([from, cnt]) => {
+      if (cnt > 1) {
+        if (!repeatRaw[code]) repeatRaw[code] = new Set();
+        repeatRaw[code].add(from);
+      }
+    });
   });
   const repeatTable = Object.entries(repeatRaw)
     .map(([code, fromSet]) => ({ code, count: fromSet.size }))
-    .filter(x => x.count > 1)
     .sort((a,b) => b.count - a.count)
     .slice(0, 10)
     .map(({code, count}) => ({ DispositionCodes: code, "Count of Count of From": count }));
+  const allRepeatCallers = new Set();
+  Object.values(repeatRaw).forEach(s => s.forEach(c => allRepeatCallers.add(c)));
 
   // --- Final Summary Table (Table 6) ---
   const summaryTable = sortedDates.map(d => ({
@@ -1084,6 +1139,7 @@ function processExotelData(rows) {
     weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
     dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
     summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+    totalRepeatCallers: allRepeatCallers.size,
   };
 }
 
@@ -1179,21 +1235,54 @@ function processAmeyoData(rows) {
   // Difference Table
   var totalVolume = completed.length + missed.length + attempts.length;
   var taggedCount = completed.filter(function(r){var c=String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();return c.length>0;}).length;
-  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":topIssues.reduce(function(s,i){return s+i.count;},0)};
+  var allIssueCount = Object.values(issueCounts).reduce(function(a,b){return a+b;},0);
+  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":allIssueCount};
 
   // Interval-Wise Table
   var intervalCounts={};for(var i=0;i<24;i++)intervalCounts[i]=0;
-  rows.forEach(function(r){var ct=getCallTime(r);if(!ct)return;var p=ct.split(/\s+/);var timePart="";for(var ti=0;ti<p.length;ti++){if(p[ti].includes(":")){timePart=p[ti];break;}}if(!timePart)return;var h=parseInt(timePart.split(":")[0],10);if(isNaN(h))return;var ampm=p.find(function(t){return t.toLowerCase()==="am"||t.toLowerCase()==="pm";});if(ampm&&ampm.toLowerCase()==="pm"&&h<12)h+=12;if(ampm&&ampm.toLowerCase()==="am"&&h===12)h=0;if(h>=0&&h<24)intervalCounts[h]++;});
-  var monthIndex = MONTHS.indexOf(month);
-  var year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
-  var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
-  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+i+"-"+(i+1===24?"0":i+1)+" "+(i<12?"AM":"PM")+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
+  var intervalDays=new Set();
+  rows.forEach(function(r){
+    var ct=getCallTime(r);if(!ct)return;
+    var day=extractDay(ct);
+    var wk=getWeekNum(day);
+    if(weekFilter!=="All"&&weekFilter!==wk)return;
+    var p=ct.split(/\s+/);var timePart="";
+    for(var ti=0;ti<p.length;ti++){if(p[ti].includes(":")){timePart=p[ti];break;}}
+    if(!timePart)return;
+    var h=parseInt(timePart.split(":")[0],10);
+    if(isNaN(h))return;
+    var ampm=p.find(function(t){return t.toLowerCase()==="am"||t.toLowerCase()==="pm";});
+    if(ampm&&ampm.toLowerCase()==="pm"&&h<12)h+=12;
+    if(ampm&&ampm.toLowerCase()==="am"&&h===12)h=0;
+    if(h>=0&&h<24){intervalCounts[h]++;intervalDays.add(p.filter(function(t){return !t.includes(':');}).join(' '));}
+  });
+  var intervalDivisor=intervalDays.size||1;
+  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=Math.round(intervalCounts[i]/intervalDivisor);
+  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+to12h(i)+"-"+to12h(i+1===24?0:i+1)+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
 
-  // Repeat Count Table (top 10)
+  // Repeat Count Table (top 10) — per-issue: caller must call same issue >1x
+  var perCodeCallerCounts = {};
+  completed.forEach(function(r) {
+    var c = String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();
+    var from = String(get(r,"Phone","phone")||"").trim();
+    if (!c || !from) return;
+    if (!perCodeCallerCounts[c]) perCodeCallerCounts[c] = {};
+    perCodeCallerCounts[c][from] = (perCodeCallerCounts[c][from] || 0) + 1;
+  });
   var repeatRaw = {};
-  completed.forEach(function(r){var c=String(get(r,"User Disposition Code","user disposition code","User_Disposition_Code","User DispositionCode","Disposition Code")||"").trim();var from=String(get(r,"Phone","phone")||"").trim();if(!c||!from)return;if(!repeatRaw[c])repeatRaw[c]=new Set();repeatRaw[c].add(from);});
-  var repeatTable = Object.entries(repeatRaw).map(function(e){return{code:e[0],count:e[1].size};}).filter(function(x){return x.count>1;}).sort(function(a,b){return b.count-a.count;}).slice(0,10).map(function(x){return{DispositionCodes:x.code,"Count of Count of From":x.count};});
+  Object.entries(perCodeCallerCounts).forEach(function(e) {
+    var code = e[0], callers = e[1];
+    Object.entries(callers).forEach(function(f) {
+      var from = f[0], cnt = f[1];
+      if (cnt > 1) {
+        if (!repeatRaw[code]) repeatRaw[code] = new Set();
+        repeatRaw[code].add(from);
+      }
+    });
+  });
+  var repeatTable = Object.entries(repeatRaw).map(function(e){return{code:e[0],count:e[1].size};}).sort(function(a,b){return b.count-a.count;}).slice(0,10).map(function(x){return{DispositionCodes:x.code,"Count of Count of From":x.count};});
+  var allRepeatCallers = new Set();
+  Object.values(repeatRaw).forEach(function(s){s.forEach(function(c){allRepeatCallers.add(c);});});
 
   // Summary Table
   var summaryTable = sortedDates.map(function(d){return{Date:d,"Inbound Calls":dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts,Completed:dateMap[d].completed,"Missed Calls":dateMap[d].missed,"Inbound AHT":secondsToHMS(Math.round((dateAHT.find(function(x){return x.date===d;})||{avgAHT:0}).avgAHT)),"Average Ring Time":secondsToHMS(Math.round((dateRing.find(function(x){return x.date===d;})||{avgRing:0}).avgRing)),"Average Cost Per Call":"$0.0000","Price":"$0.00","Completed Call Price":"$0.00","Missed Call Price":"$0.00","Call Attempt Price":"$0.00"};});
@@ -1210,6 +1299,7 @@ function processAmeyoData(rows) {
     weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
     dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
     summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+    totalRepeatCallers: allRepeatCallers.size,
   };
 }
 
@@ -1335,12 +1425,13 @@ function processPKAmeyoData(rows) {
 
   // Difference / Tagging Table
   var totalVolume = completed.length + missed.length + attempts.length;
-  var taggedCount = rows.filter(function(r){var d=getDisposition(r);return d && d.length>0;}).length;
-  var queryCount = topIssues.reduce(function(s,i){return s+i.count;},0);
-  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":queryCount};
+  var taggedCount = completed.filter(function(r){var d=getDisposition(r);return d && d.length>0;}).length;
+  var allIssueCount = Object.values(issueCounts).reduce(function(a,b){return a+b;},0);
+  var differenceTable = {"Total Volume":totalVolume,"Tagged":taggedCount,"Not Autotagged":totalVolume-taggedCount,"Query Count":allIssueCount};
 
   // Interval-Wise Table
   var intervalCounts={};for(var i=0;i<24;i++)intervalCounts[i]=0;
+  var intervalDays=new Set();
   if (rows.length > 0) {
     const sample = getCallTime(rows[0]);
     addLog(`Ameyo PK Sample Call Time: "${sample}"`, "info");
@@ -1349,11 +1440,16 @@ function processPKAmeyoData(rows) {
   rows.forEach(function(r) {
     var ct = getCallTime(r);
     if (!ct) return;
+    var day = extractDay(ct);
+    var wk = getWeekNum(day);
+    if(weekFilter!=="All"&&weekFilter!==wk)return;
     var h = -1;
+    var dateKey = '';
     // Excel serial datetime: fractional part encodes time of day (e.g. 0.604 = 14:30)
     var num = Number(ct);
     if (!isNaN(num) && /^\d+\.\d+$/.test(String(ct).trim()) && num > 40000 && num < 60000) {
       h = Math.floor((num - Math.floor(num)) * 24);
+      dateKey = String(Math.floor(num));
     } else {
       // String datetime — split on space or T, find the token containing ":"
       var timeStr = ct;
@@ -1370,18 +1466,18 @@ function processPKAmeyoData(rows) {
       var ampm = parts.find(function(t){return t.toLowerCase()==="am"||t.toLowerCase()==="pm";});
       if (ampm && ampm.toLowerCase()==="pm" && h<12) h+=12;
       if (ampm && ampm.toLowerCase()==="am" && h===12) h=0;
+      dateKey = parts.filter(function(t){return !t.includes(':');}).join(' ');
     }
-    if (h>=0 && h<24) { intervalCounts[h]++; intervalHit++; }
+    if (h>=0 && h<24) { intervalCounts[h]++; intervalDays.add(dateKey); intervalHit++; }
   });
   addLog("PK interval: " + intervalHit + " rows had valid time out of " + rows.length, "info");
-  var monthIndex = MONTHS.indexOf(month);
-  var year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
-  var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
-  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+i+"-"+(i+1===24?"0":i+1)+" "+(i<12?"AM":"PM")+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
+  var intervalDivisor=intervalDays.size||1;
+  var intervalAvg={};for(var i=0;i<24;i++)intervalAvg[i]=Math.round(intervalCounts[i]/intervalDivisor);
+  var intervalTable = Array.from({length:24},function(_,i){return{Month:month,Week:weekFilter,Date:"",Client:projectName,Intervals:i,Time:"("+to12h(i)+"-"+to12h(i+1===24?0:i+1)+")",Shifts:i<8?"Night":i<17?"Morning":"Evening",MOC:"Inbound",Count:intervalAvg[i]};});
 
-  // Repeat Count Table — PK has no phone column, return empty
+  // Repeat Count Table — PK has no caller identifier column, return empty
   var repeatTable = [];
+  var totalRepeatCallers = 0;
 
   // Summary Table
   addLog("PK debug: completed=" + completed.length + " missed=" + missed.length + " attempts=" + attempts.length, "info");
@@ -1401,6 +1497,7 @@ function processPKAmeyoData(rows) {
     weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
     dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
     summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+    totalRepeatCallers,
   };
 }
 
@@ -1421,10 +1518,11 @@ function processFrejunData(rows) {
     return safeNum(s);
   };
 
+  const missedStatuses = ["user-not-answered","user busy"];
   const completed = rows.filter(r => getS(r)==="answered");
-  const missed    = rows.filter(r => getS(r)==="user-not-answered");
+  const missed    = rows.filter(r => missedStatuses.includes(getS(r)));
   // Any rows with other statuses treated as attempts
-  const attempts  = rows.filter(r => !["answered","user-not-answered"].includes(getS(r)));
+  const attempts  = rows.filter(r => !["answered",...missedStatuses].includes(getS(r)));
 
   // --- Per-date aggregation ---
   const dateMap = {};
@@ -1439,7 +1537,7 @@ function processFrejunData(rows) {
       dateMap[d].convDurs.push(totalMinSec);
       dateMap[d].prices.push(p);
       dateMap[d].priceCompleted += p;
-    } else if (getS(r)==="user-not-answered") {
+    } else if (missedStatuses.includes(getS(r))) {
       dateMap[d].missed++;
       dateMap[d].priceMissed += p;
     } else {
@@ -1501,7 +1599,7 @@ function processFrejunData(rows) {
     weekData[wk]++;
     const sts = getS(r);
     if (sts === "answered") weekCompletedData[wk]++;
-    else if (sts === "user-not-answered") weekMissedData[wk]++;
+    else if (missedStatuses.includes(sts)) weekMissedData[wk]++;
   });
 
   // --- Location Table (top 10) - Frejun has no location, use caller area prefix ---
@@ -1542,50 +1640,66 @@ function processFrejunData(rows) {
   // --- Difference Table ---
   const totalVolume = completed.length + missed.length + attempts.length;
   const taggedCount = completed.filter(r => { const t = getTags(r); return t.length > 0; }).length;
+  const allIssueCount = Object.values(issueCounts).reduce((a,b)=>a+b,0);
   const differenceTable = {
     "Total Volume": totalVolume,
     "Tagged": taggedCount,
     "Not Autotagged": totalVolume - taggedCount,
-    "Query Count": topIssues.reduce((s,i)=>s+i.count,0),
+    "Query Count": allIssueCount,
   };
 
   // --- Interval-Wise Table ---
   const intervalCounts={};for(let i=0;i<24;i++)intervalCounts[i]=0;
+  const intervalDays=new Set();
   rows.forEach(r => {
     const st = getStartTime(r);
     if(!st)return;
-    const timePart = st.split(/\s+/)[1]||'';
-    let h = parseInt(timePart.split(":")[0],10);
-    if(isNaN(h)) h = parseInt(st.split(/[\s:]/)[2],10);
-    if(isNaN(h)) return;
-    if(h>=0&&h<24) intervalCounts[h]++;
+    const wk=getWeekNum(extractDay(st));
+    if(weekFilter!=="All"&&weekFilter!==wk)return;
+    const parts=st.split(/\s+/);
+    let timePart=parts[1]||'';
+    let h=parseInt(timePart.split(":")[0],10);
+    if(isNaN(h))h=parseInt(st.split(/[\s:]/)[2],10);
+    if(isNaN(h))return;
+    const ampm=parts.find(t=>t.toLowerCase()==="am"||t.toLowerCase()==="pm");
+    if(ampm&&ampm.toLowerCase()==="pm"&&h<12)h+=12;
+    if(ampm&&ampm.toLowerCase()==="am"&&h===12)h=0;
+    if(h>=0&&h<24){intervalCounts[h]++;intervalDays.add(parts.filter(p=>!p.includes(':')).join(' '));}
   });
-  const monthIndex = MONTHS.indexOf(month);
-  const year = parseInt(document.getElementById("yearSelect")?.value) || 2026;
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const intervalAvg={};for(let i=0;i<24;i++)intervalAvg[i]=daysInMonth>0?Math.round(intervalCounts[i]/daysInMonth):0;
+  const intervalDivisor=intervalDays.size||1;
+  const intervalAvg={};for(let i=0;i<24;i++)intervalAvg[i]=Math.round(intervalCounts[i]/intervalDivisor);
   const intervalTable = Array.from({length:24},(_,i)=>({
     Month: month, Week: weekFilter, Date: "", Client: projectName,
-    Intervals: i, Time: `(${i}-${i+1===24?"0":i+1} ${i<12?"AM":"PM"})`,
+    Intervals: i, Time: `(${to12h(i)}-${to12h(i+1===24?0:i+1)})`,
     Shifts: i<8?"Night":i<17?"Morning":"Evening",
     MOC: "Inbound", Count: intervalAvg[i],
   }));
 
-  // --- Repeat Count Table (top 10) ---
-  const repeatRaw = {};
+  // --- Repeat Count Table (top 10) — per-issue: caller must call same issue >1x ---
+  const perCodeCallerCounts = {};
   completed.forEach(r => {
     const t = getTags(r);
     const caller = String(get(r,"Caller","caller")||"").trim();
     if (!t || !caller) return;
-    if (!repeatRaw[t]) repeatRaw[t] = new Set();
-    repeatRaw[t].add(caller);
+    if (!perCodeCallerCounts[t]) perCodeCallerCounts[t] = {};
+    perCodeCallerCounts[t][caller] = (perCodeCallerCounts[t][caller] || 0) + 1;
+  });
+  const repeatRaw = {};
+  Object.entries(perCodeCallerCounts).forEach(([code, callers]) => {
+    Object.entries(callers).forEach(([caller, cnt]) => {
+      if (cnt > 1) {
+        if (!repeatRaw[code]) repeatRaw[code] = new Set();
+        repeatRaw[code].add(caller);
+      }
+    });
   });
   const repeatTable = Object.entries(repeatRaw)
     .map(([code, fromSet]) => ({ code, count: fromSet.size }))
-    .filter(x => x.count > 1)
     .sort((a,b) => b.count - a.count)
     .slice(0, 10)
     .map(({code, count}) => ({ DispositionCodes: code, "Count of Count of From": count }));
+  const allRepeatCallers = new Set();
+  Object.values(repeatRaw).forEach(s => s.forEach(c => allRepeatCallers.add(c)));
 
   // --- Summary Table ---
   const summaryTable = sortedDates.map(d => ({
@@ -1629,6 +1743,7 @@ function processFrejunData(rows) {
     weekData, weekCompletedData, weekMissedData, topLocations, topIssues, intervalAvg,
     dateCallCounts, dateAHT, dateRing, dateCost, dateCostSpend,
     summaryTable, issueCountTable, differenceTable, intervalTable, repeatTable,
+    totalRepeatCallers: allRepeatCallers.size,
   };
 }
 
@@ -1672,9 +1787,9 @@ function renderSlide2() {
     }
   });
 
-  const medHandling = document.getElementById("manualHandlingTime").value.trim() || "—";
-  const avgResp = document.getElementById("manualAvgResponse").value.trim() || "—";
-  const avgFirstResp = document.getElementById("manualFirstResponse").value.trim() || "—";
+  const medHandling = formatSecToMinSec(document.getElementById("manualHandlingTime").value.trim());
+  const avgResp = formatSecToMinSec(document.getElementById("manualAvgResponse").value.trim());
+  const avgFirstResp = formatSecToMinSec(document.getElementById("manualFirstResponse").value.trim());
   const fcr = closed > 0 ? Math.round(((closed - reopenedVal) / closed) * 100) + "%" : "N/A";
 
   const colors = [THEME.c1, "#10b981", "#f43f5e", "#f59e0b"];
@@ -1806,8 +1921,8 @@ function renderSlide3() {
   const weekCompleted = weekLabels.map(w => d.weekCompletedData[w] || 0);
   const weekMissed = weekLabels.map(w => d.weekMissedData[w] || 0);
 
-  const aht = secondsToHMS(Math.round(d.avgAHT));
-  const ring = secondsToHMS(Math.round(d.avgRing));
+  const aht = formatSecToMinSec(Math.round(d.avgAHT));
+  const ring = formatSecToMinSec(Math.round(d.avgRing));
 
   // Answer rate
   var answerRate = d.total > 0 ? Math.round(d.completed / d.total * 100) : 0;
@@ -1954,11 +2069,15 @@ function computeChatIntervalData() {
   const hourCounts = {};
   for (let i = 0; i < 24; i++) hourCounts[i] = 0;
   const uniqueDays = new Set();
+  const weekFilter = document.getElementById("weekSelect")?.value || "All";
 
   for (const row of state.rawData) {
     const dateCol = findCol(row, "Created at", "created at", "Created At");
     if (!dateCol) continue;
-    uniqueDays.add(extractDay(dateCol));
+    const day = extractDay(dateCol);
+    const wk = getWeekNum(day);
+    if (weekFilter !== "All" && weekFilter !== wk) continue;
+    uniqueDays.add(day);
     const parts = String(dateCol).trim().split(/[\/\-\s:]/);
     const h = parseInt(parts[3], 10);
     if (h >= 0 && h < 24) hourCounts[h]++;
@@ -2371,15 +2490,18 @@ function drawIndiaMap(canvasId, locationData, dotColor, maxVal) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // projection bounds
+  // projection bounds — uniform scale preserves aspect ratio (no stretch)
   var MIN_LAT = 6.5, MAX_LAT = 37.5, MIN_LNG = 68.0, MAX_LNG = 97.5;
   var pad = 0.08;
   var scaleX = W * (1 - 2 * pad) / (MAX_LNG - MIN_LNG);
   var scaleY = H * (1 - 2 * pad) / (MAX_LAT - MIN_LAT);
-  var ox = W * pad, oy = H * pad;
+  var scale = Math.min(scaleX, scaleY);
+  var mapW = (MAX_LNG - MIN_LNG) * scale;
+  var mapH = (MAX_LAT - MIN_LAT) * scale;
+  var ox = (W - mapW) / 2, oy = (H - mapH) / 2;
 
   function toXY(lat, lng) {
-    return [ox + (lng - MIN_LNG) * scaleX, H - oy - (lat - MIN_LAT) * scaleY];
+    return [ox + (lng - MIN_LNG) * scale, H - oy - (lat - MIN_LAT) * scale];
   }
 
   // Draw India mainland outline
@@ -2499,10 +2621,7 @@ function renderSlide6() {
   var data = state.processed;
   var exotel = state.exotelKPIs;
   if (!data || data.length === 0) return;
-  var isWC = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
-  var isJE = document.getElementById("sidebarProjectName").textContent === "Client JE (C11)";
-  var isPK = document.getElementById("sidebarProjectName").textContent === "Client PK";
-  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
+  var clientName = document.getElementById("sidebarProjectName").textContent || "";
 
   // Chat locations
   var locTotals = {};
@@ -2518,9 +2637,10 @@ function renderSlide6() {
   }
   var chatLocations = Object.entries(locTotals).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
 
-  // Call locations — only for non-WC clients
+  // Call locations — only Exotel (C1) has real location data via FromCircle
+  var isC1 = clientName === "Client SJ (C1)";
   var callLocations = [];
-  if (!isWC && !isJE) {
+  if (isC1) {
     callLocations = exotel ? (exotel.topLocations || []) : [];
     if (callLocations.length > 0 && typeof callLocations[0] === 'object' && callLocations[0].name !== undefined) {
       callLocations = callLocations.map(function(l) { return [l.name, l.count]; });
@@ -2528,17 +2648,18 @@ function renderSlide6() {
     callLocations = callLocations.sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
   }
 
-  // Hide/show call locations panel; center chat panel (no stretch) when no call data
-  var noCallData = (isWC || isJE || isPK || isFC);
-  var mapsContainer = document.querySelector("#slide6 .slide6-maps");
+  // Hide entire slide if no location data at all
+  var vp6 = document.getElementById("slide6")?.closest('.slide-viewport');
+  if (chatLocations.length === 0 && callLocations.length === 0) {
+    if (vp6) vp6.style.display = "none"; return;
+  }
+  if (vp6) vp6.style.display = "block";
+
+  // Hide/show call locations panel
+  var noCallData = !isC1;
   var callPanel = document.querySelector("#slide6 .slide6-panel:nth-child(2)");
   var chatPanel = document.querySelector("#slide6 .slide6-panel:nth-child(1)");
   if (callPanel) callPanel.style.display = noCallData ? "none" : "";
-  if (mapsContainer) mapsContainer.style.justifyContent = noCallData ? "center" : "";
-  if (chatPanel) {
-    chatPanel.style.flex = noCallData ? "0 0 auto" : "";
-    chatPanel.style.width = noCallData ? "55%" : "";
-  }
 
   // Build ranked city list HTML
   function buildRankList(locs) {
@@ -2563,8 +2684,8 @@ function renderSlide6() {
     panel.innerHTML = labelHtml +
       '<div class="slide6-map-row">' +
       '<canvas id="' + canvasId + '"></canvas>' +
-      buildRankList(locations) +
-      '</div>';
+      '</div>' +
+      buildRankList(locations);
   }
 
   injectRankList(chatPanel, 'mapSlide6Chat', chatLocations);
@@ -2593,41 +2714,44 @@ function renderSlide7() {
   var chatPanel = document.querySelector("#slide7 .slide7-chart.left");
   if (chatPanel) { chatPanel.style.right = isFC ? "20px" : ""; chatPanel.style.width = ""; }
 
-  const tagCounts = {};
-  for (const row of state.rawData) {
-    const tag = findCol(row, "Conversation tags", "conversation tags", "Conversation Tags");
-    if (!tag || !String(tag).trim()) continue;
-    String(tag).split(",").map(t => t.trim()).filter(Boolean).forEach(t => {
-      tagCounts[t] = (tagCounts[t] || 0) + 1;
-    });
-  }
-  const chatTop = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-  const callTop = exotel ? (exotel.topIssues || []).map(i => [i.code, i.count]) : [];
+  const chatTagCounts = state.chatTagCounts || {};
+  const chatTop = Object.entries(chatTagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const callTop = exotel ? (exotel.topIssues || []).map(i => [i.code, i.count, i.avgAHT]) : [];
 
-  function buildHorizBar(canvasId, labels, values, baseColor) {
+  function buildHorizBar(canvasId, labels, values, ahtValues, baseColor) {
     destroyChart(canvasId);
     var total = values.reduce(function(a,b){return a+b;},0) || 1;
-    createChart(canvasId, "bar", labels, [{
+    function fmtAHT(v) {
+      if (!v || v === '00:00:00') return '';
+      var p = v.split(':');
+      var h = parseInt(p[0],10), m = parseInt(p[1],10), s = parseInt(p[2],10);
+      var parts = [];
+      if (h > 0) parts.push(h + 'h');
+      if (m > 0) parts.push(m + 'm');
+      if (s > 0 || parts.length === 0) parts.push(s + 's');
+      return parts.join(' ');
+    }
+    var chart = createChart(canvasId, "bar", labels, [{
       label: "Count",
       data: values,
       backgroundColor: baseColor,
       borderColor: baseColor,
       borderWidth: 0,
-      borderRadius: 3
+      borderRadius: 3,
+      datalabels: {
+        display: true,
+        anchor: 'end', align: 'end', offset: 5,
+        color: THEME.slideText || '#1e293b',
+        font: { size: 8, weight: '700' },
+        formatter: function(v) {
+          if (!v) return '';
+          return v + ' (' + Math.round(v/total*100) + '%)';
+        }
+      }
     }], {
       indexAxis: 'y',
       plugins: {
-        legend: { display: false },
-        datalabels: {
-          display: true,
-          anchor: 'end', align: 'end', offset: 5,
-          color: THEME.slideText || '#1e293b',
-          font: { size: 8, weight: '700' },
-          formatter: function(v) {
-            if (!v) return '';
-            return v + ' (' + Math.round(v/total*100) + '%)';
-          }
-        }
+        legend: { display: false }
       },
       scales: {
         x: {
@@ -2644,6 +2768,25 @@ function renderSlide7() {
         }
       }
     });
+    if (chart && ahtValues) {
+      function drawAHT() {
+        var ctx = chart.ctx;
+        var meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data || !meta.data.length) return;
+        meta.data.forEach(function(bar, i) {
+          var txt = fmtAHT(ahtValues[i]);
+          if (!txt) return;
+          ctx.save();
+          ctx.fillStyle = '#1e293b';
+          ctx.font = '700 7px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(txt, (bar.x + bar.base) / 2, bar.y);
+          ctx.restore();
+        });
+      }
+      chart.options.animation.onComplete = drawAHT;
+    }
   }
 
   const chatLabels = chatTop.map(e => e[0]);
@@ -2651,8 +2794,31 @@ function renderSlide7() {
   const callLabels = callTop.map(e => e[0]);
   const callValues = callTop.map(e => e[1]);
 
-  buildHorizBar("chartSlide7Chat", chatLabels, chatValues, tc1(0.75));
-  buildHorizBar("chartSlide7Calls", callLabels, callValues, tc2(0.75));
+  // Compute AHT per chat tag from raw data
+  var isWC7 = document.getElementById("sidebarProjectName").textContent === "Client WC (C10)";
+  function filterWCTags7(tags) {
+    if (!isWC7 || tags.length <= 1) return tags;
+    return tags.filter(function(t) { return t !== "General Query"; });
+  }
+  const chatTagDurs = {};
+  const chatTagCounts2 = {};
+  for (const row of state.rawData) {
+    const tag = findCol(row, "Conversation tags", "conversation tags", "Conversation Tags");
+    if (!tag || !String(tag).trim()) continue;
+    const dur = safeNum(findCol(row, "Time to last close (seconds)", "Time to last close"));
+    filterWCTags7(String(tag).split(",").map(t => t.trim()).filter(Boolean)).forEach(t => {
+      chatTagDurs[t] = (chatTagDurs[t] || 0) + dur;
+      chatTagCounts2[t] = (chatTagCounts2[t] || 0) + 1;
+    });
+  }
+  const chatAht = chatLabels.map(t => {
+    var avg = chatTagCounts2[t] ? chatTagDurs[t] / chatTagCounts2[t] : 0;
+    return secondsToHMS(Math.round(avg));
+  });
+  const callAht = callTop.map(e => e[2] || '');
+
+  buildHorizBar("chartSlide7Chat", chatLabels, chatValues, null, tc1(0.75));
+  buildHorizBar("chartSlide7Calls", callLabels, callValues, callAht, tc2(0.75));
 }
 
 // =====================================================================
@@ -2660,79 +2826,82 @@ function renderSlide7() {
 // =====================================================================
 function renderSlide8() {
   var exotel = state.exotelKPIs;
-  var isFC = document.getElementById("sidebarProjectName").textContent === "Client FC (C15)";
   var vp = document.getElementById("slide8")?.closest('.slide-viewport');
-  if (isFC) { if (vp) vp.style.display = "none"; return; }
+  var clientName = document.getElementById("sidebarProjectName").textContent || "";
+  var isPK = clientName === "Client PK";
+  var isJE = clientName === "Client JE (C11)";
+  var isWC8 = clientName === "Client WC (C10)";
+  if (isPK || isJE || (!exotel && !state.chatRepeatTable)) { if (vp) vp.style.display = "none"; return; }
   if (vp) vp.style.display = "block";
 
   var callTop = exotel ? (exotel.repeatTable || []).map(function(r) {
     return [r.DispositionCodes, r["Count of Count of From"] || r.count];
   }) : [];
+  var chatTop = (!isWC8 && state.chatRepeatTable || []).map(function(r) {
+    return [r.DispositionCodes, r["Count of Count of From"] || r.count];
+  });
+  var totalCallRepeat = callTop.reduce(function(s, e) { return s + e[1]; }, 0);
+  var totalChatRepeat = isWC8 ? 0 : chatTop.reduce(function(s, e) { return s + e[1]; }, 0);
+  var totalRepeat = totalCallRepeat + totalChatRepeat;
+  var totalCompleted = exotel ? exotel.completed : 0;
+  var repeatRate = totalCompleted > 0
+    ? (totalRepeat / totalCompleted * 100).toFixed(1) + '%' : '—';
+  var topIssue = callTop.length > 0 ? callTop[0][0] : (chatTop.length > 0 ? chatTop[0][0] : '—');
 
-  // Summary stats
-  var totalUnique = callTop.length;
-  var totalRepeat = callTop.reduce(function(s,e){return s+(e[1]||0);},0);
-  var topIssue = callTop.length > 0 ? callTop[0][0] : '—';
-  var repeatRate = (exotel && exotel.completed > 0)
-    ? (totalRepeat / exotel.completed * 100).toFixed(1) + '%' : '—';
-
-  // Inject split layout: chart (68%) + summary panel (32%)
   var body = document.querySelector("#slide8 .slide8-body");
   if (body) {
-    body.innerHTML =
-      '<div class="slide8-chart"><canvas id="chartSlide8Calls"></canvas></div>' +
-      '<div class="slide8-summary">' +
-        '<div class="slide8-sum-stat">' +
-          '<div class="slide8-sum-val" style="color:var(--primary)">' + totalRepeat.toLocaleString() + '</div>' +
-          '<div class="slide8-sum-key">Total Repeat Calls</div>' +
-        '</div>' +
-        '<div class="slide8-sum-stat">' +
-          '<div class="slide8-sum-val" style="font-size:14px;line-height:1.35;word-break:break-word">' + topIssue + '</div>' +
-          '<div class="slide8-sum-key">Top Repeat Issue</div>' +
-        '</div>' +
-        '<div class="slide8-sum-stat">' +
-          '<div class="slide8-sum-val" style="color:#e11d48">' + repeatRate + '</div>' +
-          '<div class="slide8-sum-key">Repeat Rate</div>' +
-        '</div>' +
-      '</div>';
+    var html = '<div style="display:flex;gap:16px;width:100%;height:100%">';
+    if (chatTop.length > 0) {
+      html += '<div class="slide8-chart">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px">Chat Repeat Users</div>' +
+        '<div style="flex:1;position:relative"><canvas id="chartSlide8Chat"></canvas></div></div>';
+    }
+    if (callTop.length > 0) {
+      html += '<div class="slide8-chart">' +
+        '<div style="font-size:11px;font-weight:700;color:' + (THEME.c2 || '#6366f1') + ';margin-bottom:6px">Call Repeat Callers</div>' +
+        '<div style="flex:1;position:relative"><canvas id="chartSlide8Calls"></canvas></div></div>';
+    }
+    html += '<div style="width:180px;display:flex;flex-direction:column;gap:12px;justify-content:center;flex-shrink:0">' +
+      '<div class="slide8-sum-stat"><div class="slide8-sum-val" style="color:var(--primary)">' + totalRepeat.toLocaleString() + '</div><div class="slide8-sum-key">Total Repeat Users</div></div>' +
+      '<div class="slide8-sum-stat"><div class="slide8-sum-val" style="font-size:14px;line-height:1.35;word-break:break-word">' + topIssue + '</div><div class="slide8-sum-key">Top Repeat Issue</div></div>' +
+      '<div class="slide8-sum-stat"><div class="slide8-sum-val" style="color:#e11d48">' + repeatRate + '</div><div class="slide8-sum-key">Repeat Rate</div></div>' +
+      '</div></div>';
+    body.innerHTML = html;
   }
 
+  destroyChart("chartSlide8Chat");
   destroyChart("chartSlide8Calls");
-  if (!callTop || callTop.length === 0) return;
 
-  var labels = callTop.map(function(e) { return e[0]; });
-  var values = callTop.map(function(e) { return e[1]; });
-
-  createChart("chartSlide8Calls", "bar", labels, [{
-    label: "Repeat Customers",
-    data: values,
-    backgroundColor: tc2(0.75),
-    borderColor: THEME.c2,
-    borderWidth: 0,
-    borderRadius: 4
-  }], {
-    indexAxis: 'y',
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        display: true,
-        anchor: 'end', align: 'end', offset: 4,
-        color: THEME.slideText || '#1e293b',
-        font: { size: 9, weight: '700' }
-      }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        ticks: { color: THEME.chartTick, font: { size: 8 } },
-        grid: { color: THEME.chartGrid, lineWidth: 0.5 }
+  function buildChart(canvasId, data, color) {
+    if (!data || data.length === 0) return;
+    var labels = data.map(function(e) { return e[0]; });
+    var values = data.map(function(e) { return e[1]; });
+    createChart(canvasId, "bar", labels, [{
+      label: "Repeat Users",
+      data: values,
+      backgroundColor: color,
+      borderWidth: 0,
+      borderRadius: 4
+    }], {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: 'end', align: 'end', offset: 4,
+          color: THEME.slideText || '#1e293b',
+          font: { size: 9, weight: '700' }
+        }
       },
-      y: {
-        ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } },
-        grid: { display: false }
+      scales: {
+        x: { beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8 } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
+        y: { ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { display: false } }
       }
-    }
-  });
+    });
+  }
+
+  buildChart("chartSlide8Chat", chatTop, tc1(0.75));
+  buildChart("chartSlide8Calls", callTop, tc2(0.75));
 }
 
 // =====================================================================
@@ -2973,15 +3142,18 @@ function renderSlide11() {
   const sideEl = document.getElementById("s11Side");
   const bottomEl = document.getElementById("s11Bottom");
   var clientName = document.getElementById("sidebarProjectName").textContent;
+  var isSJ = clientName === "Client SJ (C1)";
   var isWC = clientName === "Client WC (C10)";
   var isJE = clientName === "Client JE (C11)";
   var isPK = clientName === "Client PK";
   var callLabel = (isWC || isPK) ? "Ameyo" : (isJE ? "Frejun" : "Exotel");
+  var hasCost = (isSJ || isJE) && state.exotelKPIs;
 
   if (!payData || payData.length === 0) {
     sideEl.innerHTML = '<div style="color:var(--sl-text-muted,#555770);font-size:9px;text-align:center;padding:20px">No rows found in Payment Details sheet. Open Editor → Payment Details tab, enter data, click Save All Sheets, then regenerate.</div>';
     bottomEl.innerHTML = '';
     destroyChart("chartSlide11");
+    destroyChart("chartSlide11CallType");
     return;
   }
 
@@ -3017,16 +3189,45 @@ function renderSlide11() {
 
   var fmt = function(v) { return '₹' + Number(v).toLocaleString('en-IN'); };
 
-  sideEl.innerHTML =
+  // --- Side panel: seats + donut + total call cost ---
+  var seatsClass = hasCost ? "s11-seats-row" : "s11-seats-col";
+  var seatsHtml =
+    '<div class="' + seatsClass + '">' +
+      '<div class="s11-seat-card"><div class="s11-seat-val" style="color:var(--kpi-1)">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="s11-seat-lbl">Intercom</div></div>' +
+      '<div class="s11-seat-card"><div class="s11-seat-val" style="color:#8b5cf6">' + callSeats.toLocaleString('en-IN') + '</div><div class="s11-seat-lbl">' + callLabel + '</div></div>' +
+      '<div class="s11-seat-card"><div class="s11-seat-val" style="color:#f59e0b">' + doubletickSeats.toLocaleString('en-IN') + '</div><div class="s11-seat-lbl">Doubletick</div></div>' +
+    '</div>';
+
+  var costHtml = '';
+  var totalCallCost = 0;
+  var completedCost = 0, missedCost = 0;
+  if (hasCost) {
+    completedCost = state.exotelKPIs.totalCost || 0;
+    missedCost = state.exotelKPIs.missedCost || 0;
+    totalCallCost = completedCost + missedCost;
+    costHtml =
+      '<div style="font-size:10px;font-weight:700;color:var(--sl-label);text-align:center;margin-bottom:4px;flex-shrink:0">Amount Spent by Call Type</div>' +
+      '<div class="s11-donut-wrap"><canvas id="chartSlide11CallType"></canvas></div>' +
+      '<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">' + fmt(totalCallCost) + '</div><div class="kpi-lbl">Total Call Spent Cost</div></div>';
+  }
+
+  sideEl.innerHTML = seatsHtml + costHtml;
+
+  // --- Bottom panel: Amount Spent + GST + Avg Call Cost ---
+  var bottomHtml =
     '<div class="kpi-card" style="--kpi-color:var(--kpi-2)"><div class="kpi-val">' + fmt(totalSubs) + '</div><div class="kpi-lbl">Amount Spent (Incl. GST)</div></div>' +
     '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + fmt(gst) + '</div><div class="kpi-lbl">GST</div></div>';
 
-  bottomEl.innerHTML =
-    '<div class="kpi-card" style="--kpi-color:var(--kpi-1)"><div class="kpi-val">' + intercomSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Intercom Seats</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#8b5cf6"><div class="kpi-val">' + callSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">' + callLabel + ' Seats</div></div>' +
-    '<div class="kpi-card" style="--kpi-color:#f59e0b"><div class="kpi-val">' + doubletickSeats.toLocaleString('en-IN') + '</div><div class="kpi-lbl">Doubletick Seats</div></div>';
+  if (hasCost) {
+    var avgCost = state.exotelKPIs.avgCostPerCall || 0;
+    bottomHtml += '<div class="kpi-card" style="--kpi-color:#06b6d4"><div class="kpi-val">' + fmt(avgCost) + '</div><div class="kpi-lbl">Avg Call Cost</div></div>';
+  }
 
+  bottomEl.innerHTML = bottomHtml;
+
+  // --- Charts ---
   destroyChart("chartSlide11");
+  destroyChart("chartSlide11CallType");
   if (intercomAmt === 0 && callAmt === 0) return;
 
   createChart("chartSlide11", "pie", ["Intercom", callLabel], [
@@ -3058,6 +3259,39 @@ function renderSlide11() {
       }
     }
   });
+
+  if (hasCost && totalCallCost > 0) {
+    createChart("chartSlide11CallType", "doughnut", ["Completed", "Missed"], [
+      {
+        data: [completedCost, missedCost],
+        backgroundColor: [tc1(0.75), "#f43f5e"],
+        borderColor: [THEME.c1, "#f43f5e"],
+        borderWidth: 2
+      }
+    ], {
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: THEME.chartTick || '#555770', font: { size: 9, weight: '600' },
+            padding: 8, usePointStyle: true, boxWidth: 10
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.label + ': ₹' + ctx.raw.toFixed(2);
+            }
+          }
+        },
+        datalabels: {
+          color: '#fff', font: { size: 9, weight: '700' },
+          formatter: function(v) { return '₹' + Number(v).toLocaleString('en-IN'); }
+        }
+      }
+    });
+  }
 }
 
 // =====================================================================
@@ -3091,7 +3325,7 @@ function renderSlide12() {
     if (whatsapp > 0) whatsappAgents++;
   });
 
-  rows.sort(function(a, b) { return b.total - a.total; });
+  rows.sort(function(a, b) { return b.chats - a.chats; });
 
   const labels = rows.map(function(r) { return r.name; });
   const chatsArr = rows.map(function(r) { return r.chats; });
@@ -3199,10 +3433,8 @@ function renderSlide13() {
   });
 
   agents.sort(function(a, b) { return b.achieved - a.achieved; });
-  var n = agents.length;
-  var split = Math.ceil(n / 2);
-  var topArr = agents.slice(0, split);
-  var bottomArr = agents.slice(split).reverse();
+  var topArr = agents.slice(0, 5);
+  var bottomArr = agents.slice(-5).reverse();
 
   var chartOpts = function() {
     return {
@@ -3749,16 +3981,6 @@ function createChart(canvasId, type, labels, datasets, options) {
 // =====================================================================
 // ===== PREVIEW =====
 // =====================================================================
-function renderPreview() {
-  if(state.processed.length===0)return;
-  const s=document.getElementById("previewSection"),h=document.getElementById("previewHead"),b=document.getElementById("previewBody");
-  s.style.display="block";
-  const cols=Object.keys(state.processed[0]);
-  h.innerHTML=cols.map(c=>`<th>${c}</th>`).join("");
-  b.innerHTML=state.processed.map(row=>`<tr>${cols.map(c=>`<td>${row[c]??""}</td>`).join("")}</tr>`).join("");
-}
-function filterPreview(inp){const t=inp.value.toLowerCase();document.querySelectorAll("#previewBody tr").forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(t)?"":"none"});}
-
 // =====================================================================
 // ===== EXPORT PDF =====
 // =====================================================================
@@ -3848,8 +4070,6 @@ function resetAll() {
   document.getElementById("manualFirstResponse").value="";
   document.getElementById("manualAvgResponse").value="";
   document.getElementById("manualHandlingTime").value="";
-  document.getElementById("manualAvgChats").value="";
-  document.getElementById("manualAvgCalls").value="";
   document.getElementById("manualHistAvgChats").value="";
   document.getElementById("manualHistAvgCalls").value="";
   const exInput=document.getElementById("exotelFileInput");
@@ -3864,7 +4084,6 @@ function resetAll() {
   setUploadState("idle","");
   document.getElementById("processBtn").disabled=true;
   document.getElementById("exportPdfBtn").disabled=true;
-  document.getElementById("previewSection").style.display="none";
   document.getElementById("dashboardSection").style.display="none";
   document.getElementById("logSection").style.display="none";
   // Clear client store for current client
@@ -3892,7 +4111,7 @@ window.addEventListener('resize', scaleSlides);
 
 // ===== Global Settings / Nav Switching =====
 function showGlobalSettings() {
-  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","dashboardSection","comparisonSection"];
   sections.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = id === "globalSettings" ? "block" : "none";
@@ -3905,7 +4124,7 @@ function showGlobalSettings() {
 
 function showClientProject() {
   syncGlobalToClient();
-  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","dashboardSection","comparisonSection"];
   sections.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = (id === "globalSettings" || id === "comparisonSection") ? "none" : "block";
@@ -3917,7 +4136,7 @@ function showClientProject() {
 
 function saveClientState(clientName) {
   var manual = {};
-  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualAvgChats","manualAvgCalls","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id) {
+  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id) {
     var el = document.getElementById(id);
     manual[id] = el ? el.value : "";
   });
@@ -3981,7 +4200,7 @@ function switchClient(navId, name) {
   document.getElementById("processBtn").disabled = true;
   document.getElementById("exportPdfBtn").disabled = true;
   // Clear manual entry inputs
-  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualAvgChats","manualAvgCalls","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id){
+  ["manualFirstResponse","manualAvgResponse","manualHandlingTime","manualHistAvgChats","manualHistAvgCalls"].forEach(function(id){
     var el = document.getElementById(id); if(el) el.value = "";
   });
 
@@ -4011,12 +4230,10 @@ function switchClient(navId, name) {
 
   showClientProject();
 
-  // Hide preview/dashboard if no data; re-render if there is data
-  var ps = document.getElementById("previewSection");
+  // Hide dashboard if no data; re-render if there is data
   var ds = document.getElementById("dashboardSection");
   if (hasData && state.processed.length > 0) {
-    ps.style.display = "block"; ds.style.display = "block";
-    renderPreview();
+    ds.style.display = "block";
     renderSlide1(); renderSlide2(); renderSlide3(); renderSlide4();
     renderSlide5(); renderSlide6(); renderSlide7(); renderSlide8();
     renderSlide9(); renderSlide10(); renderSlide11(); renderSlide12();
@@ -4050,7 +4267,7 @@ function showComparisonDashboard() {
   var oldName = document.getElementById("sidebarProjectName").textContent;
   if (oldName && oldName !== "Comparison Dashboard") saveClientState(oldName);
 
-  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","previewSection","dashboardSection","comparisonSection"];
+  var sections = ["globalSettings","config","uploadSection","dataEntrySection","manualSection","actions","logSection","dashboardSection","comparisonSection"];
   sections.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = id === "comparisonSection" ? "block" : "none";
@@ -4216,7 +4433,7 @@ function buildClientData(name, d) {
     // Also get AHT from manual if available
     if (d.manualData && d.manualData.manualHandlingTime) {
       var manualAHT = parseFloat(d.manualData.manualHandlingTime);
-      if (!isNaN(manualAHT)) { r.ahtVal = manualAHT; r.aht = manualAHT + "m"; }
+      if (!isNaN(manualAHT)) { r.ahtVal = manualAHT; r.aht = formatSecToMinSec(manualAHT); }
     }
   }
   return r;
