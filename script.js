@@ -601,7 +601,7 @@ function parseFile(file) {
       Papa.parse(file,{header:true,skipEmptyLines:true,complete:r=>r.errors.length?reject(new Error(r.errors[0].message)):resolve(stripBOM(r.data)),error:reject});
     }else{
       const r=new FileReader();
-      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});resolve(stripBOM(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])));}catch(err){reject(err)}};
+      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});resolve(stripBOM(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])));}catch(err){reject(err)}};
       r.onerror=()=>reject(new Error("Failed to read file"));
       r.readAsArrayBuffer(file);
     }
@@ -1168,7 +1168,7 @@ function processAmeyoData(rows) {
   const getS = r => String(get(r,"Answered/Hungup","answered/hungup","Answered Hungup","Answered_Hungup")||"").toLowerCase().trim();
   const getCallTime = r => String(get(r,"Call Time","call time","Call Time","Call_Time")||"").trim();
   const getDate = r => { const ct=getCallTime(r); if(!ct)return 1; const day=extractDay(ct); return(day>=1&&day<=31)?day:1; };
-  const hmsToSec = function(s){if(!s)return 0;if(s instanceof Date && !isNaN(s))return s.getUTCHours()*3600+s.getUTCMinutes()*60+s.getUTCSeconds();var p=String(s).split(":");return p.length===3?parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]):safeNum(s);};
+  const hmsToSec = function(s){if(!s)return 0;var p=String(s).split(":");return p.length===3?parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]):safeNum(s);};
 
   const completed = rows.filter(r=>getS(r).includes("answer"));
   const missed    = rows.filter(r=>!getS(r).includes("answer")&&(getS(r).includes("hung")||getS(r).includes("abandon")));
@@ -1344,12 +1344,7 @@ function processPKAmeyoData(rows) {
     var day = extractDay(ct);
     return (day >= 1 && day <= 31) ? day : 0;
   };
-  var hmsToSec = function(s) {
-    if(!s) return 0;
-    if(s instanceof Date && !isNaN(s)) return s.getUTCHours()*3600 + s.getUTCMinutes()*60 + s.getUTCSeconds();
-    var p = String(s).split(":");
-    return p.length === 3 ? parseInt(p[0], 10) * 3600 + parseInt(p[1], 10) * 60 + parseFloat(p[2]) : safeNum(s);
-  };
+  var hmsToSec = function(s) { if(!s) return 0; var p=String(s).split(":"); return p.length===3 ? parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]) : safeNum(s); };
   var getDisposition = function(r) { return String(get(r,"Disposition Code","disposition code","Disposition_Code","DispositionCode")||"").trim(); };
 
   var completed = rows.filter(function(r) { var s=getS(r); return s.includes("connected") || s.includes("answer") || s.includes("complete") || s.includes("successful"); });
@@ -1547,7 +1542,6 @@ function processFrejunData(rows) {
   };
   const toSec = function(s) {
     if(!s||s==="NA"||s==="na")return 0;
-    if(s instanceof Date && !isNaN(s)) return s.getUTCHours()*3600 + s.getUTCMinutes()*60 + s.getUTCSeconds();
     var p=String(s).match(/(\d+)m\s*(\d+)s/);
     if(p)return parseInt(p[1],10)*60+parseInt(p[2],10);
     return safeNum(s);
