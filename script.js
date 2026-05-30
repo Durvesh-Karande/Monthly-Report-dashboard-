@@ -4292,7 +4292,7 @@ function switchClient(navId, name) {
     renderSlide13(); renderSlide14(); renderSlide15();
     scaleSlides();
   } else {
-    ps.style.display = "none"; ds.style.display = "none";
+    ds.style.display = "none";
   }
 }
 
@@ -4330,6 +4330,14 @@ function showComparisonDashboard() {
   if (compNav) compNav.classList.add("active");
   var headingEl = document.getElementById("headingClientName");
   if (headingEl) headingEl.textContent = " — Comparison Dashboard";
+
+  // Reset theme to default (not client-specific) for comparison dashboard
+  var root = document.documentElement;
+  var isDark = root.classList.contains('dark');
+  root.style.setProperty('--primary', isDark ? '#3b82f6' : '#1e293b');
+  root.style.setProperty('--primary-light', isDark ? '#1e3a5f' : '#e2e8f0');
+  root.style.setProperty('--ring', isDark ? '#60a5fa' : '#3b82f6');
+
   renderComparisonDashboard();
 }
 
@@ -4681,100 +4689,72 @@ async function exportComparisonPDF() {
   var usableW = pageW - margin * 2;
   var pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
-  // Capture sections one by one
-  var sections = [
-    { id: "comp-header-area", label: "Header" },
-    { id: "comp-client-bar-area", label: "Client Summary" },
-    { id: "comp-leaders-area", label: "Category Leaders" },
-    { id: "comp-charts-area", label: "Charts" },
-    { id: "comp-table-area", label: "Table" },
-    { id: "comp-insights-area", label: "Insights" },
-  ];
+  var isDark = document.documentElement.classList.contains('dark');
+  var bgColor = isDark ? '#0f172a' : '#ffffff';
 
-  // Wrap existing sections with wrapper divs for clean capture
-  var wrapIds = {};
-  var children = Array.from(content.children);
-  children.forEach(function(child) {
-    if (child.classList.contains("comp-client-bar")) {
-      child.id = "comp-client-bar-area";
-      wrapIds["comp-client-bar-area"] = true;
-    } else if (child.classList.contains("comp-leader-grid")) {
-      child.id = "comp-leaders-area";
-      wrapIds["comp-leaders-area"] = true;
-    } else if (child.classList.contains("comp-chart-grid")) {
-      child.id = "comp-charts-area";
-      wrapIds["comp-charts-area"] = true;
-    } else if (child.tagName === "DIV" && child.classList.contains("comp-table-wrap")) {
-      child.id = "comp-table-area";
-      wrapIds["comp-table-area"] = true;
-    } else if (child.classList.contains("comp-insights")) {
-      child.id = "comp-insights-area";
-      wrapIds["comp-insights-area"] = true;
-    }
-  });
-
-  // Create a header wrapper for the title + subtitle + PDF button area
-  var headerEl = content.parentElement.querySelector(".comp-header");
-  if (headerEl && !document.getElementById("comp-header-area")) {
-    var hdrClone = headerEl.cloneNode(true);
-    // Remove the hint from header capture
-    var hintClone = hdrClone.querySelector(".comp-hint");
-    if (hintClone) hintClone.remove();
-    // Remove the PDF button from header capture
-    var btnClone = hdrClone.querySelector("#exportCompPdfBtn");
-    if (btnClone) btnClone.remove();
-    hdrClone.id = "comp-header-area";
-    hdrClone.style.padding = "0 0 12px 0";
-    hdrClone.style.margin = "0";
-    hdrClone.style.background = "transparent";
-    content.insertBefore(hdrClone, content.firstChild);
-  }
-
-  // Hide elements that shouldn't be in PDF (like the empty-state message)
+  // Hide elements that shouldn't appear in PDF
   var compHint = document.getElementById("compHint");
   if (compHint) compHint.style.display = "none";
 
-  var pageNum = 0;
-  for (var si = 0; si < sections.length; si++) {
-    var sec = document.getElementById(sections[si].id);
-    if (!sec || sec.offsetHeight === 0) continue;
+  // Hide the PDF button temporarily from header for clean capture
+  if (pdfBtn) { pdfBtn.style.display = "none"; }
 
+  var yPos = margin;
+
+  // Capture header
+  var headerEl = document.querySelector(".comp-dash > .comp-header");
+  if (headerEl) {
     try {
-      var canvas = await html2canvas(sec, {
-        scale: 2, useCORS: true, backgroundColor: "#ffffff",
+      var canvas = await html2canvas(headerEl, {
+        scale: 2, useCORS: true, backgroundColor: bgColor,
         logging: false, allowTaint: false,
       });
       var imgData = canvas.toDataURL("image/png");
-      var imgW = canvas.width, imgH = canvas.height;
-      var ratio = imgW / imgH;
       var renderW = usableW;
-      var renderH = renderW / ratio;
-
-      // Position: gap after previous section, or new page if doesn't fit
-      var gap = si === 0 ? 0 : 8;
-      var yPos = pdf.lastAutoY !== undefined ? pdf.lastAutoY + gap : margin;
-      if (yPos + renderH > pageH - margin) {
-        pdf.addPage();
-        yPos = margin;
-      }
-
+      var renderH = renderW * canvas.height / canvas.width;
       pdf.addImage(imgData, "PNG", margin, yPos, renderW, renderH);
-      pdf.lastAutoY = yPos + renderH;
-      pageNum++;
+      yPos += renderH;
     } catch (err) {
-      console.warn("Failed to capture section:", sections[si].label, err);
+      console.warn("Failed to capture header:", err);
     }
   }
 
-  // Restore hint visibility
+  // Capture each direct child of comparisonContent in order
+  var children = Array.from(content.children);
+  for (var ci = 0; ci < children.length; ci++) {
+    var child = children[ci];
+    if (!child || child.offsetHeight === 0) continue;
+    if (child.style.display === 'none') continue;
+
+    try {
+      var canvas = await html2canvas(child, {
+        scale: 2, useCORS: true, backgroundColor: bgColor,
+        logging: false, allowTaint: false,
+      });
+      var imgData = canvas.toDataURL("image/png");
+      var renderW = usableW;
+      var renderH = renderW * canvas.height / canvas.width;
+
+      var gap = 6;
+      if (yPos + renderH > pageH - margin) {
+        pdf.addPage();
+        yPos = margin;
+      } else {
+        yPos += gap;
+      }
+
+      pdf.addImage(imgData, "PNG", margin, yPos, renderW, renderH);
+      yPos += renderH;
+    } catch (err) {
+      console.warn("Failed to capture comparison block:", err);
+    }
+  }
+
+  // Restore UI elements
   if (compHint) compHint.style.display = "";
+  if (pdfBtn) pdfBtn.style.display = "";
 
-  // Remove the cloned header if we added one
-  var hdrClone = document.getElementById("comp-header-area");
-  if (hdrClone && hdrClone !== headerEl) hdrClone.remove();
-
-  var filename = "Comparison Dashboard - All Clients.pdf";
-  pdf.save(filename);
+  pdf.save("Comparison Dashboard - All Clients.pdf");
 
   if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg> Download PDF'; }
 }
