@@ -1378,13 +1378,22 @@ function processPKAmeyoData(rows) {
   const daySummary = Object.entries(dayStats).sort((a,b)=>a[0]-b[0]).map(e => `Day ${e[0]}: ${e[1]}`).join(", ");
   addLog(`Ameyo PK Day Distribution: ${daySummary}`, "info");
 
+  // Debug sample values
+  if (rows.length > 0) {
+    const sample = rows[0];
+    addLog(`PK sample headers: ${Object.keys(sample).join(", ")}`, "info");
+    addLog(`PK sample User Talk Time: "${get(sample,"User Talk Time","user talk time","User_Talk_Time","User Talktime")}"`, "info");
+    addLog(`PK sample User Ringing Time: "${get(sample,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime")}"`, "info");
+    addLog(`PK sample System Disposition: "${get(sample,"System Disposition","system disposition","System_Disposition")}"`, "info");
+  }
+
   var sortedDates = Object.keys(dateMap).map(Number).sort(function(a,b){return a-b;});
 
   // Table 1: Call Count per date
   var dateCallCounts = sortedDates.map(function(d){return {date:d, completed:dateMap[d].completed, missed:dateMap[d].missed, attempts:dateMap[d].attempts, total:dateMap[d].completed+dateMap[d].missed+dateMap[d].attempts};});
 
-  // Table 2: AHT per date
-  var dateAHT = sortedDates.map(function(d){var c=dateMap[d].convDurs; return {date:d, avgAHT:c.length?c.reduce(function(a,b){return a+b;},0)/c.length:0};});
+  // Table 2: AHT per date (exclude zero durations)
+  var dateAHT = sortedDates.map(function(d){var c=dateMap[d].convDurs.filter(function(v){return v>0;}); return {date:d, avgAHT:c.length?c.reduce(function(a,b){return a+b;},0)/c.length:0};});
 
   // Table 3: Ring Time per date
   var dateRing = sortedDates.map(function(d){var r=dateMap[d].ringTimes; return {date:d, avgRing:r.length?r.reduce(function(a,b){return a+b;},0)/r.length:0};});
@@ -1396,7 +1405,7 @@ function processPKAmeyoData(rows) {
   var dateCostSpend = sortedDates.map(function(d){return {date:d, completed:0, missed:0, attempts:0, total:0};});
 
   // Overall aggregates
-  var convDurs = completed.map(function(r){return hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));});
+  var convDurs = completed.map(function(r){return hmsToSec(get(r,"User Talk Time","user talk time","User_Talk_Time","User Talktime"));}).filter(function(v){return v>0;});
   var avgAHT = convDurs.length ? convDurs.reduce(function(a,b){return a+b;},0)/convDurs.length : 0;
 
   var ringTimes = completed.map(function(r){return hmsToSec(get(r,"User Ringing Time","user ringing time","User_Ringing_Time","User Ringtime"));});
