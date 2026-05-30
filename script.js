@@ -917,7 +917,17 @@ function processExotelData(rows) {
   const get = (r,...n)=>findCol(r,...n);
   const getS = r => String(get(r,"Status","status")||"").toLowerCase().trim();
   const getStartTime = r => String(get(r,"StartTime","starttime","Start Time","start time")||"").trim();
-  const extractDateOnly = dt => { const s = dt.split(/\s+/)[0]; return s || ''; };
+  const extractDateOnly = dt => {
+    const s = String(dt).trim().split(/\s+/)[0];
+    if (!s || !/^\d/.test(s)) {
+      const p = new Date(String(dt).trim());
+      if (!isNaN(p) && p.getFullYear() > 100) {
+        const dd = String(p.getDate()).padStart(2,"0"), mm = String(p.getMonth()+1).padStart(2,"0"), yyyy = p.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+      }
+    }
+    return s || '';
+  };
   const getDate = r => extractDateOnly(getStartTime(r));
 
   const completed = rows.filter(r => getS(r)==="completed");
@@ -1148,7 +1158,7 @@ function processAmeyoData(rows) {
   const get = (r,...n)=>findCol(r,...n);
   const getS = r => String(get(r,"Answered/Hungup","answered/hungup","Answered Hungup","Answered_Hungup")||"").toLowerCase().trim();
   const getCallTime = r => String(get(r,"Call Time","call time","Call Time","Call_Time")||"").trim();
-  const getDate = r => { const ct=getCallTime(r); if(!ct)return 1; const p=ct.split(/\s+/); const d=parseInt(p[0],10); return(d>=1&&d<=31)?d:1; };
+  const getDate = r => { const ct=getCallTime(r); if(!ct)return 1; const day=extractDay(ct); return(day>=1&&day<=31)?day:1; };
   const hmsToSec = function(s){if(!s)return 0;var p=String(s).split(":");return p.length===3?parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]):safeNum(s);};
 
   const completed = rows.filter(r=>getS(r).includes("answer"));
@@ -1321,10 +1331,8 @@ function processPKAmeyoData(rows) {
     if (!isNaN(num) && /^\d+(\.\d+)?$/.test(String(ct).trim()) && num > 40000 && num < 60000) {
       return excelSerialToDate(Math.floor(num)).getUTCDate();
     }
-    // ISO datetime with T separator (no whitespace): "2025-04-15T14:30:00.000Z"
-    var datePart = ct.split(/[\sT]/)[0] || "";
-    if (!datePart) return 0;
-    var day = extractDay(datePart);
+    // ISO datetime with T separator, DD/MM/YYYY, Date.toString(), etc. — let extractDay handle it
+    var day = extractDay(ct);
     return (day >= 1 && day <= 31) ? day : 0;
   };
   var hmsToSec = function(s) { if(!s) return 0; var p=String(s).split(":"); return p.length===3 ? parseInt(p[0],10)*3600+parseInt(p[1],10)*60+parseFloat(p[2]) : safeNum(s); };
@@ -1511,7 +1519,18 @@ function processFrejunData(rows) {
   const getStartTime = r => String(get(r,"Start Time","start time","StartTime","starttime","Start_Time")||"").trim();
   const getCallCost = r => safeNum(get(r,"Call Cost","call cost","Call_Cost","Cost","cost","Price","price"));
   const getTags = r => String(get(r,"Tags","tags")||"").trim();
-  const getDate = r => { const st=getStartTime(r); if(!st)return ''; const s=st.split(/\s+/)[0]; return s||''; };
+  const getDate = r => {
+    const st=getStartTime(r); if(!st)return '';
+    const s=String(st).trim().split(/\s+/)[0];
+    if (!s || !/^\d/.test(s)) {
+      const p=new Date(String(st).trim());
+      if (!isNaN(p) && p.getFullYear() > 100) {
+        const dd=String(p.getDate()).padStart(2,"0"), mm=String(p.getMonth()+1).padStart(2,"0"), yyyy=p.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+      }
+    }
+    return s||'';
+  };
   const toSec = function(s) {
     if(!s||s==="NA"||s==="na")return 0;
     var p=String(s).match(/(\d+)m\s*(\d+)s/);
