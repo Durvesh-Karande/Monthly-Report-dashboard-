@@ -601,7 +601,7 @@ function parseFile(file) {
       Papa.parse(file,{header:true,skipEmptyLines:true,complete:r=>r.errors.length?reject(new Error(r.errors[0].message)):resolve(stripBOM(r.data)),error:reject});
     }else{
       const r=new FileReader();
-      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});resolve(stripBOM(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])));}catch(err){reject(err)}};
+      r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});resolve(stripBOM(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])));}catch(err){reject(err)}};
       r.onerror=()=>reject(new Error("Failed to read file"));
       r.readAsArrayBuffer(file);
     }
@@ -613,9 +613,16 @@ function safeNum(v){if(v===null||v===undefined||v==="")return 0;const n=Number(S
 function secondsToHMS(sec){if(!sec||sec<=0)return"";const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;}
 function formatSecToMinSec(val){const n=Number(val);if(isNaN(n)||n<=0)return"0s";const m=Math.floor(n/60),s=Math.floor(n%60);return(m>0?m+"m ":"")+s+"s";}
 function median(arr){if(arr.length===0)return 0;const s=[...arr].sort((a,b)=>a-b),mid=Math.floor(s.length/2);return s.length%2?s[mid]:(s[mid-1]+s[mid])/2;}
-function extractDay(dateStr){
-  if(!dateStr)return 1;
-  const s=String(dateStr).trim();
+function extractDay(v){
+  // Handle Date object (from SheetJS cellDates:true)
+  if(v instanceof Date && !isNaN(v)) return v.getDate();
+  // Handle Excel serial number (belt-and-suspenders)
+  if(typeof v==="number"){
+    const d=new Date((v-25569)*86400*1000);
+    if(!isNaN(d)&&d.getFullYear()>100)return d.getDate();
+  }
+  if(!v)return 1;
+  const s=String(v).trim();
   if(!s)return 1;
 
   // Match DD/MM/YYYY or D/M/YYYY (with - or /), year can be 2 or 4 digits
@@ -2073,11 +2080,18 @@ function computeChatIntervalData() {
     if (weekFilter !== "All" && weekFilter !== wk) continue;
     uniqueDays.add(day);
     var h = NaN;
-    var timeMatch = String(dateCol).trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
-    if (timeMatch) {
-      h = parseInt(timeMatch[1], 10);
-      if (timeMatch[4] && timeMatch[4].toUpperCase() === "PM" && h !== 12) h += 12;
-      if (timeMatch[4] && timeMatch[4].toUpperCase() === "AM" && h === 12) h = 0;
+    if (dateCol instanceof Date && !isNaN(dateCol)) {
+      h = dateCol.getHours();
+    } else if (typeof dateCol === "number") {
+      var dd = new Date((dateCol - 25569) * 86400 * 1000);
+      if (!isNaN(dd) && dd.getFullYear() > 100) h = dd.getHours();
+    } else {
+      var timeMatch = String(dateCol).trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+      if (timeMatch) {
+        h = parseInt(timeMatch[1], 10);
+        if (timeMatch[4] && timeMatch[4].toUpperCase() === "PM" && h !== 12) h += 12;
+        if (timeMatch[4] && timeMatch[4].toUpperCase() === "AM" && h === 12) h = 0;
+      }
     }
     if (h >= 0 && h < 24) hourCounts[h]++;
   }
