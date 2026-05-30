@@ -4691,63 +4691,68 @@ async function exportComparisonPDF() {
 
   var isDark = document.documentElement.classList.contains('dark');
   var bgColor = isDark ? '#0f172a' : '#ffffff';
+  var pageRgb = isDark ? [15, 23, 42] : [255, 255, 255];
+
+  // Fill first page background
+  pdf.setFillColor(pageRgb[0], pageRgb[1], pageRgb[2]);
+  pdf.rect(0, 0, pageW, pageH, 'F');
 
   // Hide elements that shouldn't appear in PDF
   var compHint = document.getElementById("compHint");
   if (compHint) compHint.style.display = "none";
+  if (pdfBtn) pdfBtn.style.display = "none";
 
-  // Hide the PDF button temporarily from header for clean capture
-  if (pdfBtn) { pdfBtn.style.display = "none"; }
+  // Temporarily add background to comparisonContent for a seamless capture
+  var origBg = content.style.background;
+  content.style.background = bgColor;
 
-  var yPos = margin;
-
-  // Capture header
-  var headerEl = document.querySelector(".comp-dash > .comp-header");
-  if (headerEl) {
-    try {
-      var canvas = await html2canvas(headerEl, {
-        scale: 2, useCORS: true, backgroundColor: bgColor,
-        logging: false, allowTaint: false,
-      });
-      var imgData = canvas.toDataURL("image/png");
-      var renderW = usableW;
-      var renderH = renderW * canvas.height / canvas.width;
-      pdf.addImage(imgData, "PNG", margin, yPos, renderW, renderH);
-      yPos += renderH;
-    } catch (err) {
-      console.warn("Failed to capture header:", err);
-    }
+  // Capture the entire comparisonContent as one continuous image
+  try {
+    var canvas = await html2canvas(content, {
+      scale: 2, useCORS: true, backgroundColor: bgColor,
+      logging: false, allowTaint: false,
+      height: content.scrollHeight,
+      windowHeight: content.scrollHeight,
+    });
+  } catch (err) {
+    content.style.background = origBg;
+    if (compHint) compHint.style.display = "";
+    if (pdfBtn) { pdfBtn.style.display = ""; pdfBtn.disabled = false; pdfBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg> Download PDF'; }
+    console.warn("html2canvas failed:", err);
+    return;
   }
 
-  // Capture each direct child of comparisonContent in order
-  var children = Array.from(content.children);
-  for (var ci = 0; ci < children.length; ci++) {
-    var child = children[ci];
-    if (!child || child.offsetHeight === 0) continue;
-    if (child.style.display === 'none') continue;
+  content.style.background = origBg;
 
-    try {
-      var canvas = await html2canvas(child, {
-        scale: 2, useCORS: true, backgroundColor: bgColor,
-        logging: false, allowTaint: false,
-      });
-      var imgData = canvas.toDataURL("image/png");
-      var renderW = usableW;
-      var renderH = renderW * canvas.height / canvas.width;
+  // Split the tall image across PDF pages
+  var imgData = canvas.toDataURL("image/png");
+  var imgW = canvas.width;
+  var imgH = canvas.height;
+  var pageContentH = pageH - margin * 2;
+  var scaleFactor = usableW / imgW;
+  var imgPerPage = pageContentH / scaleFactor;
+  var totalPages = Math.ceil(imgH / imgPerPage);
 
-      var gap = 6;
-      if (yPos + renderH > pageH - margin) {
-        pdf.addPage();
-        yPos = margin;
-      } else {
-        yPos += gap;
-      }
-
-      pdf.addImage(imgData, "PNG", margin, yPos, renderW, renderH);
-      yPos += renderH;
-    } catch (err) {
-      console.warn("Failed to capture comparison block:", err);
+  for (var p = 0; p < totalPages; p++) {
+    if (p > 0) {
+      pdf.addPage();
+      pdf.setFillColor(pageRgb[0], pageRgb[1], pageRgb[2]);
+      pdf.rect(0, 0, pageW, pageH, 'F');
     }
+
+    var sy = Math.round(p * imgPerPage);
+    var sh = Math.round(Math.min(imgPerPage, imgH - sy));
+    if (sh <= 0) break;
+
+    var pageCanvas = document.createElement('canvas');
+    pageCanvas.width = imgW;
+    pageCanvas.height = sh;
+    var ctx = pageCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, sy, imgW, sh, 0, 0, imgW, sh);
+
+    var pageImg = pageCanvas.toDataURL("image/png");
+    var renderH = usableW * sh / imgW;
+    pdf.addImage(pageImg, "PNG", margin, margin, usableW, renderH);
   }
 
   // Restore UI elements
