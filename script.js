@@ -632,7 +632,16 @@ function extractDay(v){
     if (y < 100) y += 2000;
     if (d > 12 && d <= 31) return d;       // DD/MM/YYYY
     if (mo > 12 && mo <= 31) return mo;     // MM/DD/YYYY
-    if (d >= 1 && d <= 31) return d;        // ambiguous — assume DD/MM (Indian)
+    // Ambiguous (both ≤ 12) — use selected month to disambiguate
+    if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) {
+      var sel = document.getElementById("monthSelect")?.value;
+      var mNum = sel ? new Date(sel + " 1, 2000").getMonth() + 1 : 0;
+      if (mNum > 0) {
+        if (d === mNum) return mo;   // MM/DD — day is second part
+        if (mo === mNum) return d;   // DD/MM — day is first part
+      }
+    }
+    return d;  // fallback: assume DD/MM (Indian)
   }
 
   // Fallback: native Date parser for ISO or unambiguous formats
