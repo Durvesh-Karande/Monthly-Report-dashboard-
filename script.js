@@ -961,7 +961,7 @@ function processExotelData(rows) {
 
   // Table 2: AHT per date
   const dateAHT = sortedDates.map(d => {
-    const c = dateMap[d].convDurs;
+    const c = dateMap[d].convDurs.filter(v => v > 0);
     return { date:d, avgAHT: c.length ? c.reduce((a,b)=>a+b,0)/c.length : 0 };
   });
 
@@ -985,7 +985,7 @@ function processExotelData(rows) {
   }));
 
   // --- Overall aggregates ---
-  const convDurs = completed.map(r=>safeNum(get(r,"ConversationDuration","Conversation Duration","conversationduration")));
+  const convDurs = completed.map(r=>safeNum(get(r,"ConversationDuration","Conversation Duration","conversationduration"))).filter(v => v > 0);
   const avgAHT = convDurs.length ? convDurs.reduce((a,b)=>a+b,0)/convDurs.length : 0;
 
   const ringTimes = completed.map(r=>Math.max(0, safeNum(get(r,"Duration","duration"))-safeNum(get(r,"ConversationDuration","Conversation Duration","conversationduration"))));
@@ -1025,7 +1025,10 @@ function processExotelData(rows) {
   // --- Issue Count & AHT Table (top 10) ---
   const issueCounts = {}, issueDurs = {};
   completed.forEach(r=>{const c=String(get(r,"DispositionCodes","dispositioncodes","Disposition Codes")||"").trim();if(c){issueCounts[c]=(issueCounts[c]||0)+1;if(!issueDurs[c])issueDurs[c]=[];issueDurs[c].push(safeNum(get(r,"ConversationDuration","conversationduration")));}});
-  const topIssues = Object.entries(issueCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([code,count])=>({code,count,avgAHT:secondsToHMS(Math.round((issueDurs[code]||[0]).reduce((a,b)=>a+b,0)/(issueDurs[code]||[1]).length))}));
+  const topIssues = Object.entries(issueCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([code,count])=>{
+    const vals = (issueDurs[code]||[]).filter(v => v > 0);
+    return {code,count,avgAHT:secondsToHMS(Math.round(vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0))};
+  });
 
   const issueCountTable = topIssues.map(({code,count,avgAHT}) => ({
     Month: month, Week: weekFilter, Date: "", Client: projectName, MOC: "Inbound",
