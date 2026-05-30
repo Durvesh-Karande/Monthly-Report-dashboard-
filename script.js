@@ -616,25 +616,16 @@ function median(arr){if(arr.length===0)return 0;const s=[...arr].sort((a,b)=>a-b
 function extractDay(dateStr){
   if(!dateStr)return 1;
   const s=String(dateStr).trim();
+  if(!s)return 1;
 
-  const parts = s.split(/[\/\-\s,:.]+/).map(p => parseInt(p, 10)).filter(p => !isNaN(p));
-  if (parts.length >= 3) {
-    const p1 = parts[0];
-    const p2 = parts[1];
-    const p3 = parts[2];
-
-    // Case 1: YYYY-MM-DD or YYYY-DD-MM
-    if (p1 > 1000) {
-      if (p3 >= 1 && p3 <= 31) return p3;
-      if (p2 >= 1 && p2 <= 31) return p2;
-    }
-
-    // Case 2: One part is clearly a day (>12)
-    if (p1 > 12 && p1 <= 31) return p1;
-    if (p2 > 12 && p2 <= 31) return p2;
-
-    // Ambiguous (both <= 12) — assume DD/MM/YYYY (Indian format)
-    if (p1 >= 1 && p1 <= 31) return p1;
+  // Match DD/MM/YYYY or D/M/YYYY (with - or /), year can be 2 or 4 digits
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
+  if (m) {
+    let d = parseInt(m[1], 10), mo = parseInt(m[2], 10), y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    if (d > 12 && d <= 31) return d;       // DD/MM/YYYY
+    if (mo > 12 && mo <= 31) return mo;     // MM/DD/YYYY
+    if (d >= 1 && d <= 31) return d;        // ambiguous — assume DD/MM (Indian)
   }
 
   // Fallback: native Date parser for ISO or unambiguous formats
@@ -2081,8 +2072,13 @@ function computeChatIntervalData() {
     const wk = getWeekNum(day);
     if (weekFilter !== "All" && weekFilter !== wk) continue;
     uniqueDays.add(day);
-    const parts = String(dateCol).trim().split(/[\/\-\s:]/);
-    const h = parseInt(parts[3], 10);
+    var h = NaN;
+    var timeMatch = String(dateCol).trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+    if (timeMatch) {
+      h = parseInt(timeMatch[1], 10);
+      if (timeMatch[4] && timeMatch[4].toUpperCase() === "PM" && h !== 12) h += 12;
+      if (timeMatch[4] && timeMatch[4].toUpperCase() === "AM" && h === 12) h = 0;
+    }
     if (h >= 0 && h < 24) hourCounts[h]++;
   }
 
