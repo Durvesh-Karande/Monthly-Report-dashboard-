@@ -1512,7 +1512,7 @@ function processFrejunData(rows) {
     return safeNum(s);
   };
 
-  const missedStatuses = ["user-not-answered","user busy"];
+  const missedStatuses = ["user-not-answered","user-busy","user busy"];
   const completed = rows.filter(r => getS(r)==="answered");
   const missed    = rows.filter(r => missedStatuses.includes(getS(r)));
   // Any rows with other statuses treated as attempts
