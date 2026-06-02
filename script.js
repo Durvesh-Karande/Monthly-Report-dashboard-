@@ -255,7 +255,9 @@ function initConfig() {
 // ===== TABLE DATA (localStorage only — no DOM tables) =====
 // =====================================================================
 function getTableData(tableId) {
-  const saved = localStorage.getItem('table_'+tableId);
+  var client = document.getElementById("sidebarProjectName").textContent || "";
+  var key = 'table_' + client + '_' + tableId;
+  const saved = localStorage.getItem(key);
   if (!saved) return [];
   try {
     const data = JSON.parse(saved);
@@ -264,7 +266,9 @@ function getTableData(tableId) {
 }
 
 function saveTableData(tableId, data) {
-  localStorage.setItem('table_'+tableId, JSON.stringify(data));
+  var client = document.getElementById("sidebarProjectName").textContent || "";
+  var key = 'table_' + client + '_' + tableId;
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
 // =====================================================================
