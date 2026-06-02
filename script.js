@@ -274,6 +274,10 @@ let lastFocusedCell = null;
 let currentSheetIdx = 0;
 // Holds unsaved data for all sheets while modal is open
 let multiSheetData = {};
+// Column widths per sheet (for resize handles)
+let sheetColumnWidths = {};
+// Column resize state
+let colResize = { active: false, th: null, startX: 0, startWidth: 0, colIdx: 0 };
 
 // Track the currently focused cell for paste positioning
 function initExcelPasteTracker() {
@@ -419,6 +423,7 @@ function openDataEntryModal() {
 
   // Load first sheet
   loadSheetIntoGrid(0);
+  initColumnResize();
 
   document.getElementById('excelModal').style.display = 'flex';
   document.getElementById('sheetStatus').textContent = '';
@@ -443,6 +448,7 @@ function switchSheet(idx) {
   currentSheetIdx = idx;
   updateActiveTab(idx);
   loadSheetIntoGrid(idx);
+  initColumnResize();
   document.getElementById('sheetStatus').textContent = '';
 }
 
@@ -473,7 +479,17 @@ function loadSheetIntoGrid(idx) {
 
   // Set up headers
   const headRow = document.getElementById('excelGridHead');
-  headRow.innerHTML = '<th>#</th>' + sheet.headers.map(h => `<th>${h}</th>`).join('');
+  headRow.innerHTML = '<th style="position:relative">#' +
+    sheet.headers.map((h, i) => `<th style="position:relative" data-col-idx="${i + 1}">${h}<div class="th-resize-handle" data-col-idx="${i + 1}"></div></th>`).join('');
+
+  // Restore saved column widths
+  const savedWidths = sheetColumnWidths[sheet.id];
+  if (savedWidths) {
+    const allTh = headRow.querySelectorAll('th');
+    allTh.forEach((th, i) => {
+      if (savedWidths[i]) th.style.width = savedWidths[i];
+    });
+  }
 
   // Load data from memory
   const data = multiSheetData[sheet.id] || [];
@@ -486,6 +502,51 @@ function loadSheetIntoGrid(idx) {
     for (let i = 0; i < 100; i++) addExcelGridRow();
   }
 }
+
+function initColumnResize() {
+  const handles = document.querySelectorAll('.th-resize-handle');
+  handles.forEach(handle => {
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      const th = this.parentElement;
+      const sheet = SHEETS[currentSheetIdx];
+      if (!sheet) return;
+      const colIdx = parseInt(this.dataset.colIdx);
+      colResize.active = true;
+      colResize.th = th;
+      colResize.startX = e.clientX;
+      colResize.startWidth = th.offsetWidth;
+      colResize.colIdx = colIdx;
+      this.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  });
+}
+
+document.addEventListener('mousemove', function(e) {
+  if (!colResize.active || !colResize.th) return;
+  const sheet = SHEETS[currentSheetIdx];
+  if (!sheet) return;
+  const dx = e.clientX - colResize.startX;
+  const newWidth = Math.max(30, colResize.startWidth + dx);
+  colResize.th.style.width = newWidth + 'px';
+  // Store widths
+  const allTh = document.querySelectorAll('#excelGridHead th');
+  const widths = [];
+  allTh.forEach(th => widths.push(th.style.width || ''));
+  sheetColumnWidths[sheet.id] = widths;
+});
+
+document.addEventListener('mouseup', function(e) {
+  if (colResize.active) {
+    document.querySelectorAll('.th-resize-handle.resizing').forEach(h => h.classList.remove('resizing'));
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    colResize.active = false;
+    colResize.th = null;
+  }
+});
 
 function closeExcelEditor() {
   document.getElementById('excelModal').style.display = 'none';
@@ -3769,7 +3830,7 @@ function renderSlide15() {
       indexAxis: 'y',
       plugins: {
         legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v : ''; } }
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v + '%' : ''; } }
       },
       scales: {
         x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
@@ -3817,7 +3878,7 @@ function renderSlide15() {
       indexAxis: 'y',
       plugins: {
         legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v : ''; } }
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v, ctx) { if (v > 0) { return ctx.datasetIndex === 0 ? v + '%' : v; } return ''; } }
       },
       scales: {
         x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },

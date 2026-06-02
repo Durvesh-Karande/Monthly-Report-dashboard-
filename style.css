@@ -365,11 +365,11 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8125rem;
-  table-layout: fixed;
   min-width: 600px;
 }
 .excel-grid th {
   padding: 0.375rem 0.5rem;
+  padding-right: 6px;
   text-align: left;
   font-weight: 600;
   font-size: 0.7rem;
@@ -382,6 +382,23 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
   position: sticky;
   top: 0;
   z-index: 2;
+  overflow: visible;
+  user-select: none;
+}
+.excel-grid th .th-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 3;
+  background: transparent;
+}
+.excel-grid th .th-resize-handle:hover,
+.excel-grid th .th-resize-handle.resizing {
+  background: var(--primary);
+  opacity: 0.5;
 }
 .excel-grid th:first-child {
   width: 2.5rem;
