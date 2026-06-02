@@ -3550,8 +3550,11 @@ function renderSlide13() {
   });
 
   agents.sort(function(a, b) { return b.achieved - a.achieved; });
-  var topArr = agents.slice(0, 5);
-  var bottomArr = agents.slice(-5).reverse();
+  var total = agents.length;
+  var topCount = Math.min(5, Math.ceil(total / 2));
+  var bottomCount = total - topCount;
+  var topArr = agents.slice(0, topCount);
+  var bottomArr = agents.slice(total - bottomCount).reverse();
 
   var chartOpts = function() {
     return {
