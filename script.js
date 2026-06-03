@@ -3548,8 +3548,8 @@ function renderSlide13() {
 
   agents.sort(function(a, b) { return b.achieved - a.achieved; });
   var total = agents.length;
-  var topCount = Math.min(5, Math.ceil(total / 2));
-  var bottomCount = total - topCount;
+  var topCount = Math.min(5, total);
+  var bottomCount = Math.min(5, total - topCount);
   var topArr = agents.slice(0, topCount);
   var bottomArr = agents.slice(total - bottomCount).reverse();
 
