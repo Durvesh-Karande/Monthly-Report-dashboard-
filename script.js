@@ -3686,7 +3686,10 @@ function renderSlide14() {
 
   destroyChart("chartSlide14Quality");
   var minQ = Math.min.apply(null, qVals);
+  var maxQ = Math.max.apply(null, qVals);
   var yMin = Math.floor(minQ / 10) * 10;
+  var yMax = Math.ceil(maxQ / 10) * 10;
+  if (yMax - yMin < 20) { yMax = yMin + 20; }
   createChart("chartSlide14Quality", "line", qLabels, [
     {
       label: "Quality Score",
@@ -3734,7 +3737,7 @@ function renderSlide14() {
     },
     scales: {
       y: {
-        min: yMin,
+        min: yMin, max: yMax,
         ticks: { color: THEME.chartTick || '#555770', font: { size: 6.5 } },
         grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
       },
