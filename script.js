@@ -3084,41 +3084,38 @@ function renderSlide9() {
 
   function buildComparisonBar(canvasId, completedVal, disposedVal, label1, label2, color) {
     destroyChart(canvasId);
-    const yMax = Math.ceil(Math.max(completedVal, disposedVal, 1) * 1.2);
-    createChart(canvasId, "bar", [label1, label2], [
-      {
-        label: "Volume",
-        data: [completedVal, disposedVal],
-        backgroundColor: ["rgba(34,197,94,0.75)", color],
-        borderColor: ["#22c55e", "rgba(249,115,22,0.75)"],
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.7,
-        categoryPercentage: 0.8
-      }
-    ], {
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          display: true,
-          anchor: 'end', align: 'end', offset: 4,
-          color: THEME.slideText || '#1D1D1F',
-          font: { size: 14, weight: '800' },
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: THEME.chartTick || '#555770', font: { size: 11, weight: '700' } },
-          grid: { display: false }
+    const yMax = Math.ceil(Math.max(completedVal, 1) * 1.2);
+    var isChat = label1 === "Closed";
+    if (isChat) {
+      var notTagged = Math.max(0, completedVal - disposedVal);
+      createChart(canvasId, "bar", [label1, label2], [
+        { label: "Closed", data: [completedVal, 0], backgroundColor: "rgba(34,197,94,0.75)", borderColor: "#22c55e", borderWidth: 1, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 },
+        { label: "Tagged", data: [0, disposedVal], backgroundColor: color, borderColor: color.replace('0.75','1'), borderWidth: 1, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 },
+        { label: "Not Tagged", data: [0, notTagged], backgroundColor: "rgba(148,163,184,0.4)", borderColor: "rgba(148,163,184,0.6)", borderWidth: 1, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 }
+      ], {
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 9, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
+          datalabels: { display: true, color: THEME.slideText || '#1D1D1F', font: { size: 13, weight: '800' }, anchor: 'end', align: 'end', offset: 4, formatter: function(v) { return v > 0 ? v.toLocaleString() : ''; } }
         },
-        y: {
-          beginAtZero: true,
-          max: yMax,
-          ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } },
-          grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 }
+        scales: {
+          x: { stacked: true, ticks: { color: THEME.chartTick || '#555770', font: { size: 11, weight: '700' } }, grid: { display: false } },
+          y: { beginAtZero: true, max: yMax, ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } }, grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 } }
         }
-      }
-    });
+      });
+    } else {
+      createChart(canvasId, "bar", [label1, label2], [
+        { label: "Volume", data: [completedVal, disposedVal], backgroundColor: ["rgba(34,197,94,0.75)", color], borderColor: ["#22c55e", "rgba(249,115,22,0.75)"], borderWidth: 1, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 }
+      ], {
+        plugins: {
+          legend: { display: false },
+          datalabels: { display: true, anchor: 'end', align: 'end', offset: 4, color: THEME.slideText || '#1D1D1F', font: { size: 14, weight: '800' } }
+        },
+        scales: {
+          x: { ticks: { color: THEME.chartTick || '#555770', font: { size: 11, weight: '700' } }, grid: { display: false } },
+          y: { beginAtZero: true, max: yMax, ticks: { color: THEME.chartTick || '#555770', font: { size: 8 } }, grid: { color: THEME.chartGrid || 'rgba(85,87,112,0.08)', lineWidth: 0.5 } }
+        }
+      });
+    }
   }
 
   buildComparisonBar("chartSlide9Chat", chatCompleted, chatDisposed, "Closed", "Tagged", tc1(0.75));
@@ -3559,6 +3556,7 @@ function renderSlide13() {
   var chartOpts = function() {
     return {
       indexAxis: 'y',
+      layout: { padding: { top: 10, right: 40, bottom: 8, left: 10 } },
       plugins: {
         legend: { display: false },
         datalabels: {
@@ -3837,7 +3835,7 @@ function renderSlide15() {
       indexAxis: 'y',
       plugins: {
         legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v) { return v > 0 ? v + '%' : ''; } }
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, formatter: function(v) { return v > 0 ? v + '%' : ''; } }
       },
       scales: {
         x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
@@ -3885,7 +3883,7 @@ function renderSlide15() {
       indexAxis: 'y',
       plugins: {
         legend: { display: true, position: 'bottom', labels: { color: THEME.slideMuted, font: { size: 8, weight: '600' }, boxWidth: 10, padding: 8, usePointStyle: true } },
-        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, textShadowColor: 'rgba(0,0,0,0.7)', textShadowBlur: 4, formatter: function(v, ctx) { if (v > 0) { return ctx.datasetIndex === 0 ? v + '%' : v; } return ''; } }
+        datalabels: { anchor: 'center', align: function(ctx) { var v = ctx.dataset.data[ctx.dataIndex]; return v > 8 ? 'center' : 'end'; }, offset: 2, color: '#fff', font: { size: 8, weight: '800' }, formatter: function(v, ctx) { if (v > 0) { return ctx.datasetIndex === 0 ? v + '%' : v; } return ''; } }
       },
       scales: {
         x: { stacked: true, beginAtZero: true, ticks: { color: THEME.chartTick, font: { size: 8, weight: '600' } }, grid: { color: THEME.chartGrid, lineWidth: 0.5 } },
