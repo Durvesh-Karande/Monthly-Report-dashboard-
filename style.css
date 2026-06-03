@@ -1240,7 +1240,7 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
   display: flex; flex-direction: column; gap: 10px;
 }
 
-#slide13 .slide13-charts { display: flex; gap: 10px; flex: 1; min-height: 360px; }
+#slide13 .slide13-charts { display: flex; gap: 10px; flex: 1; min-height: 320px; }
 
 #slide13 .slide13-panel {
   flex: 1;
