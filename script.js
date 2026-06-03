@@ -3729,7 +3729,7 @@ function renderSlide14() {
         anchor: 'end', align: 'end', offset: 2,
         color: THEME.slideText || '#1D1D1F',
         font: { size: 6.5, weight: '700' },
-        formatter: function(v) { return v > 0 ? v : ''; }
+        formatter: function(v, ctx) { return ctx.datasetIndex === 0 && v > 0 ? v : ''; }
       }
     },
     scales: {
