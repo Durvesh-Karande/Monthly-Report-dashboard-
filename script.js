@@ -3713,7 +3713,8 @@ function renderSlide14() {
       borderWidth: 2,
       borderDash: [4, 3],
       pointRadius: 0,
-      fill: false
+      fill: false,
+      datalabels: { display: false }
     }
   ], {
     plugins: {
