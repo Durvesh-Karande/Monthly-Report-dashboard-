@@ -1259,8 +1259,11 @@ html.dark .fh-tag.critical { background: color-mix(in srgb, var(--destructive) 2
 #slide13 .slide13-panel canvas { flex: 1; width: 100% !important; min-height: 0; }
 
 #slide13 .slide13-table-wrap {
-  flex-shrink: 0; overflow: hidden;
+  flex-shrink: 0; overflow-y: auto; max-height: 195px;
 }
+#slide13 .slide13-table-wrap::-webkit-scrollbar { width: 4px; }
+#slide13 .slide13-table-wrap::-webkit-scrollbar-thumb { background: var(--sl-text-muted); border-radius: 4px; }
+#slide13 .slide13-table-wrap::-webkit-scrollbar-track { background: transparent; }
 
 #slide13 .slide13-table-wrap table {
   width: 100%; border-collapse: collapse; font-size: 7.5px;
